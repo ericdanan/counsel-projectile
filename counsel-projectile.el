@@ -169,7 +169,11 @@ With a prefix ARG invalidates the cache first."
    ("g" (lambda (dir)
 	  (let ((projectile-switch-project-action 'projectile-vc))
 	    (projectile-switch-project-by-name dir arg)))
-    "open in vc-dir / magit / monky")))
+    "open in vc-dir / magit / monky")
+   ("e" (lambda (dir)
+	  (let ((projectile-switch-project-action 'projectile-run-eshell))
+	    (projectile-switch-project-by-name dir arg)))
+    "start eshell")))
 
 
 (provide 'counsel-projectile)
