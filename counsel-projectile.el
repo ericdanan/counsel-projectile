@@ -161,7 +161,7 @@ With a prefix ARG invalidates the cache first."
 	  (let ((projectile-switch-project-action
 		 'projectile-remove-current-project-from-known-projects))
 	    (projectile-switch-project-by-name dir arg)))
-    "remove from knwon projects")
+    "remove from known projects")
    ("l" (lambda (dir)
 	  (let ((projectile-switch-project-action 'projectile-edit-dir-locals))
 	    (projectile-switch-project-by-name dir arg)))
