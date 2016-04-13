@@ -4,7 +4,7 @@ This library tries to do something similar to `helm-projectile`, but using `ivy`
 
 # Installation
 
-Clone the repository somewhere in your load path.
+Install the package from `MELPA` or clone this repository somewhere in your load path.
 
 # Usage
 
