@@ -54,7 +54,8 @@ With a prefix ARG invalidates the cache first."
             :action
             (lambda (x)
               (with-ivy-window
-                (find-file (expand-file-name x (projectile-project-root)))))
+                (find-file
+                 (projectile-expand-root x))))
             :require-match t
             :caller 'counsel-projectile-find-file)
   (run-hooks 'projectile-find-file-hook))
@@ -64,7 +65,7 @@ With a prefix ARG invalidates the cache first."
  '(("w" (lambda (x)
           (with-ivy-window
             (find-file-other-window
-             (expand-file-name x (projectile-project-root)))))
+             (projectile-expand-root x))))
     "other window")))
 
 ;;; counsel-projectile-find-dir
@@ -83,7 +84,8 @@ With a prefix ARG invalidates the cache first."
             :action
             (lambda (x)
               (with-ivy-window
-                (dired (expand-file-name x (projectile-project-root)))))
+                (dired
+                 (projectile-expand-root x))))
             :require-match t
             :caller 'counsel-projectile-find-dir)
   (run-hooks 'projectile-find-dir-hook))
@@ -92,7 +94,8 @@ With a prefix ARG invalidates the cache first."
  'counsel-projectile-find-dir
  '(("w" (lambda (x)
           (with-ivy-window
-            (dired-other-window (expand-file-name x (projectile-project-root)))))
+            (dired-other-window
+             (projectile-expand-root x))))
     "other window")))
 
 ;;; counsel-projectile-switch-to-buffer
