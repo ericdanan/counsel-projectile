@@ -62,7 +62,7 @@ With a prefix ARG invalidates the cache first."
 
 (ivy-set-actions
  'counsel-projectile-find-file
- '(("w" (lambda (x)
+ '(("j" (lambda (x)
           (with-ivy-window
             (find-file-other-window
              (projectile-expand-root x))))
@@ -92,7 +92,7 @@ With a prefix ARG invalidates the cache first."
 
 (ivy-set-actions
  'counsel-projectile-find-dir
- '(("w" (lambda (x)
+ '(("j" (lambda (x)
           (with-ivy-window
             (dired-other-window
              (projectile-expand-root x))))
@@ -116,7 +116,7 @@ With a prefix ARG invalidates the cache first."
 
 (ivy-set-actions
  'counsel-projectile-switch-to-buffer
- '(("w" (lambda (x)
+ '(("j" (lambda (x)
           (with-ivy-window
             (switch-to-buffer-other-window x)))
     "other window")))
