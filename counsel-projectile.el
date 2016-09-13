@@ -117,10 +117,9 @@ With a prefix ARG invalidates the cache first."
 With a prefix ARG invalidates the cache first."
   (interactive "P")
   (ivy-read (projectile-prepend-project-name "Switch to project: ")
-            (if (projectile-project-p)
-                (cons (abbreviate-file-name (projectile-project-root))
-                      (projectile-relevant-known-projects))
-              projectile-known-projects)
+            projectile-known-projects
+            :preselect (and (projectile-project-p)
+                            (abbreviate-file-name (projectile-project-root)))
             :action (lambda (dir)
                       (projectile-switch-project-by-name dir arg))
             :require-match t
