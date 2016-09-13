@@ -177,6 +177,13 @@ With a prefix ARG invalidates the cache first."
       (counsel-projectile-find-file)
     (counsel-projectile-switch-project arg)))
 
+;;; key bindings
+
+;;;###autoload
+(eval-after-load 'projectile
+  '(progn
+     (define-key projectile-command-map (kbd "SPC") #'counsel-projectile)))
+
 
 (provide 'counsel-projectile)
 
