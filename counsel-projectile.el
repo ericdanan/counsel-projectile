@@ -165,6 +165,18 @@ With a prefix ARG invokes `projectile-commander' instead of `projectile-switch-p
             (projectile-switch-project-by-name dir arg)))
     "start eshell")))
 
+;;; counsel-projectile
+
+;;;###autoload
+(defun counsel-projectile (&optional arg)
+  "Use projectile with Ivy instead of ido.
+
+With a prefix ARG invalidates the cache first."
+  (interactive "P")
+  (if (projectile-project-p)
+      (counsel-projectile-find-file)
+    (counsel-projectile-switch-project arg)))
+
 
 (provide 'counsel-projectile)
 
