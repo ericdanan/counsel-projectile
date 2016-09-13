@@ -51,11 +51,8 @@ With a prefix ARG invalidates the cache first."
   (projectile-maybe-invalidate-cache arg)
   (ivy-read (projectile-prepend-project-name "Find file: ")
             (projectile-current-project-files)
-            :action
-            (lambda (x)
-              (with-ivy-window
-                (find-file
-                 (projectile-expand-root x))))
+            :action (lambda (x)
+                      (find-file (projectile-expand-root x)))
             :require-match t
             :caller 'counsel-projectile-find-file)
   (run-hooks 'projectile-find-file-hook))
@@ -63,9 +60,7 @@ With a prefix ARG invalidates the cache first."
 (ivy-set-actions
  'counsel-projectile-find-file
  '(("j" (lambda (x)
-          (with-ivy-window
-            (find-file-other-window
-             (projectile-expand-root x))))
+          (find-file-other-window (projectile-expand-root x)))
     "other window")))
 
 ;;; counsel-projectile-find-dir
@@ -81,11 +76,8 @@ With a prefix ARG invalidates the cache first."
             (if projectile-find-dir-includes-top-level
                 (append '("./") (projectile-current-project-dirs))
               (projectile-current-project-dirs))
-            :action
-            (lambda (x)
-              (with-ivy-window
-                (dired
-                 (projectile-expand-root x))))
+            :action (lambda (x)
+                      (dired (projectile-expand-root x)))
             :require-match t
             :caller 'counsel-projectile-find-dir)
   (run-hooks 'projectile-find-dir-hook))
@@ -93,9 +85,7 @@ With a prefix ARG invalidates the cache first."
 (ivy-set-actions
  'counsel-projectile-find-dir
  '(("j" (lambda (x)
-          (with-ivy-window
-            (dired-other-window
-             (projectile-expand-root x))))
+          (dired-other-window (projectile-expand-root x)))
     "other window")))
 
 ;;; counsel-projectile-switch-to-buffer
@@ -107,18 +97,15 @@ With a prefix ARG invalidates the cache first."
   (ivy-read (projectile-prepend-project-name "Switch-to-buffer: ")
             (-remove-item (buffer-name (current-buffer))
                           (projectile-project-buffer-names))
-            :action
-            (lambda (x)
-              (with-ivy-window
-                (switch-to-buffer x)))
+            :action (lambda (x)
+                      (switch-to-buffer x))
             :require-match t
             :caller 'counsel-projectile-switch-to-buffer))
 
 (ivy-set-actions
  'counsel-projectile-switch-to-buffer
  '(("j" (lambda (x)
-          (with-ivy-window
-            (switch-to-buffer-other-window x)))
+          (switch-to-buffer-other-window x))
     "other window")))
 
 ;;; counsel-projectile
@@ -134,9 +121,8 @@ With a prefix ARG invalidates the cache first."
                 (cons (abbreviate-file-name (projectile-project-root))
                       (projectile-relevant-known-projects))
               projectile-known-projects)
-            :action
-            (lambda (dir)
-              (projectile-switch-project-by-name dir arg))
+            :action (lambda (dir)
+                      (projectile-switch-project-by-name dir arg))
             :require-match t
             :caller 'counsel-projectile))
 
