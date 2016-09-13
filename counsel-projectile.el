@@ -49,7 +49,7 @@ Replacement for `projectile-find-file'.
 With a prefix ARG invalidates the cache first."
   (interactive "P")
   (projectile-maybe-invalidate-cache arg)
-  (ivy-read "Find file: "
+  (ivy-read (projectile-prepend-project-name "Find file: ")
             (projectile-current-project-files)
             :action
             (lambda (x)
@@ -77,7 +77,7 @@ With a prefix ARG invalidates the cache first."
 With a prefix ARG invalidates the cache first."
   (interactive "P")
   (projectile-maybe-invalidate-cache arg)
-  (ivy-read "Find dir: "
+  (ivy-read (projectile-prepend-project-name "Find dir: ")
             (if projectile-find-dir-includes-top-level
                 (append '("./") (projectile-current-project-dirs))
               (projectile-current-project-dirs))
@@ -104,7 +104,7 @@ With a prefix ARG invalidates the cache first."
 (defun counsel-projectile-switch-to-buffer ()
   "Switch to a project buffer."
   (interactive)
-  (ivy-read "Switch-to-buffer: "
+  (ivy-read (projectile-prepend-project-name "Switch-to-buffer: ")
             (-remove-item (buffer-name (current-buffer))
                           (projectile-project-buffer-names))
             :action
@@ -129,7 +129,7 @@ With a prefix ARG invalidates the cache first."
 
 With a prefix ARG invalidates the cache first."
   (interactive "P")
-  (ivy-read "Switch to project: "
+  (ivy-read (projectile-prepend-project-name "Switch to project: ")
             (if (projectile-project-p)
                 (cons (abbreviate-file-name (projectile-project-root))
                       (projectile-relevant-known-projects))
