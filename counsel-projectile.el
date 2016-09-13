@@ -95,7 +95,7 @@ With a prefix ARG invalidates the cache first."
   "Switch to a project buffer."
   (interactive)
   (ivy-read (projectile-prepend-project-name "Switch-to-buffer: ")
-            (-remove-item (buffer-name (current-buffer))
+            (delete (buffer-name (current-buffer))
                           (projectile-project-buffer-names))
             :action (lambda (x)
                       (switch-to-buffer x))
