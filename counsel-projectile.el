@@ -108,13 +108,13 @@ With a prefix ARG invalidates the cache first."
           (switch-to-buffer-other-window x))
     "other window")))
 
-;;; counsel-projectile
+;;; counsel-projectile-switch-project
 
 ;;;###autoload
-(defun counsel-projectile (&optional arg)
-  "Use projectile with Ivy instead of ido.
-
-With a prefix ARG invalidates the cache first."
+(defun counsel-projectile-switch-project (&optional arg)
+  "Switch to a project we have visited before.
+Invokes the command referenced by `projectile-switch-project-action' on switch.
+With a prefix ARG invokes `projectile-commander' instead of `projectile-switch-project-action.'"
   (interactive "P")
   (ivy-read (projectile-prepend-project-name "Switch to project: ")
             projectile-known-projects
@@ -123,10 +123,10 @@ With a prefix ARG invalidates the cache first."
             :action (lambda (dir)
                       (projectile-switch-project-by-name dir arg))
             :require-match t
-            :caller 'counsel-projectile))
+            :caller 'counsel-projectile-switch-project))
 
 (ivy-set-actions
- 'counsel-projectile
+ 'counsel-projectile-switch-project
  '(("f" (lambda (dir)
           (let ((projectile-switch-project-action 'counsel-projectile-find-file))
             (projectile-switch-project-by-name dir arg)))
