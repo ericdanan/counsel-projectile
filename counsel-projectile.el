@@ -174,8 +174,8 @@ With a prefix ARG invokes `projectile-commander' instead of `projectile-switch-p
 With a prefix ARG invalidates the cache first."
   (interactive "P")
   (if (projectile-project-p)
-      (counsel-projectile-find-file)
-    (counsel-projectile-switch-project arg)))
+      (counsel-projectile-find-file arg)
+    (counsel-projectile-switch-project)))
 
 ;;; key bindings
 
