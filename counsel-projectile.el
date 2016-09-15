@@ -39,6 +39,20 @@
 (require 'counsel)
 (require 'projectile)
 
+;;; counsel-projectile-map
+
+(defun counsel-projectile-drop-to-switch-project ()
+  "For use in minibuffer maps. Quit and call `counsel-projectile-switch-project'."
+  (interactive)
+  (ivy-quit-and-run
+   (counsel-projectile-switch-project)))
+
+(defvar counsel-projectile-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "M-SPC") 'counsel-projectile-drop-to-switch-project)
+    map)
+  "Keymap used in the minibuffer.")
+
 ;;; counsel-projectile-find-file
 
 ;;;###autoload
@@ -54,6 +68,7 @@ With a prefix ARG invalidates the cache first."
             :action (lambda (x)
                       (find-file (projectile-expand-root x)))
             :require-match t
+            :keymap counsel-projectile-map
             :caller 'counsel-projectile-find-file)
   (run-hooks 'projectile-find-file-hook))
 
@@ -79,6 +94,7 @@ With a prefix ARG invalidates the cache first."
             :action (lambda (x)
                       (dired (projectile-expand-root x)))
             :require-match t
+            :keymap counsel-projectile-map
             :caller 'counsel-projectile-find-dir)
   (run-hooks 'projectile-find-dir-hook))
 
@@ -145,6 +161,7 @@ If optional argument VIRTUAL is non-nil, add project files as virtual buffers."
             :matcher #'ivy--switch-buffer-matcher
             :action #'counsel-projectile--switch-buffer-action
             :require-match t
+            :keymap counsel-projectile-map
             :caller 'counsel-projectile-switch-to-buffer))
 
 (ivy-set-actions
