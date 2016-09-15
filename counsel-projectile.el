@@ -169,6 +169,17 @@ If optional argument VIRTUAL is non-nil, add project files as virtual buffers."
  '(("j" counsel-projectile--switch-buffer-other-window-action
     "other window")))
 
+;;; counsel-projectile-find-file-or-buffer
+
+;;;###autoload
+(defun counsel-projectile-find-file-or-buffer (&optional arg)
+  "Visit a project file or buffer.
+
+With a prefix ARG invalidates the cache first."
+  (interactive)
+  (projectile-maybe-invalidate-cache arg)
+  (counsel-projectile-switch-to-buffer t))
+
 ;;; counsel-projectile-switch-project
 
 ;;;###autoload
@@ -235,9 +246,7 @@ With a prefix ARG invokes `projectile-commander' instead of `projectile-switch-p
 With a prefix ARG invalidates the cache first."
   (interactive "P")
   (if (projectile-project-p)
-      (progn
-        (projectile-maybe-invalidate-cache arg)
-        (counsel-projectile-switch-to-buffer t))
+        (counsel-projectile-find-file-or-buffer arg)
     (counsel-projectile-switch-project)))
 
 ;;; key bindings
