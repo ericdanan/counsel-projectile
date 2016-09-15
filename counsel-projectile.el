@@ -256,6 +256,57 @@ With a prefix ARG invalidates the cache first."
   '(progn
      (define-key projectile-command-map (kbd "SPC") #'counsel-projectile)))
 
+(defun counsel-projectile-commander-bindings ()
+  (def-projectile-commander-method ?f
+    "Find file in project."
+    (counsel-projectile-find-file))
+
+  (def-projectile-commander-method ?b
+    "Switch to project buffer."
+    (counsel-projectile-switch-to-buffer))
+
+  (def-projectile-commander-method ?d
+    "Find directory in project."
+    (counsel-projectile-find-dir))
+
+  (def-projectile-commander-method ?s
+    "Switch project."
+    (counsel-projectile-switch-project)))
+
+(defun counsel-projectile-toggle (toggle)
+  "Toggle Ivy version of Projectile commands."
+  (if (> toggle 0)
+      (progn
+        (when (eq projectile-switch-project-action #'projectile-find-file)
+          (setq projectile-switch-project-action #'counsel-projectile-find-file-or-buffer))
+        (define-key projectile-command-map (kbd "f") #'counsel-projectile-find-file)
+        (define-key projectile-command-map (kbd "d") #'counsel-projectile-find-dir)
+        (define-key projectile-command-map (kbd "p") #'counsel-projectile-switch-project)
+        (define-key projectile-command-map (kbd "b") #'counsel-projectile-switch-to-buffer)
+        (counsel-projectile-commander-bindings))
+    (progn
+      (when (eq projectile-switch-project-action #'counsel-projectile-find-file-or-buffer)
+        (setq projectile-switch-project-action #'projectile-find-file))
+      (define-key projectile-command-map (kbd "f") #'projectile-find-file)
+      (define-key projectile-command-map (kbd "d") #'projectile-find-dir)
+      (define-key projectile-command-map (kbd "p") #'projectile-switch-project)
+      (define-key projectile-command-map (kbd "b") #'projectile-switch-to-buffer)
+      (projectile-commander-bindings))))
+
+;;;###autoload
+(defun counsel-projectile-on ()
+  "Turn on counsel-projectile key bindings."
+  (interactive)
+  (message "Turn on counsel-projectile key bindings")
+  (counsel-projectile-toggle 1))
+
+;;;###autoload
+(defun counsel-projectile-off ()
+  "Turn off counsel-projectile key bindings."
+  (interactive)
+  (message "Turn off counsel-projectile key bindings")
+  (counsel-projectile-toggle -1))
+
 
 (provide 'counsel-projectile)
 
