@@ -90,22 +90,66 @@ With a prefix ARG invalidates the cache first."
 
 ;;; counsel-projectile-switch-to-buffer
 
+(defvar counsel-projectile--virtual-buffers nil
+  "Store the project virtual buffers alist.")
+
+(defun counsel-projectile--virtual-buffers ()
+  "Adapted from `ivy--virtual-buffers'."
+  (let (virtual-buffers filename)
+    (dolist (name (projectile-current-project-files))
+      (and (not (equal name ""))
+           (null (get-file-buffer (setq filename (projectile-expand-root name))))
+           (not (assoc name virtual-buffers))
+           (push (cons name filename) virtual-buffers)))
+    (when virtual-buffers
+      (dolist (comp virtual-buffers)
+        (put-text-property 0 (length (car comp))
+                           'face 'ivy-virtual
+                           (car comp)))
+      (setq counsel-projectile--virtual-buffers (nreverse virtual-buffers))
+      (mapcar #'car counsel-projectile--virtual-buffers))))
+
+(defun counsel-projectile--buffer-list (&optional virtual)
+  "Adapted from `ivy--buffer-list'."
+  (delete-dups
+   (append
+    (ivy--buffer-list "" nil (lambda (x)
+                                (member (car x) (projectile-project-buffer-names))))
+    (and virtual
+         (counsel-projectile--virtual-buffers)))))
+
+(ivy-set-display-transformer
+ 'counsel-projectile-switch-to-buffer 'ivy-switch-buffer-transformer)
+
+(defun counsel-projectile--switch-buffer-action (buffer)
+  "Switch to BUFFER.
+BUFFER may be a string or nil."
+  (let ((ivy--virtual-buffers counsel-projectile--virtual-buffers)
+        (ivy-views nil))
+    (ivy--switch-buffer-action buffer)))
+
+(defun counsel-projectile--switch-buffer-other-window-action (buffer)
+  "Switch to BUFFER in other window.
+BUFFER may be a string or nil."
+  (let ((ivy--virtual-buffers counsel-projectile--virtual-buffers)
+        (ivy-views nil))
+    (ivy--switch-buffer-other-window-action buffer)))
+
 ;;;###autoload
-(defun counsel-projectile-switch-to-buffer ()
-  "Switch to a project buffer."
+(defun counsel-projectile-switch-to-buffer (&optional virtual)
+  "Switch to a project buffer.
+If optional argument VIRTUAL is non-nil, add project files as virtual buffers."
   (interactive)
   (ivy-read (projectile-prepend-project-name "Switch-to-buffer: ")
-            (delete (buffer-name (current-buffer))
-                          (projectile-project-buffer-names))
-            :action (lambda (x)
-                      (switch-to-buffer x))
+            (counsel-projectile--buffer-list virtual)
+            :matcher #'ivy--switch-buffer-matcher
+            :action #'counsel-projectile--switch-buffer-action
             :require-match t
             :caller 'counsel-projectile-switch-to-buffer))
 
 (ivy-set-actions
  'counsel-projectile-switch-to-buffer
- '(("j" (lambda (x)
-          (switch-to-buffer-other-window x))
+ '(("j" counsel-projectile--switch-buffer-other-window-action
     "other window")))
 
 ;;; counsel-projectile-switch-project
@@ -174,7 +218,9 @@ With a prefix ARG invokes `projectile-commander' instead of `projectile-switch-p
 With a prefix ARG invalidates the cache first."
   (interactive "P")
   (if (projectile-project-p)
-      (counsel-projectile-find-file arg)
+      (progn
+        (projectile-maybe-invalidate-cache arg)
+        (counsel-projectile-switch-to-buffer t))
     (counsel-projectile-switch-project)))
 
 ;;; key bindings
