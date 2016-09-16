@@ -49,9 +49,14 @@
   (ivy-quit-and-run
    (counsel-projectile-switch-project)))
 
+(defvar counsel-projectile-drop-to-switch-project-binding "M-SPC"
+  "Key binding for `counsel-projectile-drop-to-switch-project' in `counsel-projectile-map'.")
+
 (defvar counsel-projectile-map
   (let ((map (make-sparse-keymap)))
-    (define-key map (kbd "M-SPC") 'counsel-projectile-drop-to-switch-project)
+    (define-key map
+      (kbd counsel-projectile-drop-to-switch-project-binding)
+      'counsel-projectile-drop-to-switch-project)
     map)
   "Keymap used in the minibuffer.")
 
