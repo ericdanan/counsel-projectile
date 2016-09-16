@@ -163,7 +163,7 @@ BUFFER may be a string or nil."
   "Switch to a project buffer.
 If optional argument VIRTUAL is non-nil, add project files as virtual buffers."
   (interactive)
-  (ivy-read (projectile-prepend-project-name "Switch-to-buffer: ")
+  (ivy-read (projectile-prepend-project-name "Switch to buffer: ")
             (counsel-projectile--buffer-list virtual)
             :matcher #'ivy--switch-buffer-matcher
             :action #'counsel-projectile--switch-buffer-action
