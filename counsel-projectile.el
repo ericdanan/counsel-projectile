@@ -71,9 +71,12 @@ With a prefix ARG invalidates the cache first."
   (interactive "P")
   (projectile-maybe-invalidate-cache arg)
   (ivy-read (projectile-prepend-project-name "Find file: ")
-            (projectile-current-project-files)
+            (let ((root (projectile-project-root)))
+              (mapcar (lambda (name)
+                        (cons name (expand-file-name name root)))
+                      (projectile-current-project-files)))
             :action (lambda (x)
-                      (find-file (projectile-expand-root x)))
+                      (find-file (cdr x)))
             :require-match t
             :keymap counsel-projectile-map
             :caller 'counsel-projectile-find-file)
@@ -82,7 +85,7 @@ With a prefix ARG invalidates the cache first."
 (ivy-set-actions
  'counsel-projectile-find-file
  '(("j" (lambda (x)
-          (find-file-other-window (projectile-expand-root x)))
+          (find-file-other-window (cdr x)))
     "other window")))
 
 ;;; counsel-projectile-find-dir
@@ -95,11 +98,14 @@ With a prefix ARG invalidates the cache first."
   (interactive "P")
   (projectile-maybe-invalidate-cache arg)
   (ivy-read (projectile-prepend-project-name "Find dir: ")
-            (if projectile-find-dir-includes-top-level
-                (append '("./") (projectile-current-project-dirs))
-              (projectile-current-project-dirs))
+            (let ((root (projectile-project-root)))
+              (mapcar (lambda (name)
+                        (cons name (expand-file-name name root)))
+                      (if projectile-find-dir-includes-top-level
+                          (append '("./") (projectile-current-project-dirs))
+                        (projectile-current-project-dirs))))
             :action (lambda (x)
-                      (dired (projectile-expand-root x)))
+                      (dired (cdr x)))
             :require-match t
             :keymap counsel-projectile-map
             :caller 'counsel-projectile-find-dir)
@@ -108,7 +114,7 @@ With a prefix ARG invalidates the cache first."
 (ivy-set-actions
  'counsel-projectile-find-dir
  '(("j" (lambda (x)
-          (dired-other-window (projectile-expand-root x)))
+          (dired-other-window (cdr x)))
     "other window")))
 
 ;;; counsel-projectile-switch-to-buffer
