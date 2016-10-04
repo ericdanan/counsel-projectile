@@ -2,7 +2,7 @@
 
 # Description
 
-[Projectile](https://github.com/bbatsov/projectile) has native support for using [ivy](https://github.com/abo-abo/swiper) as its completion system. Counsel-projectile provides further ivy integration into projectile by taking advantage of ivy's mechanism to select from a list of actions and/or apply an action without leaving the comlpetion session. It is inspired by [helm-projectile](https://github.com/bbatsov/helm-projectile).
+[Projectile](https://github.com/bbatsov/projectile) has native support for using [ivy](https://github.com/abo-abo/swiper) as its completion system. Counsel-projectile provides further ivy integration into projectile by taking advantage of ivy's mechanism to select from a list of actions and/or apply an action without leaving the completion session. It is inspired by [helm-projectile](https://github.com/bbatsov/helm-projectile).
 
 # Installation
 
