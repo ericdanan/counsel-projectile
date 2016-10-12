@@ -24,6 +24,7 @@ Counsel-projectile also provides replacements for several standard projectile co
 - <kbd>C-c p f</kbd> `counsel-projectile-find-file`: find a project file,
 - <kbd>C-c p d</kbd> `counsel-projectile-find-dir`: find a project directory,
 - <kbd>C-c p b</kbd> `counsel-projectile-switch-to-buffer`: switch to a project buffer,
+- <kbd>C-c p s s</kbd> `counsel-projectile-ag`: search project files with ag,
 - <kbd>C-c p p</kbd> `counsel-projectile-switch-project`: switch to another project (see above).
 
 If your default action for switching to a project (stored in the variable `projectile-switch-project-action`) is `projectile-find-file` (the default), then `counsel-projectile-on` also replaces it with `counsel-projectile-find-file-or-buffer` (see above).
