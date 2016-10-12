@@ -292,18 +292,18 @@ With a prefix ARG invalidates the cache first."
       (progn
         (when (eq projectile-switch-project-action #'projectile-find-file)
           (setq projectile-switch-project-action #'counsel-projectile-find-file-or-buffer))
-        (define-key projectile-command-map (kbd "f") #'counsel-projectile-find-file)
-        (define-key projectile-command-map (kbd "d") #'counsel-projectile-find-dir)
-        (define-key projectile-command-map (kbd "p") #'counsel-projectile-switch-project)
-        (define-key projectile-command-map (kbd "b") #'counsel-projectile-switch-to-buffer)
+        (define-key projectile-mode-map [remap projectile-find-file] #'counsel-projectile-find-file)
+        (define-key projectile-mode-map [remap projectile-find-dir] #'counsel-projectile-find-dir)
+        (define-key projectile-mode-map [remap projectile-switch-project] #'counsel-projectile-switch-project)
+        (define-key projectile-mode-map [remap projectile-switch-to-buffer] #'counsel-projectile-switch-to-buffer)
         (counsel-projectile-commander-bindings))
     (progn
       (when (eq projectile-switch-project-action #'counsel-projectile-find-file-or-buffer)
         (setq projectile-switch-project-action #'projectile-find-file))
-      (define-key projectile-command-map (kbd "f") #'projectile-find-file)
-      (define-key projectile-command-map (kbd "d") #'projectile-find-dir)
-      (define-key projectile-command-map (kbd "p") #'projectile-switch-project)
-      (define-key projectile-command-map (kbd "b") #'projectile-switch-to-buffer)
+      (define-key projectile-mode-map [remap projectile-find-file] nil)
+      (define-key projectile-mode-map [remap projectile-find-dir] nil)
+      (define-key projectile-mode-map [remap projectile-switch-project] nil)
+      (define-key projectile-mode-map [remap projectile-switch-to-buffer] nil)
       (projectile-commander-bindings))))
 
 ;;;###autoload
