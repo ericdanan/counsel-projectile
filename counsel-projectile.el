@@ -76,16 +76,17 @@ With a prefix ARG invalidates the cache first."
                         (cons name (expand-file-name name root)))
                       (projectile-current-project-files)))
             :action (lambda (x)
-                      (find-file (cdr x)))
+                      (find-file (cdr x))
+                      (run-hooks 'projectile-find-file-hook))
             :require-match t
             :keymap counsel-projectile-map
-            :caller 'counsel-projectile-find-file)
-  (run-hooks 'projectile-find-file-hook))
+            :caller 'counsel-projectile-find-file))
 
 (ivy-set-actions
  'counsel-projectile-find-file
  '(("j" (lambda (x)
-          (find-file-other-window (cdr x)))
+          (find-file-other-window (cdr x))
+          (run-hooks 'projectile-find-file-hook))
     "other window")))
 
 ;;; counsel-projectile-find-dir
@@ -105,16 +106,17 @@ With a prefix ARG invalidates the cache first."
                           (append '("./") (projectile-current-project-dirs))
                         (projectile-current-project-dirs))))
             :action (lambda (x)
-                      (dired (cdr x)))
+                      (dired (cdr x))
+                      (run-hooks 'projectile-find-dir-hook))
             :require-match t
             :keymap counsel-projectile-map
-            :caller 'counsel-projectile-find-dir)
-  (run-hooks 'projectile-find-dir-hook))
+            :caller 'counsel-projectile-find-dir))
 
 (ivy-set-actions
  'counsel-projectile-find-dir
  '(("j" (lambda (x)
-          (dired-other-window (cdr x)))
+          (dired-other-window (cdr x))
+          (run-hooks 'projectile-find-dir-hook))
     "other window")))
 
 ;;; counsel-projectile-switch-to-buffer
