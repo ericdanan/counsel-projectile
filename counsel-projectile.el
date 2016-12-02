@@ -176,8 +176,7 @@ BUFFER may be a string or nil."
 
 ;;;###autoload
 (defun counsel-projectile-switch-to-buffer ()
-  "Switch to a project buffer.
-If optional argument VIRTUAL is non-nil, add project files as virtual buffers."
+  "Switch to a project buffer."
   (interactive)
   (ivy-read (projectile-prepend-project-name "Switch to buffer: ")
             (counsel-projectile--buffer-list)
