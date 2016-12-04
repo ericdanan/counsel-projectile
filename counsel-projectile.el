@@ -78,12 +78,11 @@ Like `projectile-current-project-files', but fontifies non-visited file names wi
 
 (defun counsel-projectile--find-file-action (file &optional other-window)
   "Find FILE and run `projectile-find-file-hook'."
-  (with-current-buffer (ivy-state-buffer ivy-last)
-    (funcall (if other-window
-                 'find-file-other-window
-               'find-file)
-             (projectile-expand-root file))
-    (run-hooks 'projectile-find-file-hook)))
+  (funcall (if other-window
+               'find-file-other-window
+             'find-file)
+           (projectile-expand-root file))
+  (run-hooks 'projectile-find-file-hook))
 
 (defun counsel-projectile--find-file-other-window-action (file)
   "Find FILE in another window and run `projectile-find-file-hook'."
@@ -120,12 +119,11 @@ With a prefix ARG invalidates the cache first."
   
 (defun counsel-projectile--find-dir-action (dir &optional other-window)
   "Visit DIR with dired and run `projectile-find-dir-hook'."
-  (with-current-buffer (ivy-state-buffer ivy-last)
-    (funcall (if other-window
-                 'dired-other-window
-               'dired)
-             (projectile-expand-root dir))
-    (run-hooks 'projectile-find-dir-hook)))
+  (funcall (if other-window
+               'dired-other-window
+             'dired)
+           (projectile-expand-root dir))
+  (run-hooks 'projectile-find-dir-hook))
 
 (defun counsel-projectile--find-dir-other-window-action (dir)
   "Visit DIR with dired in another window and run `projectile-find-dir-hook'."
@@ -163,14 +161,13 @@ Like `projectile-project-buffer-names', but propertize buffer names as in `ivy--
 (defun counsel-projectile--switch-buffer-action (buffer &optional other-window)
   "Switch to BUFFER.
 BUFFER may be a string or nil."
-  (with-current-buffer (ivy-state-buffer ivy-last)
-    (cond
-     ((zerop (length buffer))
-      (switch-to-buffer ivy-text nil 'force-same-window))
-     (other-window
-      (switch-to-buffer-other-window buffer))
-     (t
-      (switch-to-buffer buffer nil 'force-same-window)))))
+  (cond
+   ((zerop (length buffer))
+    (switch-to-buffer ivy-text nil 'force-same-window))
+   (other-window
+    (switch-to-buffer-other-window buffer))
+   (t
+    (switch-to-buffer buffer nil 'force-same-window)))) 
 
 (defun counsel-projectile--switch-buffer-other-window-action (buffer)
   "Switch to BUFFER in other window.
