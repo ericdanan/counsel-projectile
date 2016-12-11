@@ -7,7 +7,7 @@
 ;; Created: 2016-04-11
 ;; Keywords: project, convenience
 ;; Version: 0.1
-;; Package-Requires: ((counsel "0.7.0") (projectile "0.13.0"))
+;; Package-Requires: ((counsel "0.8.0") (projectile "0.14.0"))
 
 ;; This file is NOT part of GNU Emacs.
 
