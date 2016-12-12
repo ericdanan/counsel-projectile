@@ -116,7 +116,7 @@ With a prefix ARG invalidates the cache first."
   (if projectile-find-dir-includes-top-level
       (append '("./") (projectile-current-project-dirs))
     (projectile-current-project-dirs)))
-  
+
 (defun counsel-projectile--find-dir-action (dir &optional other-window)
   "Visit DIR with dired and run `projectile-find-dir-hook'."
   (funcall (if other-window
@@ -167,7 +167,7 @@ BUFFER may be a string or nil."
    (other-window
     (switch-to-buffer-other-window buffer))
    (t
-    (switch-to-buffer buffer nil 'force-same-window)))) 
+    (switch-to-buffer buffer nil 'force-same-window))))
 
 (defun counsel-projectile--switch-buffer-other-window-action (buffer)
   "Switch to BUFFER in other window.
@@ -303,7 +303,7 @@ Relies on `ivy-switch-buffer-transformer'."
   (if (eq (get-text-property 0 'type str) 'buffer)
       (ivy-switch-buffer-transformer str)
     str))
-  
+
 (defun counsel-projectile--matcher (regexp candidates)
   "Return REGEXP-matching CANDIDATES.
 Relies on `ivy--switch-buffer-matcher` and `counsel--find-file-matcher'."
