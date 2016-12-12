@@ -223,7 +223,7 @@ BUFFER may be a string or nil."
                  (cl-union (projectile-ignored-files-rel) grep-find-ignored-files)
                  (cl-union (projectile-ignored-directories-rel) grep-find-ignored-directories))))
              (options
-              (concat options
+              (concat options " "
                       (mapconcat (lambda (i)
                                    (concat "--ignore " i))
                                  ignored
