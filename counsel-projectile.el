@@ -197,6 +197,7 @@ BUFFER may be a string or nil."
 
 ;;; counsel-projectile-ag
 
+;;;###autoload
 (defun counsel-projectile-ag (&optional options)
   "Ivy version of `projectile-ag'."
   (interactive)
