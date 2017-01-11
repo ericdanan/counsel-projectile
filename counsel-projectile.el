@@ -225,7 +225,7 @@ BUFFER may be a string or nil."
              (options
               (concat options " "
                       (mapconcat (lambda (i)
-                                   (concat "--ignore " i))
+                                   (concat "--ignore " (shell-quote-argument i)))
                                  ignored
                                  " "))))
         (counsel-ag nil
