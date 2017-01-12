@@ -207,12 +207,22 @@ BUFFER may be a string or nil."
 
 ;;; counsel-projectile-ag
 
+(defcustom counsel-projectile-ag-use-thing-at-point nil
+  "Prefer ‘counsel-projectile-ag-thing-at-point’ binding when calling ‘counsel-projectile-on’."
+  :group 'projectile
+  :type 'boolean)
+
+(defvar counsel-projectile-ag--symbol-or-selection-at-point nil
+  "Flag whether to populate the ‘counsel-projectile-ag’ prompt with symbol or selection at point.")
+
 ;;;###autoload
 (defun counsel-projectile-ag (&optional options)
   "Ivy version of `projectile-ag'."
   (interactive)
   (if (projectile-project-p)
-      (let* ((options
+      (let* ((initial-input (if counsel-projectile-ag--symbol-or-selection-at-point
+                                (projectile-symbol-or-selection-at-point) nil))
+             (options
               (if current-prefix-arg
                   (read-string "options: ")
                 options))
@@ -228,11 +238,19 @@ BUFFER may be a string or nil."
                                    (concat "--ignore " (shell-quote-argument i)))
                                  ignored
                                  " "))))
-        (counsel-ag nil
+        (counsel-ag initial-input
                     (projectile-project-root)
                     options
                     (projectile-prepend-project-name "ag")))
     (user-error "You're not in a project")))
+
+;;;###autoload
+(defun counsel-projectile-ag-at-point (&optional options)
+  "Ivy version of `projectile-ag', using."
+  (interactive)
+  (let ((counsel-projectile-ag--symbol-or-selection-at-point t))
+    (counsel-projectile-ag options)))
+
 
 ;;; counsel-projectile-switch-project
 
@@ -404,7 +422,9 @@ With a prefix ARG invalidates the cache first."
         (define-key projectile-mode-map [remap projectile-find-file] #'counsel-projectile-find-file)
         (define-key projectile-mode-map [remap projectile-find-dir] #'counsel-projectile-find-dir)
         (define-key projectile-mode-map [remap projectile-switch-project] #'counsel-projectile-switch-project)
-        (define-key projectile-mode-map [remap projectile-ag] #'counsel-projectile-ag)
+        (if counsel-projectile-ag-use-thing-at-point
+            (define-key projectile-mode-map [remap projectile-ag] #'counsel-projectile-ag-at-point)
+        (define-key projectile-mode-map [remap projectile-ag] #'counsel-projectile-ag))
         (define-key projectile-mode-map [remap projectile-switch-to-buffer] #'counsel-projectile-switch-to-buffer)
         (counsel-projectile-commander-bindings))
     (progn
