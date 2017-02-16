@@ -234,6 +234,36 @@ BUFFER may be a string or nil."
                     (projectile-prepend-project-name "ag")))
     (user-error "You're not in a project")))
 
+;;; counsel-projectile-rg
+
+;;;###autoload
+(defun counsel-projectile-rg (&optional options)
+  "Ivy version of `projectile-rg'."
+  (interactive)
+  (if (projectile-project-p)
+      (let* ((options
+              (if current-prefix-arg
+                  (read-string "options: ")
+                options))
+             (ignored
+              (unless (eq (projectile-project-vcs) 'git)
+                ;; rg supports git ignore files
+                (append
+                 (cl-union (projectile-ignored-files-rel) grep-find-ignored-files)
+                 (cl-union (projectile-ignored-directories-rel) grep-find-ignored-directories))))
+             (options
+              (concat options " "
+                      (mapconcat (lambda (i)
+                                   (concat "--ignore-file " (shell-quote-argument i)))
+                                 ignored
+                                 " "))))
+        (counsel-rg nil
+                    (projectile-project-root)
+                    options
+                    (projectile-prepend-project-name "rg")))
+    (user-error "You're not in a project")))
+
+
 ;;; counsel-projectile-switch-project
 
 ;;;###autoload
