@@ -220,7 +220,7 @@ BUFFER may be a string or nil."
               (unless (eq (projectile-project-vcs) 'git)
                 ;; ag supports git ignore files
                 (append
-                 (cl-union (projectile-ignored-files-rel) grep-find-ignored-files)
+                 (cl-union (projectile-ignored-files-rel) (mapcar 'shell-quote-argument grep-find-ignored-files))
                  (cl-union (projectile-ignored-directories-rel) grep-find-ignored-directories))))
              (options
               (concat options " "
