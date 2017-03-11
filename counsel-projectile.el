@@ -308,7 +308,7 @@ invokes `projectile-commander' instead of
     "kill all buffers")
    ("r" (lambda (dir)
           (let ((projectile-switch-project-action
-                 'projectile-remove-current-project-from-known-projects))
+                 (lambda () (projectile-remove-known-project dir))))
             (projectile-switch-project-by-name dir arg)))
     "remove from known projects")
    ("l" (lambda (dir)
