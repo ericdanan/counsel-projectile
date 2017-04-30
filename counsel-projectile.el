@@ -42,6 +42,12 @@
 (require 'counsel)
 (require 'projectile)
 
+;;; counsel-project-search-tool
+
+(defvar counsel-projectile-search-function 'counsel-projectile-rg
+  "Function to use for searching in a project.
+Possible values are `counsel-projectile-ag' and `counsel-projectile-rg'")
+
 ;;; counsel-projectile-map
 
 (defun counsel-projectile-drop-to-switch-project ()
@@ -263,6 +269,13 @@ BUFFER may be a string or nil."
                     (projectile-prepend-project-name "rg")))
     (user-error "You're not in a project")))
 
+;;; counsel-projectile-search
+
+;;;###autoload
+(defun counsel-projectile-search (&optional options)
+  "Search project using `counsel-projectile-search-function'."
+  (interactive)
+  (funcall-interactively counsel-projectile-search-function options))
 
 ;;; counsel-projectile-switch-project
 
@@ -324,9 +337,9 @@ invokes `projectile-commander' instead of
             (projectile-switch-project-by-name dir arg)))
     "start eshell")
    ("a" (lambda (dir)
-          (let ((projectile-switch-project-action 'counsel-projectile-ag))
+          (let ((projectile-switch-project-action 'counsel-projectile-search))
             (projectile-switch-project-by-name dir arg)))
-    "search with ag")))
+    "search")))
 
 ;;; counsel-projectile
 
@@ -419,8 +432,8 @@ With a prefix ARG invalidates the cache first."
     "Switch to project buffer."
     (counsel-projectile-switch-to-buffer))
   (def-projectile-commander-method ?A
-    "Search project files with ag."
-    (counsel-projectile-ag))
+    "Search project files."
+    (counsel-projectile-search))
   (def-projectile-commander-method ?s
     "Switch project."
     (counsel-projectile-switch-project)))
@@ -434,7 +447,7 @@ With a prefix ARG invalidates the cache first."
         (define-key projectile-mode-map [remap projectile-find-file] #'counsel-projectile-find-file)
         (define-key projectile-mode-map [remap projectile-find-dir] #'counsel-projectile-find-dir)
         (define-key projectile-mode-map [remap projectile-switch-project] #'counsel-projectile-switch-project)
-        (define-key projectile-mode-map [remap projectile-ag] #'counsel-projectile-ag)
+        (define-key projectile-mode-map [remap projectile-ag] #'counsel-projectile-search)
         (define-key projectile-mode-map [remap projectile-switch-to-buffer] #'counsel-projectile-switch-to-buffer)
         (counsel-projectile-commander-bindings))
     (progn
