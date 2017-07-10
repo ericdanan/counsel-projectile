@@ -228,7 +228,7 @@ BUFFER may be a string or nil."
                                    (concat "--ignore " (shell-quote-argument i)))
                                  ignored
                                  " "))))
-        (counsel-ag nil
+        (counsel-ag (thing-at-point 'symbol t)
                     (projectile-project-root)
                     options
                     (projectile-prepend-project-name "ag")))
