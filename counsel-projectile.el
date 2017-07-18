@@ -162,9 +162,10 @@ With a prefix ARG invalidates the cache first."
 
 Like `projectile-project-buffer-names', but propertize buffer
 names as in `ivy--buffer-list'."
-  (ivy--buffer-list "" nil
-                    (lambda (x)
-                      (member (car x) (projectile-project-buffer-names)))))
+  (let ((buffer-names (projectile-project-buffer-names)))
+    (ivy--buffer-list "" nil
+                      (lambda (x)
+                        (member (car x) buffer-names)))))
 
 (defun counsel-projectile--switch-buffer-action (buffer &optional other-window)
   "Switch to BUFFER.
