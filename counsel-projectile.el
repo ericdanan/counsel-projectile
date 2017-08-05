@@ -257,7 +257,7 @@ BUFFER may be a string or nil."
                                    (concat "--ignore-file " (shell-quote-argument i)))
                                  ignored
                                  " "))))
-        (counsel-rg nil
+        (counsel-rg (thing-at-point 'symbol t)
                     (projectile-project-root)
                     options
                     (projectile-prepend-project-name "rg")))
