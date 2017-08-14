@@ -229,7 +229,7 @@ BUFFER may be a string or nil."
                                    (concat "--ignore " (shell-quote-argument i)))
                                  ignored
                                  " "))))
-        (counsel-ag nil
+        (counsel-ag (thing-at-point 'symbol t)
                     (projectile-project-root)
                     options
                     (projectile-prepend-project-name "ag")))
@@ -258,7 +258,7 @@ BUFFER may be a string or nil."
                                    (concat "--glob " (shell-quote-argument (concat "!" i))))
                                  ignored
                                  " "))))
-        (counsel-rg nil
+        (counsel-rg (thing-at-point 'symbol t)
                     (projectile-project-root)
                     options
                     (projectile-prepend-project-name "rg")))
