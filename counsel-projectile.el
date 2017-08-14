@@ -254,7 +254,7 @@ BUFFER may be a string or nil."
              (options
               (concat options " "
                       (mapconcat (lambda (i)
-                                   (concat "--ignore-file " (shell-quote-argument i)))
+                                   (concat "--glob " (shell-quote-argument (concat "!" i))))
                                  ignored
                                  " "))))
         (counsel-rg nil
