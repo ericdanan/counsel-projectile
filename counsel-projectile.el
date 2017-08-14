@@ -308,7 +308,11 @@ invokes `projectile-commander' instead of
     "kill all buffers")
    ("r" (lambda (dir)
           (let ((projectile-switch-project-action
-                 (lambda () (projectile-remove-known-project dir))))
+                 (lambda ()
+                   (projectile-remove-known-project dir)
+                   (setq ivy--all-candidates
+                         (delete dir ivy--all-candidates))
+                   (ivy--reset-state ivy-last))))
             (projectile-switch-project-by-name dir arg)))
     "remove from known projects")
    ("l" (lambda (dir)
