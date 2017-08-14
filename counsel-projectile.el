@@ -290,6 +290,12 @@ invokes `projectile-commander' instead of
           (let ((projectile-switch-project-action 'counsel-projectile-find-file))
             (projectile-switch-project-by-name dir arg)))
     "find file")
+   ("F" (lambda (dir)
+          (let ((projectile-switch-project-action
+                 (lambda ()
+                   (counsel-find-file dir))))
+            (projectile-switch-project-by-name dir arg)))
+    "find file manually")
    ("d" (lambda (dir)
           (let ((projectile-switch-project-action 'counsel-projectile-find-dir))
             (projectile-switch-project-by-name dir arg)))
