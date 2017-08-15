@@ -208,6 +208,20 @@ BUFFER may be a string or nil."
 
 ;;; counsel-projectile-ag
 
+(defvar counsel-projectile-ag-initial-input nil
+  "Initial minibuffer input for `counsel-projectile-ag'.  If non-nil, it should be a form whose evaluation yields the initial input string, e.g.
+
+    (setq counsel-projectile-ag-initial-input
+          '(projectile-symbol-or-selection-at-point))
+
+or
+
+    (setq counsel-projectile-ag-initial-input 
+          '(thing-at-point 'symbol t))
+
+Note that you can always insert the value of `(ivy-thing-at-point)' by
+hitting \"M-n\" in the minibuffer.")
+
 ;;;###autoload
 (defun counsel-projectile-ag (&optional options)
   "Ivy version of `projectile-ag'."
@@ -229,13 +243,16 @@ BUFFER may be a string or nil."
                                    (concat "--ignore " (shell-quote-argument i)))
                                  ignored
                                  " "))))
-        (counsel-ag nil
+        (counsel-ag (eval counsel-projectile-ag-initial-input)
                     (projectile-project-root)
                     options
                     (projectile-prepend-project-name "ag")))
     (user-error "You're not in a project")))
 
 ;;; counsel-projectile-rg
+
+(defvar counsel-projectile-rg-initial-input nil
+  "Initial minibuffer input for `counsel-projectile-rg'.  See `counsel-projectile-ag-initial-input' for details.")
 
 ;;;###autoload
 (defun counsel-projectile-rg (&optional options)
@@ -258,7 +275,7 @@ BUFFER may be a string or nil."
                                    (concat "--glob " (shell-quote-argument (concat "!" i))))
                                  ignored
                                  " "))))
-        (counsel-rg nil
+        (counsel-rg (eval counsel-projectile-rg-initial-input)
                     (projectile-project-root)
                     options
                     (projectile-prepend-project-name "rg")))
