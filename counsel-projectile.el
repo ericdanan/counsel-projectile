@@ -354,7 +354,11 @@ invokes `projectile-commander' instead of
    ("a" (lambda (dir)
           (let ((projectile-switch-project-action 'counsel-projectile-ag))
             (projectile-switch-project-by-name dir arg)))
-    "search with ag")))
+    "search with ag")
+   ("R" (lambda (dir)
+          (let ((projectile-switch-project-action 'counsel-projectile-rg))
+            (projectile-switch-project-by-name dir arg)))
+    "search with rg")))
 
 ;;; counsel-projectile
 
