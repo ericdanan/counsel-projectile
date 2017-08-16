@@ -65,18 +65,6 @@
 
 ;;; counsel-projectile-find-file
 
-(defun counsel-projectile--unvisited-file-list ()
-  "Return a list of unvisited files for the current project.
-
-Like `projectile-current-project-files', but skips any files
-already being visited by a buffer."
-  (let ((root (projectile-project-root)))
-    (cl-loop
-     for name in (projectile-current-project-files)
-     for file = (expand-file-name name root)
-     if (not (get-file-buffer file))
-     collect name)))
-
 (defun counsel-projectile--find-file-action (file &optional other-window)
   "Find FILE and run `projectile-find-file-hook'."
   (funcall (if other-window
@@ -367,6 +355,18 @@ invokes `projectile-commander' instead of
     "search with rg")))
 
 ;;; counsel-projectile
+
+(defun counsel-projectile--unvisited-file-list ()
+  "Return a list of unvisited files for the current project.
+
+Like `projectile-current-project-files', but skips any files
+already being visited by a buffer."
+  (let ((root (projectile-project-root)))
+    (cl-loop
+     for name in (projectile-current-project-files)
+     for file = (expand-file-name name root)
+     if (not (get-file-buffer file))
+     collect name)))
 
 (defun counsel-projectile--global-list ()
   "Get a list of project buffers and files."
