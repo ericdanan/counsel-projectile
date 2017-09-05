@@ -218,7 +218,7 @@ hitting \"M-n\" in the minibuffer.")
 
 ;;;###autoload
 (defun counsel-projectile-ag (&optional options)
-  "Ivy version of `projectile-ag'."
+  "Run an ag search in the project."
   (interactive)
   (if (projectile-project-p)
       (let* ((options
@@ -250,7 +250,7 @@ hitting \"M-n\" in the minibuffer.")
 
 ;;;###autoload
 (defun counsel-projectile-rg (&optional options)
-  "Ivy version of `projectile-rg'."
+  "Run an rg search in the project."
   (interactive)
   (if (projectile-project-p)
       (let* ((options
@@ -490,7 +490,7 @@ With a prefix ARG invalidates the cache first."
     (counsel-projectile-switch-project)))
 
 (defun counsel-projectile-toggle (toggle)
-  "Toggle Ivy version of Projectile commands."
+  "Toggle counsel-projectile keybindings."
   (if (> toggle 0)
       (progn
         (when (eq projectile-switch-project-action #'projectile-find-file)
