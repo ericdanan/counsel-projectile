@@ -304,6 +304,86 @@ action."
   (with-current-buffer " *counsel-projectile*"
     (run-hooks 'projectile-after-switch-project-hook)))
 
+(defun counsel-projectile-switch-project--find-file-action (project)
+  "Action for `counsel-projectile-switch-project' to find a
+PROJECT file."
+  (let ((projectile-switch-project-action
+         (lambda ()
+           (counsel-projectile-find-file ivy-current-prefix-arg))))
+    (counsel-projectile-switch-project-by-name project)))
+
+(defun counsel-projectile-switch-project--find-file-manually-action (project)
+  "Action for `counsel-projectile-switch-project' to find a
+PROJECT file manually."
+  (let ((projectile-switch-project-action
+         (lambda ()
+           (counsel-find-file project))))
+    (counsel-projectile-switch-project-by-name project)))
+
+(defun counsel-projectile-switch-project--find-dir-action (project)
+  "Action for `counsel-projectile-switch-project' to find a
+PROJECT directory."
+  (let ((projectile-switch-project-action
+         (lambda ()
+           (counsel-projectile-find-dir ivy-current-prefix-arg))))
+    (counsel-projectile-switch-project-by-name project)))
+
+(defun counsel-projectile-switch-project--switch-to-buffer-action (project)
+  "Action for `counsel-projectile-switch-project' to switch to a
+PROJECT buffer."
+  (let ((projectile-switch-project-action 'counsel-projectile-switch-to-buffer))
+    (counsel-projectile-switch-project-by-name project)))
+
+(defun counsel-projectile-switch-project--save-all-buffers-axtion (project)
+  "Action for `counsel-projectile-switch-project' to save all
+PROJECT buffers."
+  (let ((projectile-switch-project-action 'projectile-save-project-buffers))
+    (counsel-projectile-switch-project-by-name project)))
+
+(defun counsel-projectile-switch-project--kill-buffers-action (project)
+  "Action for `counsel-projectile-switch-project' to kill all
+PROJECT buffers."
+  (let ((projectile-switch-project-action 'projectile-kill-buffers))
+    (counsel-projectile-switch-project-by-name project)))
+
+(defun counsel-projectile-switch-project--remove-known-project-action (project)
+  "Action for `counsel-projectile-switch-project' to remove
+PROJECT from the list of known projects."
+  (projectile-remove-known-project project)
+  (setq ivy--all-candidates
+        (delete dir ivy--all-candidates))
+  (ivy--reset-state ivy-last))
+
+(defun counsel-projectile-switch-project--edit-dir-locals-action (project)
+  "Action for `counsel-projectile-switch-project' to edit
+PROJECT's dir-locals."
+  (let ((projectile-switch-project-action 'projectile-edit-dir-locals))
+    (counsel-projectile-switch-project-by-name project)))
+
+(defun counsel-projectile-switch-project--vc-action (project)
+  "Action for `counsel-projectile-switch-project' to open PROJECT
+in vc-dir / magit / monky."
+  (let ((projectile-switch-project-action 'projectile-vc))
+    (counsel-projectile-switch-project-by-name project)))
+
+(defun counsel-projectile-switch-project--run-eshell-action (project)
+  "Action for `counsel-projectile-switch-project' to start
+`eshell' from PROJECT's root."
+  (let ((projectile-switch-project-action 'projectile-run-eshell))
+    (counsel-projectile-switch-project-by-name project)))
+
+(defun counsel-projectile-switch-project--ag-action (project)
+  "Action for `counsel-projectile-switch-project' to search
+PROJECT with `ag'."
+  (let ((projectile-switch-project-action 'counsel-projectile-ag))
+    (counsel-projectile-switch-project-by-name project)))
+
+(defun counsel-projectile-switch-project--rg-action (project)
+  "Action for `counsel-projectile-switch-project' to search
+PROJECT with `rg'."
+  (let ((projectile-switch-project-action 'counsel-projectile-rg))
+    (counsel-projectile-switch-project-by-name project)))
+
 ;;;###autoload
 (defun counsel-projectile-switch-project ()
   "Switch to a project we have visited before.
@@ -319,64 +399,39 @@ Invokes the command referenced by
             :require-match t
             :caller 'counsel-projectile-switch-project))
 
+(defvar counsel-projectile-switch-project-actions
+  '(("f" counsel-projectile-switch-project--find-file-action
+     "find file")
+    ("F" counsel-projectile-switch-project--find-file-manually-action
+     "find file manually")
+    ("d" counsel-projectile-switch-project--find-dir-action
+     "find directory")
+    ("b" counsel-projectile-switch-project--switch-to-buffer-action
+     "switch to buffer")
+    ("s" counsel-projectile-switch-project--save-all-buffers-axtion
+     "save all buffers")
+    ("k" counsel-projectile-switch-project--kill-buffers-action
+     "kill all buffers")
+    ("r" counsel-projectile-switch-project--remove-known-project-action
+     "remove from known projects")
+    ("l" counsel-projectile-switch-project--edit-dir-locals-action
+     "edit dir-locals")
+    ("g" counsel-projectile-switch-project--vc-action
+     "open in vc-dir / magit / monky")
+    ("e" counsel-projectile-switch-project--run-eshell-action
+     "start eshell")
+    ("a" counsel-projectile-switch-project--ag-action
+     "search with ag")
+    ("R" counsel-projectile-switch-project--rg-action
+     "search with rg"))
+  "List of actions for `counsel-projecile-switch-project'.  If
+  you modify this variable after loading counsel-projectile, then
+  you should call `ivy-set-actions' afterwards to apply your
+  changes.")
+
 (ivy-set-actions
  'counsel-projectile-switch-project
- '(("f" (lambda (dir)
-          (let ((projectile-switch-project-action
-                 (lambda ()
-                   (counsel-projectile-find-file ivy-current-prefix-arg))))
-            (counsel-projectile-switch-project-by-name dir)))
-    "find file")
-   ("F" (lambda (dir)
-          (let ((projectile-switch-project-action
-                 (lambda ()
-                   (counsel-find-file dir))))
-            (counsel-projectile-switch-project-by-name dir)))
-    "find file manually")
-   ("d" (lambda (dir)
-          (let ((projectile-switch-project-action
-                 (lambda ()
-                   (counsel-projectile-find-dir ivy-current-prefix-arg))))
-            (counsel-projectile-switch-project-by-name dir)))
-    "find directory")
-   ("b" (lambda (dir)
-          (let ((projectile-switch-project-action 'counsel-projectile-switch-to-buffer))
-            (counsel-projectile-switch-project-by-name dir)))
-    "switch to buffer")
-   ("s" (lambda (dir)
-          (let ((projectile-switch-project-action 'projectile-save-project-buffers))
-            (counsel-projectile-switch-project-by-name dir)))
-    "save all buffers")
-   ("k" (lambda (dir)
-          (let ((projectile-switch-project-action 'projectile-kill-buffers))
-            (counsel-projectile-switch-project-by-name dir)))
-    "kill all buffers")
-   ("r" (lambda (dir)
-          (projectile-remove-known-project dir)
-          (setq ivy--all-candidates
-                (delete dir ivy--all-candidates))
-          (ivy--reset-state ivy-last))
-    "remove from known projects")
-   ("l" (lambda (dir)
-          (let ((projectile-switch-project-action 'projectile-edit-dir-locals))
-            (counsel-projectile-switch-project-by-name dir)))
-    "edit dir-locals")
-   ("g" (lambda (dir)
-          (let ((projectile-switch-project-action 'projectile-vc))
-            (counsel-projectile-switch-project-by-name dir)))
-    "open in vc-dir / magit / monky")
-   ("e" (lambda (dir)
-          (let ((projectile-switch-project-action 'projectile-run-eshell))
-            (counsel-projectile-switch-project-by-name dir)))
-    "start eshell")
-   ("a" (lambda (dir)
-          (let ((projectile-switch-project-action 'counsel-projectile-ag))
-            (counsel-projectile-switch-project-by-name dir)))
-    "search with ag")
-   ("R" (lambda (dir)
-          (let ((projectile-switch-project-action 'counsel-projectile-rg))
-            (counsel-projectile-switch-project-by-name dir)))
-    "search with rg")))
+ counsel-projectile-switch-project-actions)
 
 ;;; counsel-projectile
 
