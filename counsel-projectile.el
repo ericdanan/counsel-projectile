@@ -280,8 +280,8 @@ hitting \"M-n\" in the minibuffer.")
 
 ;;; counsel-projectile-switch-project
 
-(defun counsel-projectile-switch-project-by-name (project-to-switch)
-  "Switch to project by project name PROJECT-TO-SWITCH.
+(defun counsel-projectile-switch-project-action (project)
+  "Switch to PROJECT.
 Invokes the command referenced by `projectile-switch-project-action' on switch.
 
 This is a replacement for `projectile-switch-project-by-name'
@@ -294,7 +294,7 @@ action."
   ;; variable
   (ignore-errors (kill-buffer " *counsel-projectile*"))
   (set-buffer (get-buffer-create " *counsel-projectile*"))
-  (setq default-directory project-to-switch)
+  (setq default-directory project)
   ;; Load the project dir-local variables into the switch buffer, so
   ;; the action can make use of them
   (hack-dir-local-variables-non-file-buffer)
@@ -312,7 +312,7 @@ PROJECT file."
   (let ((projectile-switch-project-action
          (lambda ()
            (counsel-projectile-find-file ivy-current-prefix-arg))))
-    (counsel-projectile-switch-project-by-name project)))
+    (counsel-projectile-switch-project-action project)))
 
 (defun counsel-projectile-switch-project-action-find-file-manually (project)
   "Action for `counsel-projectile-switch-project' to find a
@@ -320,7 +320,7 @@ PROJECT file manually."
   (let ((projectile-switch-project-action
          (lambda ()
            (counsel-find-file project))))
-    (counsel-projectile-switch-project-by-name project)))
+    (counsel-projectile-switch-project-action project)))
 
 (defun counsel-projectile-switch-project-action-find-dir (project)
   "Action for `counsel-projectile-switch-project' to find a
@@ -328,25 +328,25 @@ PROJECT directory."
   (let ((projectile-switch-project-action
          (lambda ()
            (counsel-projectile-find-dir ivy-current-prefix-arg))))
-    (counsel-projectile-switch-project-by-name project)))
+    (counsel-projectile-switch-project-action project)))
 
 (defun counsel-projectile-switch-project-action-switch-to-buffer (project)
   "Action for `counsel-projectile-switch-project' to switch to a
 PROJECT buffer."
   (let ((projectile-switch-project-action 'counsel-projectile-switch-to-buffer))
-    (counsel-projectile-switch-project-by-name project)))
+    (counsel-projectile-switch-project-action project)))
 
 (defun counsel-projectile-switch-project-action-save-all-buffers (project)
   "Action for `counsel-projectile-switch-project' to save all
 PROJECT buffers."
   (let ((projectile-switch-project-action 'projectile-save-project-buffers))
-    (counsel-projectile-switch-project-by-name project)))
+    (counsel-projectile-switch-project-action project)))
 
 (defun counsel-projectile-switch-project-action-kill-buffers (project)
   "Action for `counsel-projectile-switch-project' to kill all
 PROJECT buffers."
   (let ((projectile-switch-project-action 'projectile-kill-buffers))
-    (counsel-projectile-switch-project-by-name project)))
+    (counsel-projectile-switch-project-action project)))
 
 (defun counsel-projectile-switch-project-action-remove-known-project (project)
   "Action for `counsel-projectile-switch-project' to remove
@@ -360,31 +360,31 @@ PROJECT from the list of known projects."
   "Action for `counsel-projectile-switch-project' to edit
 PROJECT's dir-locals."
   (let ((projectile-switch-project-action 'projectile-edit-dir-locals))
-    (counsel-projectile-switch-project-by-name project)))
+    (counsel-projectile-switch-project-action project)))
 
 (defun counsel-projectile-switch-project-action-vc (project)
   "Action for `counsel-projectile-switch-project' to open PROJECT
 in vc-dir / magit / monky."
   (let ((projectile-switch-project-action 'projectile-vc))
-    (counsel-projectile-switch-project-by-name project)))
+    (counsel-projectile-switch-project-action project)))
 
 (defun counsel-projectile-switch-project-action-run-eshell (project)
   "Action for `counsel-projectile-switch-project' to start
 `eshell' from PROJECT's root."
   (let ((projectile-switch-project-action 'projectile-run-eshell))
-    (counsel-projectile-switch-project-by-name project)))
+    (counsel-projectile-switch-project-action project)))
 
 (defun counsel-projectile-switch-project-action-ag (project)
   "Action for `counsel-projectile-switch-project' to search
 PROJECT with `ag'."
   (let ((projectile-switch-project-action 'counsel-projectile-ag))
-    (counsel-projectile-switch-project-by-name project)))
+    (counsel-projectile-switch-project-action project)))
 
 (defun counsel-projectile-switch-project-action-rg (project)
   "Action for `counsel-projectile-switch-project' to search
 PROJECT with `rg'."
   (let ((projectile-switch-project-action 'counsel-projectile-rg))
-    (counsel-projectile-switch-project-by-name project)))
+    (counsel-projectile-switch-project-action project)))
 
 ;;;###autoload
 (defun counsel-projectile-switch-project ()
@@ -397,7 +397,7 @@ Invokes the command referenced by
             projectile-known-projects
             :preselect (and (projectile-project-p)
                             (abbreviate-file-name (projectile-project-root)))
-            :action #'counsel-projectile-switch-project-by-name
+            :action #'counsel-projectile-switch-project-action
             :require-match t
             :caller 'counsel-projectile-switch-project))
 
