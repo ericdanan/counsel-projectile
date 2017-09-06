@@ -171,23 +171,9 @@ names as in `ivy--buffer-list'."
                       (lambda (x)
                         (member (car x) buffer-names)))))
 
-(defun counsel-projectile-action-switch-buffer (buffer &optional other-window)
-  "Switch to BUFFER.
-
-BUFFER may be a string or nil."
-  (cond
-   ((zerop (length buffer))
-    (switch-to-buffer ivy-text nil 'force-same-window))
-   (other-window
-    (switch-to-buffer-other-window buffer))
-   (t
-    (switch-to-buffer buffer nil 'force-same-window))))
-
-(defun counsel-projectile-action-switch-buffer-other-window (buffer)
-  "Switch to BUFFER in other window.
-
-BUFFER may be a string or nil."
-  (counsel-projectile-action-switch-buffer buffer t))
+(defun counsel-projectile-switch-to-buffer-action (buffer)
+  "Switch to BUFFER."
+  (switch-to-buffer buffer nil 'force-same-window))
 
 ;;;###autoload
 (defun counsel-projectile-switch-to-buffer ()
@@ -198,11 +184,11 @@ BUFFER may be a string or nil."
             :matcher #'ivy--switch-buffer-matcher
             :require-match t
             :keymap counsel-projectile-map
-            :action #'counsel-projectile-action-switch-buffer
+            :action #'counsel-projectile-switch-to-buffer-action
             :caller 'counsel-projectile-switch-to-buffer))
 
 (defvar counsel-projectile-switch-to-buffer-actions
-  '(("j" counsel-projectile-action-switch-buffer-other-window
+  '(("j" switch-to-buffer-other-window
     "other window"))
   "List of actions for `counsel-projecile-switch-to-buffer'.  If
   you modify this variable after loading counsel-projectile, then
@@ -291,7 +277,6 @@ hitting \"M-n\" in the minibuffer.")
                     options
                     (projectile-prepend-project-name "rg")))
     (user-error "You're not in a project")))
-
 
 ;;; counsel-projectile-switch-project
 
