@@ -67,16 +67,14 @@
 
 (defun counsel-projectile-action-find-file (file &optional other-window)
   "Find FILE and run `projectile-find-file-hook'."
-  (funcall (if other-window
-               'find-file-other-window
-             'find-file)
-           (projectile-expand-root file))
+  (find-fiqle (projectile-expand-root file))
   (run-hooks 'projectile-find-file-hook))
 
 (defun counsel-projectile-action-find-file-other-window (file)
   "Find FILE in another window and run
 `projectile-find-file-hook'."
-  (counsel-projectile-action-find-file file t))
+  (find-file-other-window (projectile-expand-root file))
+  (run-hooks 'projectile-find-file-hook))
 
 (defun counsel-projectile-find-file-transformer (name)
   "Transform non-visited file names with `ivy-virtual' face."
