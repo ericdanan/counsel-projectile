@@ -65,12 +65,12 @@
 
 ;;; counsel-projectile-find-file
 
-(defun counsel-projectile-action-find-file (file &optional other-window)
+(defun counsel-projectile-find-file-action (file)
   "Find FILE and run `projectile-find-file-hook'."
   (find-fiqle (projectile-expand-root file))
   (run-hooks 'projectile-find-file-hook))
 
-(defun counsel-projectile-action-find-file-other-window (file)
+(defun counsel-projectile-find-file-action-other-window (file)
   "Find FILE in another window and run
 `projectile-find-file-hook'."
   (find-file-other-window (projectile-expand-root file))
@@ -95,11 +95,11 @@ invalidates the cache first."
             :matcher #'counsel--find-file-matcher
             :require-match t
             :keymap counsel-projectile-map
-            :action #'counsel-projectile-action-find-file
+            :action #'counsel-projectile-find-file-action
             :caller 'counsel-projectile-find-file))
 
 (defvar counsel-projectile-find-file-actions
-  '(("j" counsel-projectile-action-find-file-other-window
+  '(("j" counsel-projectile-find-file-action-other-window
      "other window"))
   "List of actions for `counsel-projecile-find-file'.  If
   you modify this variable after loading counsel-projectile, then
@@ -122,18 +122,16 @@ invalidates the cache first."
       (append '("./") (projectile-current-project-dirs))
     (projectile-current-project-dirs)))
 
-(defun counsel-projectile-action-find-dir (dir &optional other-window)
+(defun counsel-projectile-find-dir-action (dir)
   "Visit DIR with dired and run `projectile-find-dir-hook'."
-  (funcall (if other-window
-               'dired-other-window
-             'dired)
-           (projectile-expand-root dir))
+  (dired (projectile-expand-root dir))
   (run-hooks 'projectile-find-dir-hook))
 
-(defun counsel-projectile-action-find-dir-other-window (dir)
+(defun counsel-projectile-find-dir-action-other-window (dir)
   "Visit DIR with dired in another window and run
 `projectile-find-dir-hook'."
-  (counsel-projectile-action-find-dir dir t))
+ (dired-other-window (projectile-expand-root dir))
+ (run-hooks 'projectile-find-dir-hook))
 
 ;;;###autoload
 (defun counsel-projectile-find-dir (&optional arg)
@@ -146,11 +144,11 @@ With a prefix ARG invalidates the cache first."
             (counsel-projectile--dir-list)
             :require-match t
             :keymap counsel-projectile-map
-            :action #'counsel-projectile-action-find-dir
+            :action #'counsel-projectile-find-dir-action
             :caller 'counsel-projectile-find-dir))
 
 (defvar counsel-projectile-find-dir-actions
-  '(("j" counsel-projectile-action-find-dir-other-window
+  '(("j" counsel-projectile-find-dir-action-other-window
      "other window"))
   "List of actions for `counsel-projecile-find-dir'.  If
   you modify this variable after loading counsel-projectile, then
