@@ -100,10 +100,17 @@ invalidates the cache first."
             :action #'counsel-projectile-action-find-file
             :caller 'counsel-projectile-find-file))
 
+(defvar counsel-projectile-find-file-actions
+  '(("j" counsel-projectile-action-find-file-other-window
+     "other window"))
+  "List of actions for `counsel-projecile-find-file'.  If
+  you modify this variable after loading counsel-projectile, then
+  you should call `ivy-set-actions' afterwards to apply your
+  changes.")
+
 (ivy-set-actions
  'counsel-projectile-find-file
- '(("j" counsel-projectile-action-find-file-other-window
-    "other window")))
+ counsel-projectile-find-file-actions)
 
 (ivy-set-display-transformer
  'counsel-projectile-find-file
@@ -144,10 +151,17 @@ With a prefix ARG invalidates the cache first."
             :action #'counsel-projectile-action-find-dir
             :caller 'counsel-projectile-find-dir))
 
+(defvar counsel-projectile-find-dir-actions
+  '(("j" counsel-projectile-action-find-dir-other-window
+     "other window"))
+  "List of actions for `counsel-projecile-find-dir'.  If
+  you modify this variable after loading counsel-projectile, then
+  you should call `ivy-set-actions' afterwards to apply your
+  changes.")
+
 (ivy-set-actions
  'counsel-projectile-find-dir
- '(("j" counsel-projectile-action-find-dir-other-window
-    "other window")))
+ counsel-projectile-find-dir-actions)
 
 ;;; counsel-projectile-switch-to-buffer
 
@@ -191,14 +205,21 @@ BUFFER may be a string or nil."
             :action #'counsel-projectile-action-switch-buffer
             :caller 'counsel-projectile-switch-to-buffer))
 
-(ivy-set-display-transformer
- 'counsel-projectile-switch-to-buffer
- 'ivy-switch-buffer-transformer)
+(defvar counsel-projectile-switch-to-buffer-actions
+  '(("j" counsel-projectile-action-switch-buffer-other-window
+    "other window"))
+  "List of actions for `counsel-projecile-switch-to-buffer'.  If
+  you modify this variable after loading counsel-projectile, then
+  you should call `ivy-set-actions' afterwards to apply your
+  changes.")
 
 (ivy-set-actions
  'counsel-projectile-switch-to-buffer
- '(("j" counsel-projectile-action-switch-buffer-other-window
-    "other window")))
+ counsel-projectile-switch-to-buffer-actions)
+
+(ivy-set-display-transformer
+ 'counsel-projectile-switch-to-buffer
+ 'ivy-switch-buffer-transformer)
 
 ;;; counsel-projectile-ag
 
@@ -457,16 +478,6 @@ already being visited by a buffer."
            (add-text-properties 0 1 '(type file) file))
          (counsel-projectile--unvisited-file-list))))
 
-(defun counsel-projectile-transformer (str)
-  "Fontifies modified, file-visiting buffers.
-
-Relies on `ivy-switch-buffer-transformer'."
-  (let ((type (get-text-property 0 'type str)))
-    (cond
-     ((eq type 'buffer) (ivy-switch-buffer-transformer str))
-     ((eq type 'file) (propertize str 'face 'ivy-virtual))
-     (t str))))
-
 (defun counsel-projectile--matcher (regexp candidates)
   "Return REGEXP-matching CANDIDATES.
 
@@ -494,6 +505,16 @@ Relies on `ivy--switch-buffer-matcher` and
   "Switch to buffer or find file named NAME in another window."
   (counsel-projectile-action name t))
 
+(defun counsel-projectile-transformer (str)
+  "Fontifies modified, file-visiting buffers.
+
+Relies on `ivy-switch-buffer-transformer'."
+  (let ((type (get-text-property 0 'type str)))
+    (cond
+     ((eq type 'buffer) (ivy-switch-buffer-transformer str))
+     ((eq type 'file) (propertize str 'face 'ivy-virtual))
+     (t str))))
+
 ;;;###autoload
 (defun counsel-projectile (&optional arg)
   "Use projectile with Ivy instead of ido.
@@ -511,14 +532,21 @@ With a prefix ARG invalidates the cache first."
               :action #'counsel-projectile-action
               :caller 'counsel-projectile)))
 
-(ivy-set-display-transformer
- 'counsel-projectile
- 'counsel-projectile-transformer)
+(defvar counsel-projectile-actions
+  '(("j" counsel-projectile-action-other-window
+    "other window"))
+  "List of actions for `counsel-projecile'.  If
+  you modify this variable after loading counsel-projectile, then
+  you should call `ivy-set-actions' afterwards to apply your
+  changes.")
 
 (ivy-set-actions
  'counsel-projectile
- '(("j" counsel-projectile-action-other-window
-    "other window")))
+ counsel-projectile-actions)
+
+(ivy-set-display-transformer
+ 'counsel-projectile
+ 'counsel-projectile-transformer)
 
 ;;; key bindings
 
