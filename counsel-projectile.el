@@ -65,7 +65,7 @@
 
 ;;; counsel-projectile-find-file
 
-(defun counsel-projectile--find-file-action (file &optional other-window)
+(defun counsel-projectile-action-find-file (file &optional other-window)
   "Find FILE and run `projectile-find-file-hook'."
   (funcall (if other-window
                'find-file-other-window
@@ -73,12 +73,12 @@
            (projectile-expand-root file))
   (run-hooks 'projectile-find-file-hook))
 
-(defun counsel-projectile--find-file-other-window-action (file)
+(defun counsel-projectile-action-find-file-other-window (file)
   "Find FILE in another window and run
 `projectile-find-file-hook'."
-  (counsel-projectile--find-file-action file t))
+  (counsel-projectile-action-find-file file t))
 
-(defun counsel-projectile--find-file-transformer (name)
+(defun counsel-projectile-find-file-transformer (name)
   "Transform non-visited file names with `ivy-virtual' face."
   (if (not (get-file-buffer (expand-file-name name (projectile-project-root))))
       (propertize name 'face 'ivy-virtual)
@@ -97,17 +97,17 @@ invalidates the cache first."
             :matcher #'counsel--find-file-matcher
             :require-match t
             :keymap counsel-projectile-map
-            :action #'counsel-projectile--find-file-action
+            :action #'counsel-projectile-action-find-file
             :caller 'counsel-projectile-find-file))
 
 (ivy-set-actions
  'counsel-projectile-find-file
- '(("j" counsel-projectile--find-file-other-window-action
+ '(("j" counsel-projectile-action-find-file-other-window
     "other window")))
 
 (ivy-set-display-transformer
  'counsel-projectile-find-file
- 'counsel-projectile--find-file-transformer)
+ 'counsel-projectile-find-file-transformer)
 
 ;;; counsel-projectile-find-dir
 
@@ -117,7 +117,7 @@ invalidates the cache first."
       (append '("./") (projectile-current-project-dirs))
     (projectile-current-project-dirs)))
 
-(defun counsel-projectile--find-dir-action (dir &optional other-window)
+(defun counsel-projectile-action-find-dir (dir &optional other-window)
   "Visit DIR with dired and run `projectile-find-dir-hook'."
   (funcall (if other-window
                'dired-other-window
@@ -125,10 +125,10 @@ invalidates the cache first."
            (projectile-expand-root dir))
   (run-hooks 'projectile-find-dir-hook))
 
-(defun counsel-projectile--find-dir-other-window-action (dir)
+(defun counsel-projectile-action-find-dir-other-window (dir)
   "Visit DIR with dired in another window and run
 `projectile-find-dir-hook'."
-  (counsel-projectile--find-dir-action dir t))
+  (counsel-projectile-action-find-dir dir t))
 
 ;;;###autoload
 (defun counsel-projectile-find-dir (&optional arg)
@@ -141,12 +141,12 @@ With a prefix ARG invalidates the cache first."
             (counsel-projectile--dir-list)
             :require-match t
             :keymap counsel-projectile-map
-            :action #'counsel-projectile--find-dir-action
+            :action #'counsel-projectile-action-find-dir
             :caller 'counsel-projectile-find-dir))
 
 (ivy-set-actions
  'counsel-projectile-find-dir
- '(("j" counsel-projectile--find-dir-other-window-action
+ '(("j" counsel-projectile-action-find-dir-other-window
     "other window")))
 
 ;;; counsel-projectile-switch-to-buffer
@@ -161,7 +161,7 @@ names as in `ivy--buffer-list'."
                       (lambda (x)
                         (member (car x) buffer-names)))))
 
-(defun counsel-projectile--switch-buffer-action (buffer &optional other-window)
+(defun counsel-projectile-action-switch-buffer (buffer &optional other-window)
   "Switch to BUFFER.
 
 BUFFER may be a string or nil."
@@ -173,11 +173,11 @@ BUFFER may be a string or nil."
    (t
     (switch-to-buffer buffer nil 'force-same-window))))
 
-(defun counsel-projectile--switch-buffer-other-window-action (buffer)
+(defun counsel-projectile-action-switch-buffer-other-window (buffer)
   "Switch to BUFFER in other window.
 
 BUFFER may be a string or nil."
-  (counsel-projectile--switch-buffer-action buffer t))
+  (counsel-projectile-action-switch-buffer buffer t))
 
 ;;;###autoload
 (defun counsel-projectile-switch-to-buffer ()
@@ -188,7 +188,7 @@ BUFFER may be a string or nil."
             :matcher #'ivy--switch-buffer-matcher
             :require-match t
             :keymap counsel-projectile-map
-            :action #'counsel-projectile--switch-buffer-action
+            :action #'counsel-projectile-action-switch-buffer
             :caller 'counsel-projectile-switch-to-buffer))
 
 (ivy-set-display-transformer
@@ -197,7 +197,7 @@ BUFFER may be a string or nil."
 
 (ivy-set-actions
  'counsel-projectile-switch-to-buffer
- '(("j" counsel-projectile--switch-buffer-other-window-action
+ '(("j" counsel-projectile-action-switch-buffer-other-window
     "other window")))
 
 ;;; counsel-projectile-ag
@@ -304,7 +304,7 @@ action."
   (with-current-buffer " *counsel-projectile*"
     (run-hooks 'projectile-after-switch-project-hook)))
 
-(defun counsel-projectile-switch-project--find-file-action (project)
+(defun counsel-projectile-switch-project-action-find-file (project)
   "Action for `counsel-projectile-switch-project' to find a
 PROJECT file."
   (let ((projectile-switch-project-action
@@ -312,7 +312,7 @@ PROJECT file."
            (counsel-projectile-find-file ivy-current-prefix-arg))))
     (counsel-projectile-switch-project-by-name project)))
 
-(defun counsel-projectile-switch-project--find-file-manually-action (project)
+(defun counsel-projectile-switch-project-action-find-file-manually (project)
   "Action for `counsel-projectile-switch-project' to find a
 PROJECT file manually."
   (let ((projectile-switch-project-action
@@ -320,7 +320,7 @@ PROJECT file manually."
            (counsel-find-file project))))
     (counsel-projectile-switch-project-by-name project)))
 
-(defun counsel-projectile-switch-project--find-dir-action (project)
+(defun counsel-projectile-switch-project-action-find-dir (project)
   "Action for `counsel-projectile-switch-project' to find a
 PROJECT directory."
   (let ((projectile-switch-project-action
@@ -328,25 +328,25 @@ PROJECT directory."
            (counsel-projectile-find-dir ivy-current-prefix-arg))))
     (counsel-projectile-switch-project-by-name project)))
 
-(defun counsel-projectile-switch-project--switch-to-buffer-action (project)
+(defun counsel-projectile-switch-project-action-switch-to-buffer (project)
   "Action for `counsel-projectile-switch-project' to switch to a
 PROJECT buffer."
   (let ((projectile-switch-project-action 'counsel-projectile-switch-to-buffer))
     (counsel-projectile-switch-project-by-name project)))
 
-(defun counsel-projectile-switch-project--save-all-buffers-axtion (project)
+(defun counsel-projectile-switch-project-action-save-all-buffers (project)
   "Action for `counsel-projectile-switch-project' to save all
 PROJECT buffers."
   (let ((projectile-switch-project-action 'projectile-save-project-buffers))
     (counsel-projectile-switch-project-by-name project)))
 
-(defun counsel-projectile-switch-project--kill-buffers-action (project)
+(defun counsel-projectile-switch-project-action-kill-buffers (project)
   "Action for `counsel-projectile-switch-project' to kill all
 PROJECT buffers."
   (let ((projectile-switch-project-action 'projectile-kill-buffers))
     (counsel-projectile-switch-project-by-name project)))
 
-(defun counsel-projectile-switch-project--remove-known-project-action (project)
+(defun counsel-projectile-switch-project-action-remove-known-project (project)
   "Action for `counsel-projectile-switch-project' to remove
 PROJECT from the list of known projects."
   (projectile-remove-known-project project)
@@ -354,31 +354,31 @@ PROJECT from the list of known projects."
         (delete dir ivy--all-candidates))
   (ivy--reset-state ivy-last))
 
-(defun counsel-projectile-switch-project--edit-dir-locals-action (project)
+(defun counsel-projectile-switch-project-action-edit-dir-locals (project)
   "Action for `counsel-projectile-switch-project' to edit
 PROJECT's dir-locals."
   (let ((projectile-switch-project-action 'projectile-edit-dir-locals))
     (counsel-projectile-switch-project-by-name project)))
 
-(defun counsel-projectile-switch-project--vc-action (project)
+(defun counsel-projectile-switch-project-action-vc (project)
   "Action for `counsel-projectile-switch-project' to open PROJECT
 in vc-dir / magit / monky."
   (let ((projectile-switch-project-action 'projectile-vc))
     (counsel-projectile-switch-project-by-name project)))
 
-(defun counsel-projectile-switch-project--run-eshell-action (project)
+(defun counsel-projectile-switch-project-action-run-eshell (project)
   "Action for `counsel-projectile-switch-project' to start
 `eshell' from PROJECT's root."
   (let ((projectile-switch-project-action 'projectile-run-eshell))
     (counsel-projectile-switch-project-by-name project)))
 
-(defun counsel-projectile-switch-project--ag-action (project)
+(defun counsel-projectile-switch-project-action-ag (project)
   "Action for `counsel-projectile-switch-project' to search
 PROJECT with `ag'."
   (let ((projectile-switch-project-action 'counsel-projectile-ag))
     (counsel-projectile-switch-project-by-name project)))
 
-(defun counsel-projectile-switch-project--rg-action (project)
+(defun counsel-projectile-switch-project-action-rg (project)
   "Action for `counsel-projectile-switch-project' to search
 PROJECT with `rg'."
   (let ((projectile-switch-project-action 'counsel-projectile-rg))
@@ -400,29 +400,29 @@ Invokes the command referenced by
             :caller 'counsel-projectile-switch-project))
 
 (defvar counsel-projectile-switch-project-actions
-  '(("f" counsel-projectile-switch-project--find-file-action
+  '(("f" counsel-projectile-switch-project-action-find-file
      "find file")
-    ("F" counsel-projectile-switch-project--find-file-manually-action
+    ("F" counsel-projectile-switch-project-action-find-file-manually
      "find file manually")
-    ("d" counsel-projectile-switch-project--find-dir-action
+    ("d" counsel-projectile-switch-project-action-find-dir
      "find directory")
-    ("b" counsel-projectile-switch-project--switch-to-buffer-action
+    ("b" counsel-projectile-switch-project-action-switch-to-buffer
      "switch to buffer")
-    ("s" counsel-projectile-switch-project--save-all-buffers-axtion
+    ("s" counsel-projectile-switch-project-action-save-all-buffers
      "save all buffers")
-    ("k" counsel-projectile-switch-project--kill-buffers-action
+    ("k" counsel-projectile-switch-project-action-kill-buffers
      "kill all buffers")
-    ("r" counsel-projectile-switch-project--remove-known-project-action
+    ("r" counsel-projectile-switch-project-action-remove-known-project
      "remove from known projects")
-    ("l" counsel-projectile-switch-project--edit-dir-locals-action
+    ("l" counsel-projectile-switch-project-action-edit-dir-locals
      "edit dir-locals")
-    ("g" counsel-projectile-switch-project--vc-action
+    ("g" counsel-projectile-switch-project-action-vc
      "open in vc-dir / magit / monky")
-    ("e" counsel-projectile-switch-project--run-eshell-action
+    ("e" counsel-projectile-switch-project-action-run-eshell
      "start eshell")
-    ("a" counsel-projectile-switch-project--ag-action
+    ("a" counsel-projectile-switch-project-action-ag
      "search with ag")
-    ("R" counsel-projectile-switch-project--rg-action
+    ("R" counsel-projectile-switch-project-action-rg
      "search with rg"))
   "List of actions for `counsel-projecile-switch-project'.  If
   you modify this variable after loading counsel-projectile, then
@@ -457,7 +457,7 @@ already being visited by a buffer."
            (add-text-properties 0 1 '(type file) file))
          (counsel-projectile--unvisited-file-list))))
 
-(defun counsel-projectile--transformer (str)
+(defun counsel-projectile-transformer (str)
   "Fontifies modified, file-visiting buffers.
 
 Relies on `ivy-switch-buffer-transformer'."
@@ -481,18 +481,18 @@ Relies on `ivy--switch-buffer-matcher` and
     (append (ivy--switch-buffer-matcher regexp buffers)
             (counsel--find-file-matcher regexp files))))
 
-(defun counsel-projectile--action (name &optional other-window)
+(defun counsel-projectile-action (name &optional other-window)
   "Switch to buffer or find file named NAME."
   (let ((type (get-text-property 0 'type name)))
     (cond
      ((eq type 'file)
-      (counsel-projectile--find-file-action name other-window))
+      (counsel-projectile-action-find-file name other-window))
      ((eq type 'buffer)
-      (counsel-projectile--switch-buffer-action name other-window)))))
+      (counsel-projectile-action-switch-buffer name other-window)))))
 
-(defun counsel-projectile--other-window-action (name)
+(defun counsel-projectile-action-other-window (name)
   "Switch to buffer or find file named NAME in another window."
-  (counsel-projectile--action name t))
+  (counsel-projectile-action name t))
 
 ;;;###autoload
 (defun counsel-projectile (&optional arg)
@@ -508,16 +508,16 @@ With a prefix ARG invalidates the cache first."
               :matcher #'counsel-projectile--matcher
               :require-match t
               :keymap counsel-projectile-map
-              :action #'counsel-projectile--action
+              :action #'counsel-projectile-action
               :caller 'counsel-projectile)))
 
 (ivy-set-display-transformer
  'counsel-projectile
- 'counsel-projectile--transformer)
+ 'counsel-projectile-transformer)
 
 (ivy-set-actions
  'counsel-projectile
- '(("j" counsel-projectile--other-window-action
+ '(("j" counsel-projectile-action-other-window
     "other window")))
 
 ;;; key bindings
