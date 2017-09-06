@@ -67,7 +67,7 @@
 
 (defun counsel-projectile-find-file-action (file)
   "Find FILE and run `projectile-find-file-hook'."
-  (find-fiqle (projectile-expand-root file))
+  (find-file (projectile-expand-root file))
   (run-hooks 'projectile-find-file-hook))
 
 (defun counsel-projectile-find-file-action-other-window (file)
@@ -437,64 +437,50 @@ Invokes the command referenced by
 
 ;;; counsel-projectile
 
-(defun counsel-projectile--unvisited-file-list ()
-  "Return a list of unvisited files for the current project.
+(defvar counsel-projectile--buffers nil
+  "Stores the list of project buffers.")
 
-Like `projectile-current-project-files', but skips any files
-already being visited by a buffer."
-  (let ((root (projectile-project-root)))
-    (cl-loop
-     for name in (projectile-current-project-files)
-     for file = (expand-file-name name root)
-     if (not (get-file-buffer file))
-     collect name)))
+(defvar counsel-projectile--non-visited-files nil
+  "Stores the list of project files that are not currently visited by a buffer.")
 
-(defun counsel-projectile--global-list ()
+(defun counsel-projectile--buffer-file-list ()
   "Get a list of project buffers and files."
   (append
-   (mapc (lambda (buffer)
-           (add-text-properties 0 1 '(type buffer) buffer))
+   (setq counsel-projectile--buffers
          (counsel-projectile--buffer-list))
-   (mapc (lambda (file)
-           (add-text-properties 0 1 '(type file) file))
-         (counsel-projectile--unvisited-file-list))))
+   (setq counsel-projectile--non-visited-files
+         (let ((root (projectile-project-root))
+               (files (projectile-current-project-files))
+               file)
+           (dolist (buffer counsel-projectile--buffers files)
+             (when (setq file (buffer-file-name (get-buffer buffer)))
+               (delete (file-relative-name file root) files)))))))
 
 (defun counsel-projectile--matcher (regexp candidates)
   "Return REGEXP-matching CANDIDATES.
 
-Relies on `ivy--switch-buffer-matcher` and
+Relies on `ivy--switch-buffer-matcher' and
 `counsel--find-file-matcher'."
-  (let ((buffers (cl-remove-if-not (lambda (name)
-                                     (eq (get-text-property 0 'type name) 'buffer))
-                                   candidates))
-        (files (cl-remove-if-not (lambda (name)
-                                   (eq (get-text-property 0 'type name) 'file))
-                                 candidates)))
-    (append (ivy--switch-buffer-matcher regexp buffers)
-            (counsel--find-file-matcher regexp files))))
+  (append (ivy--switch-buffer-matcher regexp counsel-projectile--buffers)
+          (counsel--find-file-matcher regexp counsel-projectile--non-visited-files)))
 
-(defun counsel-projectile-action (name &optional other-window)
+(defun counsel-projectile-action (name)
   "Switch to buffer or find file named NAME."
-  (let ((type (get-text-property 0 'type name)))
-    (cond
-     ((eq type 'file)
-      (counsel-projectile-action-find-file name other-window))
-     ((eq type 'buffer)
-      (counsel-projectile-action-switch-buffer name other-window)))))
+  (if (member name counsel-projectile--buffers)
+      (counsel-projectile-switch-to-buffer-action name)
+    (counsel-projectile-find-file-action name)))
 
 (defun counsel-projectile-action-other-window (name)
   "Switch to buffer or find file named NAME in another window."
-  (counsel-projectile-action name t))
+  (if (member name counsel-projectile--buffers)
+      (switch-to-buffer-other-window name)
+    (counsel-projectile-find-file-action-other-window name)))
 
-(defun counsel-projectile-transformer (str)
-  "Fontifies modified, file-visiting buffers.
-
-Relies on `ivy-switch-buffer-transformer'."
-  (let ((type (get-text-property 0 'type str)))
-    (cond
-     ((eq type 'buffer) (ivy-switch-buffer-transformer str))
-     ((eq type 'file) (propertize str 'face 'ivy-virtual))
-     (t str))))
+(defun counsel-projectile-transformer (name)
+  "Fontifies modified, file-visiting buffers as well as non-visited files."
+  (if (member name counsel-projectile--buffers)
+      (ivy-switch-buffer-transformer name)
+    (propertize name 'face 'ivy-virtual)))
 
 ;;;###autoload
 (defun counsel-projectile (&optional arg)
@@ -506,7 +492,7 @@ With a prefix ARG invalidates the cache first."
       (counsel-projectile-switch-project)
     (projectile-maybe-invalidate-cache arg)
     (ivy-read (projectile-prepend-project-name "Load buffer or file: ")
-              (counsel-projectile--global-list)
+              (counsel-projectile--buffer-file-list)
               :matcher #'counsel-projectile--matcher
               :require-match t
               :keymap counsel-projectile-map
