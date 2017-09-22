@@ -454,7 +454,7 @@ Invokes the command referenced by
                file)
            (dolist (buffer counsel-projectile--buffers files)
              (when (setq file (buffer-file-name (get-buffer buffer)))
-               (delete (file-relative-name file root) files)))))))
+               (setq files (delete (file-relative-name file root) files))))))))
 
 (defun counsel-projectile--matcher (regexp candidates)
   "Return REGEXP-matching CANDIDATES.
