@@ -182,7 +182,6 @@ names as in `ivy--buffer-list'."
   (ivy-read (projectile-prepend-project-name "Switch to buffer: ")
             (counsel-projectile--buffer-list)
             :matcher #'ivy--switch-buffer-matcher
-            :preselect (buffer-name (other-buffer (current-buffer)))
             :require-match t
             :keymap counsel-projectile-map
             :action #'counsel-projectile-switch-to-buffer-action
