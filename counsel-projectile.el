@@ -63,6 +63,10 @@
     map)
   "Keymap used in the minibuffer.")
 
+(defcustom counsel-projectile-use-buffer-preselect nil
+  "When non-nil, preselect the recently selected buffer for `counsel-projectile-switch-to-buffer'."
+  :type 'boolean)
+
 ;;; counsel-projectile-find-file
 
 (defun counsel-projectile-find-file-action (file)
@@ -182,7 +186,8 @@ names as in `ivy--buffer-list'."
   (ivy-read (projectile-prepend-project-name "Switch to buffer: ")
             (counsel-projectile--buffer-list)
             :matcher #'ivy--switch-buffer-matcher
-            :preselect (buffer-name (other-buffer (current-buffer)))
+            :preselect (and counsel-projectile-use-buffer-preselect
+                            (buffer-name (other-buffer (current-buffer))))
             :require-match t
             :keymap counsel-projectile-map
             :action #'counsel-projectile-switch-to-buffer-action
