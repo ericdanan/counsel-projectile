@@ -161,12 +161,19 @@ With a prefix ARG invalidates the cache first."
 
 ;;; counsel-projectile-switch-to-buffer
 
+(defvar counsel-projectile-remove-current-buffer nil
+  "Non-nil if current buffer should be removed from the
+  candidates list of `counsel-projectile-switch-to-buffer' and
+  `counsel-projectile'.")
+
 (defun counsel-projectile--buffer-list ()
   "Get a list of project buffer names.
 
 Like `projectile-project-buffer-names', but propertize buffer
 names as in `ivy--buffer-list'."
   (let ((buffer-names (projectile-project-buffer-names)))
+    (when counsel-projectile-remove-current-buffer
+      (setq buffer-names (delete (buffer-name (current-buffer)) buffer-names)))
     (ivy--buffer-list "" nil
                       (lambda (x)
                         (member (car x) buffer-names)))))
@@ -279,6 +286,10 @@ hitting \"M-n\" in the minibuffer.")
     (user-error "You're not in a project")))
 
 ;;; counsel-projectile-switch-project
+
+(defvar counsel-projectile-remove-current-project nil
+  "Non-nil if current project should be removed from the
+  candidates list of `counsel-projectile-switch-project'.")
 
 (defun counsel-projectile-switch-project-action (project)
   "Switch to PROJECT.
@@ -394,7 +405,9 @@ Invokes the command referenced by
 `projectile-switch-project-action' on switch."
   (interactive)
   (ivy-read (projectile-prepend-project-name "Switch to project: ")
-            projectile-known-projects
+            (if counsel-projectile-remove-current-project
+                (projectile-relevant-known-projects)
+              projectile-known-projects)
             :preselect (and (projectile-project-p)
                             (abbreviate-file-name (projectile-project-root)))
             :action #'counsel-projectile-switch-project-action
