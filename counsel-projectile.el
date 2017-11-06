@@ -42,6 +42,228 @@
 (require 'counsel)
 (require 'projectile)
 
+;;; customization
+
+(defgroup counsel-projectile nil
+  "Ivy integration for Projectile."
+  :group 'ivy
+  :group 'projectile)
+
+(defcustom counsel-projectile-remove-current-buffer nil
+  "Non-nil if current buffer should be removed from the
+candidates list of `counsel-projectile-switch-to-buffer' and
+`counsel-projectile'."
+  :type 'boolean
+  :group 'counsel-projectile)
+
+(defcustom counsel-projectile-remove-current-project nil
+  "Non-nil if current project should be removed from the
+candidates list of `counsel-projectile-switch-project'."
+  :type 'boolean
+  :group 'counsel-projectile)
+
+(defcustom counsel-projectile-ag-initial-input nil
+  "Initial minibuffer input for `counsel-projectile-ag'.  If
+non-nil, it should be a Lisp expression whose evaluation yields
+the initial input string.
+
+Note that you can always insert the value
+of `(ivy-thing-at-point)' by hitting \"M-n\" in the minibuffer."
+  :type '(choice
+          (const :tag "None" nil)
+          (const :tag "Symbol at point (generic)" '(thing-at-point 'symbol t))
+          (const :tag "Symbol or selection at point (projectile)" '(projectile-symbol-or-selection-at-point))
+          (const :tag "Thing at point (ivy)" '(ivy-thing-at-point))
+          (sexp  :tag "Custom expression"))
+  :group 'counsel-projectile)
+
+(defcustom counsel-projectile-rg-initial-input nil
+  "Initial minibuffer input for `counsel-projectile-rg'.  If
+non-nil, it should be a Lisp expression whose evaluation yields
+the initial input string.
+
+Note that you can always insert the value
+of `(ivy-thing-at-point)' by hitting \"M-n\" in the minibuffer."
+  :type '(choice
+          (const :tag "None" nil)
+          (const :tag "Symbol at point (generic)" '(thing-at-point 'symbol t))
+          (const :tag "Symbol or selection at point (projectile)" '(projectile-symbol-or-selection-at-point))
+          (const :tag "Thing at point (ivy)" '(ivy-thing-at-point))
+          (sexp  :tag "Custom expression"))
+  :group 'counsel-projectile)
+
+(defcustom counsel-projectile-find-file-actions
+  '(("j" counsel-projectile-find-file-action-other-window
+     "other window"))
+  "List of actions for `counsel-projecile-find-file'.
+
+Each action is made of:
+
+- a key (one-letter string, avoiding \"o\" which is reserved for
+  the default action) to call the action, a function of one
+- variable (the selected candidate) to execute the action, a
+- name (string) for the action.
+
+If you modify this variable outside the Customize interface and
+after loading counsel-projectile, then you should evaluate
+ 
+    (ivy-set-actions 
+     'counsel-projectile-find-file
+     counsel-projectile-find-file-actions)
+
+afterwards to apply your changes."
+  :type '(repeat
+          (list :tag "Action"
+                (string   :tag "     key")
+                (function :tag "function")
+                (string   :tag "    name")))
+  :set (lambda (sym val)
+         (set sym val)
+         (ivy-set-actions 'counsel-projectile-find-file val))
+  :group 'counsel-projectile)
+
+(defcustom counsel-projectile-find-dir-actions
+  '(("j" counsel-projectile-find-dir-action-other-window
+     "other window"))
+  "List of actions for `counsel-projecile-find-dir'.
+
+Each action is made of:
+
+- a key (one-letter string, avoiding \"o\" which is reserved for
+  the default action) to call the action, a function of one
+- variable (the selected candidate) to execute the action, a
+- name (string) for the action.
+
+If you modify this variable outside the Customize interface and
+after loading counsel-projectile, then you should evaluate
+ 
+    (ivy-set-actions 
+     'counsel-projectile-find-dir
+     counsel-projectile-find-dir-actions)
+
+afterwards to apply your changes."
+  :type '(repeat
+          (list :tag "Action"
+                (string   :tag "     key")
+                (function :tag "function")
+                (string   :tag "    name")))
+  :set (lambda (sym val)
+         (set sym val)
+         (ivy-set-actions 'counsel-projectile-find-dir val))
+  :group 'counsel-projectile)
+
+(defcustom counsel-projectile-switch-to-buffer-actions
+  '(("j" switch-to-buffer-other-window
+    "other window"))
+  "List of actions for `counsel-projecile-switch-to-buffer'.
+
+Each action is made of:
+
+- a key (one-letter string, avoiding \"o\" which is reserved for
+  the default action) to call the action, a function of one
+- variable (the selected candidate) to execute the action, a
+- name (string) for the action.
+
+If you modify this variable outside the Customize interface and
+after loading counsel-projectile, then you should evaluate
+ 
+    (ivy-set-actions 
+     'counsel-projectile-switch-to-buffer
+     counsel-projectile-switch-to-buffer-actions)
+
+afterwards to apply your changes."
+  :type '(repeat
+          (list :tag "Action"
+                (string   :tag "     key")
+                (function :tag "function")
+                (string   :tag "    name")))
+  :set (lambda (sym val)
+         (set sym val)
+         (ivy-set-actions 'counsel-projectile-switch-to-buffer val))
+  :group 'counsel-projectile)
+
+(defcustom counsel-projectile-switch-project-actions
+  '(("f" counsel-projectile-switch-project-action-find-file
+     "find file")
+    ("F" counsel-projectile-switch-project-action-find-file-manually
+     "find file manually")
+    ("d" counsel-projectile-switch-project-action-find-dir
+     "find directory")
+    ("b" counsel-projectile-switch-project-action-switch-to-buffer
+     "switch to buffer")
+    ("s" counsel-projectile-switch-project-action-save-all-buffers
+     "save all buffers")
+    ("k" counsel-projectile-switch-project-action-kill-buffers
+     "kill all buffers")
+    ("r" counsel-projectile-switch-project-action-remove-known-project
+     "remove from known projects")
+    ("l" counsel-projectile-switch-project-action-edit-dir-locals
+     "edit dir-locals")
+    ("g" counsel-projectile-switch-project-action-vc
+     "open in vc-dir / magit / monky")
+    ("e" counsel-projectile-switch-project-action-run-eshell
+     "start eshell")
+    ("a" counsel-projectile-switch-project-action-ag
+     "search with ag")
+    ("R" counsel-projectile-switch-project-action-rg
+     "search with rg"))
+  "List of actions for `counsel-projecile-switch-project'.
+
+Each action is made of:
+
+- a key (one-letter string, avoiding \"o\" which is reserved for
+  the default action) to call the action, a function of one
+- variable (the selected candidate) to execute the action, a
+- name (string) for the action.
+
+If you modify this variable outside the Customize interface and
+after loading counsel-projectile, then you should evaluate
+ 
+    (ivy-set-actions 
+     'counsel-projectile-switch-project
+     counsel-projectile-switch-project-actions)
+
+afterwards to apply your changes."
+  :type '(repeat
+          (list :tag "Action"
+                (string   :tag "     key")
+                (function :tag "function")
+                (string   :tag "    name")))
+  :set (lambda (sym val)
+         (set sym val)
+         (ivy-set-actions 'counsel-projectile-switch-project val))
+  :group 'counsel-projectile)
+
+(defcustom counsel-projectile-actions
+  '(("j" counsel-projectile-action-other-window
+    "other window"))
+  "List of actions for `counsel-projecile'.
+
+Each action is made of:
+
+- a key (one-letter string, avoiding \"o\" which is reserved for
+  the default action) to call the action, a function of one
+- variable (the selected candidate) to execute the action, a
+- name (string) for the action.
+
+If you modify this variable outside the Customize interface and
+after loading counsel-projectile, then you should evaluate
+ 
+    (ivy-set-actions 
+     'counsel-projectile
+     counsel-projectile-actions)
+
+afterwards to apply your changes."
+  :type '(repeat
+          (list :tag "Action"
+                (string   :tag "     key")
+                (function :tag "function")
+                (string   :tag "    name")))
+  :set (lambda (sym val)
+         (set sym val)
+         (ivy-set-actions 'counsel-projectile val))
+  :group 'counsel-projectile)
+
 ;;; counsel-projectile-map
 
 (defun counsel-projectile-drop-to-switch-project ()
@@ -98,18 +320,6 @@ invalidates the cache first."
             :action #'counsel-projectile-find-file-action
             :caller 'counsel-projectile-find-file))
 
-(defvar counsel-projectile-find-file-actions
-  '(("j" counsel-projectile-find-file-action-other-window
-     "other window"))
-  "List of actions for `counsel-projecile-find-file'.  If
-  you modify this variable after loading counsel-projectile, then
-  you should call `ivy-set-actions' afterwards to apply your
-  changes.")
-
-(ivy-set-actions
- 'counsel-projectile-find-file
- counsel-projectile-find-file-actions)
-
 (ivy-set-display-transformer
  'counsel-projectile-find-file
  'counsel-projectile-find-file-transformer)
@@ -147,24 +357,7 @@ With a prefix ARG invalidates the cache first."
             :action #'counsel-projectile-find-dir-action
             :caller 'counsel-projectile-find-dir))
 
-(defvar counsel-projectile-find-dir-actions
-  '(("j" counsel-projectile-find-dir-action-other-window
-     "other window"))
-  "List of actions for `counsel-projecile-find-dir'.  If
-  you modify this variable after loading counsel-projectile, then
-  you should call `ivy-set-actions' afterwards to apply your
-  changes.")
-
-(ivy-set-actions
- 'counsel-projectile-find-dir
- counsel-projectile-find-dir-actions)
-
 ;;; counsel-projectile-switch-to-buffer
-
-(defvar counsel-projectile-remove-current-buffer nil
-  "Non-nil if current buffer should be removed from the
-  candidates list of `counsel-projectile-switch-to-buffer' and
-  `counsel-projectile'.")
 
 (defun counsel-projectile--buffer-list ()
   "Get a list of project buffer names.
@@ -194,37 +387,11 @@ names as in `ivy--buffer-list'."
             :action #'counsel-projectile-switch-to-buffer-action
             :caller 'counsel-projectile-switch-to-buffer))
 
-(defvar counsel-projectile-switch-to-buffer-actions
-  '(("j" switch-to-buffer-other-window
-    "other window"))
-  "List of actions for `counsel-projecile-switch-to-buffer'.  If
-  you modify this variable after loading counsel-projectile, then
-  you should call `ivy-set-actions' afterwards to apply your
-  changes.")
-
-(ivy-set-actions
- 'counsel-projectile-switch-to-buffer
- counsel-projectile-switch-to-buffer-actions)
-
 (ivy-set-display-transformer
  'counsel-projectile-switch-to-buffer
  'ivy-switch-buffer-transformer)
 
 ;;; counsel-projectile-ag
-
-(defvar counsel-projectile-ag-initial-input nil
-  "Initial minibuffer input for `counsel-projectile-ag'.  If non-nil, it should be a form whose evaluation yields the initial input string, e.g.
-
-    (setq counsel-projectile-ag-initial-input
-          '(projectile-symbol-or-selection-at-point))
-
-or
-
-    (setq counsel-projectile-ag-initial-input 
-          '(thing-at-point 'symbol t))
-
-Note that you can always insert the value of `(ivy-thing-at-point)' by
-hitting \"M-n\" in the minibuffer.")
 
 ;;;###autoload
 (defun counsel-projectile-ag (&optional options)
@@ -255,9 +422,6 @@ hitting \"M-n\" in the minibuffer.")
 
 ;;; counsel-projectile-rg
 
-(defvar counsel-projectile-rg-initial-input nil
-  "Initial minibuffer input for `counsel-projectile-rg'.  See `counsel-projectile-ag-initial-input' for details.")
-
 ;;;###autoload
 (defun counsel-projectile-rg (&optional options)
   "Run an rg search in the project."
@@ -286,10 +450,6 @@ hitting \"M-n\" in the minibuffer.")
     (user-error "You're not in a project")))
 
 ;;; counsel-projectile-switch-project
-
-(defvar counsel-projectile-remove-current-project nil
-  "Non-nil if current project should be removed from the
-  candidates list of `counsel-projectile-switch-project'.")
 
 (defun counsel-projectile-switch-project-action (project)
   "Switch to PROJECT.
@@ -414,40 +574,6 @@ Invokes the command referenced by
             :require-match t
             :caller 'counsel-projectile-switch-project))
 
-(defvar counsel-projectile-switch-project-actions
-  '(("f" counsel-projectile-switch-project-action-find-file
-     "find file")
-    ("F" counsel-projectile-switch-project-action-find-file-manually
-     "find file manually")
-    ("d" counsel-projectile-switch-project-action-find-dir
-     "find directory")
-    ("b" counsel-projectile-switch-project-action-switch-to-buffer
-     "switch to buffer")
-    ("s" counsel-projectile-switch-project-action-save-all-buffers
-     "save all buffers")
-    ("k" counsel-projectile-switch-project-action-kill-buffers
-     "kill all buffers")
-    ("r" counsel-projectile-switch-project-action-remove-known-project
-     "remove from known projects")
-    ("l" counsel-projectile-switch-project-action-edit-dir-locals
-     "edit dir-locals")
-    ("g" counsel-projectile-switch-project-action-vc
-     "open in vc-dir / magit / monky")
-    ("e" counsel-projectile-switch-project-action-run-eshell
-     "start eshell")
-    ("a" counsel-projectile-switch-project-action-ag
-     "search with ag")
-    ("R" counsel-projectile-switch-project-action-rg
-     "search with rg"))
-  "List of actions for `counsel-projecile-switch-project'.  If
-  you modify this variable after loading counsel-projectile, then
-  you should call `ivy-set-actions' afterwards to apply your
-  changes.")
-
-(ivy-set-actions
- 'counsel-projectile-switch-project
- counsel-projectile-switch-project-actions)
-
 ;;; counsel-projectile
 
 (defvar counsel-projectile--buffers nil
@@ -511,18 +637,6 @@ With a prefix ARG invalidates the cache first."
               :keymap counsel-projectile-map
               :action #'counsel-projectile-action
               :caller 'counsel-projectile)))
-
-(defvar counsel-projectile-actions
-  '(("j" counsel-projectile-action-other-window
-    "other window"))
-  "List of actions for `counsel-projecile'.  If
-  you modify this variable after loading counsel-projectile, then
-  you should call `ivy-set-actions' afterwards to apply your
-  changes.")
-
-(ivy-set-actions
- 'counsel-projectile
- counsel-projectile-actions)
 
 (ivy-set-display-transformer
  'counsel-projectile
