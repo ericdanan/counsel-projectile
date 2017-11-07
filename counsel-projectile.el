@@ -520,7 +520,11 @@ called with a prefix argument."
 
 ;;;###autoload
 (defun counsel-projectile-ag (&optional options)
-  "Run an ag search in the project."
+  "Run an ag search in the project.
+
+OPTIONS, if non-nil, is a string containing additional options to
+be passed to ag. It is read from the minibuffer if the function
+is called with a prefix argument."
   (interactive)
   (if (projectile-project-p)
       (let* ((options
@@ -549,7 +553,11 @@ called with a prefix argument."
 
 ;;;###autoload
 (defun counsel-projectile-rg (&optional options)
-  "Run an rg search in the project."
+  "Run an rg search in the project.
+
+OPTIONS, if non-nil, is a string containing additional options to
+be passed to rg. It is read from the minibuffer if the function
+is called with a prefix argument."
   (interactive)
   (if (projectile-project-p)
       (let* ((options
