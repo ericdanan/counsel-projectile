@@ -107,6 +107,125 @@ of `(ivy-thing-at-point)' by hitting \"M-n\" in the minibuffer."
           (sexp  :tag "Custom expression"))
   :group 'counsel-projectile)
 
+(defcustom counsel-projectile-org-capture-templates nil
+  "Templates for the creation of new entries with `counsel-projectile-org-capture'.
+
+The format is the same as in `org-capture-templates', except that
+in all strings of in an entry's target slot, all instances of
+\"${root}\" and \"${name}\" are replaced with the current project
+root and name, respectively.
+
+Examples of template targets:
+
+    \(file+headline \"${root}/${name}.org}\" \"Notes\"\)
+    \(file+olp \"~/notes.org\" \"${root}\" \"Todos\"\)
+
+The former points to headline \"Notes\" in file
+\"<project-name>.org\" in the project root directory (one file per project), whereas the latter points to
+outline path \"<project-root>/Todos\" in file
+\"~/notes.org\" (same file for all projects)."
+  :type ;; copied from `org-capture-templates'
+  (let ((file-variants '(choice :tag "Filename       "
+				(file :tag "Literal")
+				(function :tag "Function")
+				(variable :tag "Variable")
+				(sexp :tag "Form"))))
+    `(repeat
+      (choice :value ("" "" entry (file "~/org/notes.org") "")
+              (list :tag "Multikey description"
+                    (string :tag "Keys       ")
+                    (string :tag "Description"))
+              (list :tag "Template entry"
+                    (string :tag "Keys           ")
+                    (string :tag "Description    ")
+                    (choice :tag "Capture Type   " :value entry
+                            (const :tag "Org entry" entry)
+                            (const :tag "Plain list item" item)
+                            (const :tag "Checkbox item" checkitem)
+                            (const :tag "Plain text" plain)
+                            (const :tag "Table line" table-line))
+                    (choice :tag "Target location"
+                            (list :tag "File"
+                                  (const :format "" file)
+                                  ,file-variants)
+                            (list :tag "ID"
+                                  (const :format "" id)
+                                  (string :tag "  ID"))
+                            (list :tag "File & Headline"
+                                  (const :format "" file+headline)
+                                  ,file-variants
+                                  (string :tag "  Headline"))
+                            (list :tag "File & Outline path"
+                                  (const :format "" file+olp)
+                                  ,file-variants
+                                  (repeat :tag "Outline path" :inline t
+                                          (string :tag "Headline")))
+                            (list :tag "File & Regexp"
+                                  (const :format "" file+regexp)
+                                  ,file-variants
+                                  (regexp :tag "  Regexp"))
+                            (list :tag "File [ & Outline path ] & Date tree"
+                                  (const :format "" file+olp+datetree)
+                                  ,file-variants
+                                  (option (repeat :tag "Outline path" :inline t
+                                                  (string :tag "Headline"))))
+                            (list :tag "File & function"
+                                  (const :format "" file+function)
+                                  ,file-variants
+                                  (sexp :tag "  Function"))
+                            (list :tag "Current clocking task"
+                                  (const :format "" clock))
+                            (list :tag "Function"
+                                  (const :format "" function)
+                                  (sexp :tag "  Function")))
+                    (choice :tag "Template       "
+                            (string)
+                            (list :tag "File"
+                                  (const :format "" file)
+                                  (file :tag "Template file"))
+                            (list :tag "Function"
+                                  (const :format "" function)
+                                  (function :tag "Template function")))
+                    (plist :inline t
+                           ;; Give the most common options as checkboxes
+                           :options (((const :format "%v " :prepend) (const t))
+                                     ((const :format "%v " :immediate-finish) (const t))
+                                     ((const :format "%v " :jump-to-captured) (const t))
+                                     ((const :format "%v " :empty-lines) (const 1))
+                                     ((const :format "%v " :empty-lines-before) (const 1))
+                                     ((const :format "%v " :empty-lines-after) (const 1))
+                                     ((const :format "%v " :clock-in) (const t))
+                                     ((const :format "%v " :clock-keep) (const t))
+                                     ((const :format "%v " :clock-resume) (const t))
+                                     ((const :format "%v " :time-prompt) (const t))
+                                     ((const :format "%v " :tree-type) (const week))
+                                     ((const :format "%v " :unnarrowed) (const t))
+                                     ((const :format "%v " :table-line-pos) (string))
+                                     ((const :format "%v " :kill-buffer) (const t))))))))
+  :group 'counsel-projectile)
+
+(defcustom counsel-projectile-org-capture-templates-contexts nil
+  "Alist of capture templates and valid contexts for `counsel-projectile-org-capture'.
+
+The format is the same as in `org-capture-templates-contexts'."
+  :type ;; copied from `org-capture-target-templates'
+  '(repeat (list :tag "Rule"
+                 (string :tag "        Capture key")
+                 (string :tag "Replace by template")
+                 (repeat :tag "Available when"
+                         (choice
+                          (cons :tag "Condition"
+                                (choice
+                                 (const :tag "In file" in-file)
+                                 (const :tag "Not in file" not-in-file)
+                                 (const :tag "In buffer" in-buffer)
+                                 (const :tag "Not in buffer" not-in-buffer)
+                                 (const :tag "In mode" in-mode)
+                                 (const :tag "Not in mode" not-in-mode))
+                                (regexp))
+                          (function :tag "Custom function")))))
+  :group 'counsel-projectile)
+
 (defcustom counsel-projectile-find-file-actions
   '(("j" counsel-projectile-find-file-action-other-window
      "other window"))
@@ -223,7 +342,9 @@ afterwards to apply your changes."
     ("a" counsel-projectile-switch-project-action-ag
      "search with ag")
     ("R" counsel-projectile-switch-project-action-rg
-     "search with rg"))
+     "search with rg")
+    ("c" counsel-projectile-switch-project-action-org-capture
+     "org-capture"))
   "List of actions for `counsel-projecile-switch-project'.
 
 Each action is made of:
@@ -301,7 +422,7 @@ afterwards to apply your changes."
       'counsel-projectile-drop-to-switch-project)
     map)
   "Keymap used in the minibuffer.")
-
+  
 ;;; counsel-projectile-find-file
 
 (defun counsel-projectile-find-file-action (file)
@@ -582,6 +703,43 @@ is called with a prefix argument."
                     (projectile-prepend-project-name "rg")))
     (user-error "You're not in a project")))
 
+;;; counsel-projectile-org-capture
+
+;;;###autoload
+(defun counsel-projectile-org-capture ()
+  "Capture something into current project."
+  (interactive)
+  (require 'org-capture)
+  (let* ((root (projectile-project-root))
+	 (name (projectile-project-name))
+	 (org-capture-templates
+	  (cl-loop
+	   for template in counsel-projectile-org-capture-templates
+	   collect (cl-loop
+		    for item in template
+		    if (= (cl-position item template) 3) ;; template's target
+		    collect (cl-loop
+			     for x in item
+			     if (stringp x)
+			     collect (replace-regexp-in-string
+				      "\\${[^}]+}"
+				      (lambda (s)
+					(pcase s
+					  ("${root}" root)
+					  ("${name}" name)))
+				      x)
+			     else
+			     collect x)
+		    else
+		    collect item)))
+	 (org-capture-templates-contexts counsel-projectile-org-capture-templates-contexts)
+         (ivy--prompts-list ivy--prompts-list))
+    (ivy-set-prompt 'counsel-org-capture
+                    (lambda ()
+                      (ivy-add-prompt-count
+                       (projectile-prepend-project-name (ivy-state-prompt ivy-last)))))
+    (counsel-org-capture)))
+
 ;;; counsel-projectile-switch-project
 
 (defun counsel-projectile-switch-project-action (project)
@@ -694,6 +852,12 @@ PROJECT with `ag'."
   "Action for `counsel-projectile-switch-project' to search
 PROJECT with `rg'."
   (let ((projectile-switch-project-action 'counsel-projectile-rg))
+    (counsel-projectile-switch-project-action project)))
+
+(defun counsel-projectile-switch-project-action-org-capture (project)
+  "Action for `counsel-projectile-switch-project' to capture
+something into PROJECT."
+  (let ((projectile-switch-project-action 'counsel-projectile-org-capture))
     (counsel-projectile-switch-project-action project)))
 
 ;;;###autoload
