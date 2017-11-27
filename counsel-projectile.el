@@ -107,6 +107,30 @@ of `(ivy-thing-at-point)' by hitting \"M-n\" in the minibuffer."
           (sexp  :tag "Custom expression"))
   :group 'counsel-projectile)
 
+(defcustom counsel-projectile-ag-use-gitignore-only t
+  "Non-nil if, for git projects, `counsel-projectile-ag' should
+not ignore other files and directories than those specified in
+the `.gitignore' file.  This is the default behavior.
+
+If nil, files and directories specified in the `.projectile' file
+as well as variables `grep-find-ignored-files' and
+`grep-find-ignored-directories' are also ignored for git
+projects (as they systematically are for non-git projects)."
+  :type 'boolean
+  :group 'counsel-projectile)
+
+(defcustom counsel-projectile-rg-use-gitignore-only t
+  "Non-nil if, for git projects, `counsel-projectile-rg' should
+not ignore other files and directories than those specified in
+the `.gitignore' file.  This is the default behavior.
+
+If nil, files and directories specified in the `.projectile' file
+as well as variables `grep-find-ignored-files' and
+`grep-find-ignored-directories' are also ignored for git
+projects (as they systematically are for non-git projects)."
+  :type 'boolean
+  :group 'counsel-projectile)
+
 (defcustom counsel-projectile-org-capture-templates nil
   "Templates for the creation of new entries with `counsel-projectile-org-capture'.
 
@@ -653,8 +677,8 @@ is called with a prefix argument."
                   (read-string "options: ")
                 options))
              (ignored
-              (unless (eq (projectile-project-vcs) 'git)
-                ;; ag supports git ignore files
+              (unless (and (eq (projectile-project-vcs) 'git)
+                           counsel-projectile-ag-use-gitignore-only)
                 (append
                  (cl-union (projectile-ignored-files-rel) grep-find-ignored-files)
                  (cl-union (projectile-ignored-directories-rel) grep-find-ignored-directories))))
@@ -686,8 +710,8 @@ is called with a prefix argument."
                   (read-string "options: ")
                 options))
              (ignored
-              (unless (eq (projectile-project-vcs) 'git)
-                ;; rg supports git ignore files
+              (unless (and (eq (projectile-project-vcs) 'git)
+                           counsel-projectile-rg-use-gitignore-only)
                 (append
                  (cl-union (projectile-ignored-files-rel) grep-find-ignored-files)
                  (cl-union (projectile-ignored-directories-rel) grep-find-ignored-directories))))
