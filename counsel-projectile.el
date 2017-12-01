@@ -107,30 +107,6 @@ of `(ivy-thing-at-point)' by hitting \"M-n\" in the minibuffer."
           (sexp  :tag "Custom expression"))
   :group 'counsel-projectile)
 
-(defcustom counsel-projectile-ag-use-gitignore-only t
-  "Non-nil if, for git projects, `counsel-projectile-ag' should
-not ignore other files and directories than those specified in
-the `.gitignore' file.  This is the default behavior.
-
-If nil, files and directories specified in the `.projectile' file
-as well as variables `grep-find-ignored-files' and
-`grep-find-ignored-directories' are also ignored for git
-projects (as they systematically are for non-git projects)."
-  :type 'boolean
-  :group 'counsel-projectile)
-
-(defcustom counsel-projectile-rg-use-gitignore-only t
-  "Non-nil if, for git projects, `counsel-projectile-rg' should
-not ignore other files and directories than those specified in
-the `.gitignore' file.  This is the default behavior.
-
-If nil, files and directories specified in the `.projectile' file
-as well as variables `grep-find-ignored-files' and
-`grep-find-ignored-directories' are also ignored for git
-projects (as they systematically are for non-git projects)."
-  :type 'boolean
-  :group 'counsel-projectile)
-
 (defcustom counsel-projectile-org-capture-templates nil
   "Templates for the creation of new entries with `counsel-projectile-org-capture'.
 
@@ -561,6 +537,9 @@ construct the command.")
 
 (defvar counsel-projectile-grep-base-command nil)
 
+(defvar counsel-projectile-grep-options-history nil
+  "History for `counsel-projectile-grep' options.")
+
 (defun counsel-projectile-grep-function (string)
   "Grep in the current project for STRING."
   (if (< (length string) 3)
@@ -622,24 +601,25 @@ called with a prefix argument."
 	    (counsel-git-grep (or current-prefix-arg options-or-cmd)
 			      counsel-projectile-grep-initial-input))
 	(counsel-require-program (car (split-string counsel-projectile-grep-base-command)))	
-	(let* ((options (if current-prefix-arg
-			    (read-string "options: ")
-			  options-or-cmd))
-	       (ignored-files
-		(cl-union (projectile-ignored-files-rel) grep-find-ignored-files))
-	       (ignored-dirs
-		(cl-union (projectile-ignored-directories-rel) grep-find-ignored-directories))
-	       (options
-		(concat options " "
-			(mapconcat (lambda (i)
-				     (concat "--exclude=" (shell-quote-argument i)))
-				   ignored-files
-				   " ")
-			" "
-			(mapconcat (lambda (i)
-				     (concat "--exclude-dir=" (shell-quote-argument i)))
-				   ignored-dirs
-				   " "))))
+	(let* ((ignored-files (mapconcat (lambda (i)
+                                           (concat "--exclude="
+                                                   (shell-quote-argument i)
+                                                   " "))
+                                         (projectile-ignored-files-rel)
+                                         ""))
+               (ignored-dirs (mapconcat (lambda (i)
+                                          (concat "--exclude-dir="
+                                                  (shell-quote-argument i)
+                                                  " "))
+                                        (projectile-ignored-directories-rel)
+                                        ""))
+               (ignored (concat ignored-files ignored-dirs))
+               (options
+                (if current-prefix-arg
+                    (read-string (projectile-prepend-project-name "grep options: ")
+                                 ignored
+                                 'counsel-projectile-grep-options-history)
+                  (concat ignored options-or-cmd))))
 	  (setq counsel-projectile-grep-command
 		(format counsel-projectile-grep-base-command options))
 	  (ivy-set-prompt 'counsel-projectile-grep counsel-prompt-function)
@@ -663,6 +643,9 @@ called with a prefix argument."
 
 ;;; counsel-projectile-ag
 
+(defvar counsel-projectile-ag-options-history nil
+  "History for `counsel-projectile-ag' options.")
+
 ;;;###autoload
 (defun counsel-projectile-ag (&optional options)
   "Run an ag search in the project.
@@ -672,22 +655,19 @@ be passed to ag. It is read from the minibuffer if the function
 is called with a prefix argument."
   (interactive)
   (if (projectile-project-p)
-      (let* ((options
-              (if current-prefix-arg
-                  (read-string "options: ")
-                options))
-             (ignored
-              (unless (and (eq (projectile-project-vcs) 'git)
-                           counsel-projectile-ag-use-gitignore-only)
-                (append
-                 (cl-union (projectile-ignored-files-rel) grep-find-ignored-files)
-                 (cl-union (projectile-ignored-directories-rel) grep-find-ignored-directories))))
+      (let* ((ignored (mapconcat (lambda (i)
+                                   (concat "--ignore "
+                                           (shell-quote-argument i)
+                                           " "))
+                                 (append (projectile-ignored-files-rel)
+                                         (projectile-ignored-directories-rel))
+                                 ""))
              (options
-              (concat options " "
-                      (mapconcat (lambda (i)
-                                   (concat "--ignore " (shell-quote-argument i)))
-                                 ignored
-                                 " "))))
+              (if current-prefix-arg
+                  (read-string (projectile-prepend-project-name "ag options: ")
+                               ignored
+                               'counsel-projectile-ag-options-history)
+                (concat ignored options))))
         (counsel-ag (eval counsel-projectile-ag-initial-input)
                     (projectile-project-root)
                     options
@@ -695,6 +675,9 @@ is called with a prefix argument."
     (user-error "You're not in a project")))
 
 ;;; counsel-projectile-rg
+
+(defvar counsel-projectile-rg-options-history nil
+  "History for `counsel-projectile-rg' options.")
 
 ;;;###autoload
 (defun counsel-projectile-rg (&optional options)
@@ -705,22 +688,19 @@ be passed to rg. It is read from the minibuffer if the function
 is called with a prefix argument."
   (interactive)
   (if (projectile-project-p)
-      (let* ((options
-              (if current-prefix-arg
-                  (read-string "options: ")
-                options))
-             (ignored
-              (unless (and (eq (projectile-project-vcs) 'git)
-                           counsel-projectile-rg-use-gitignore-only)
-                (append
-                 (cl-union (projectile-ignored-files-rel) grep-find-ignored-files)
-                 (cl-union (projectile-ignored-directories-rel) grep-find-ignored-directories))))
+      (let* ((ignored (mapconcat (lambda (i)
+                                   (concat "--glob "
+                                           (shell-quote-argument (concat "!" i))
+                                           " "))
+                                 (append (projectile-ignored-files-rel)
+                                         (projectile-ignored-directories-rel))
+                                 ""))
              (options
-              (concat options " "
-                      (mapconcat (lambda (i)
-                                   (concat "--glob " (shell-quote-argument (concat "!" i))))
-                                 ignored
-                                 " "))))
+              (if current-prefix-arg
+                  (read-string (projectile-prepend-project-name "rg options: ")
+                               ignored
+                               'counsel-projectile-rg-options-history)
+                (concat ignored options))))
         (counsel-rg (eval counsel-projectile-rg-initial-input)
                     (projectile-project-root)
                     options
