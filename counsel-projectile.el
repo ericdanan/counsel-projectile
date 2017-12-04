@@ -609,51 +609,49 @@ additional options to be passed to grep, or an alternative git
 grep command. It is read from the minibuffer if the function is
 called with a prefix argument."
   (interactive)
-  (if (projectile-project-p)
-      (if (and (eq (projectile-project-vcs) 'git)
-	       projectile-use-git-grep)
-	  (let ((counsel-prompt-function
-		 (lambda ()
-		   (ivy-add-prompt-count
-		    (format "%s: " (projectile-prepend-project-name (ivy-state-prompt ivy-last)))))))
-	    (counsel-git-grep (or current-prefix-arg options-or-cmd)
-			      counsel-projectile-grep-initial-input))
-	(counsel-require-program (car (split-string counsel-projectile-grep-base-command)))	
-	(let* ((ignored-files (mapconcat (lambda (i)
-                                           (concat "--exclude="
-                                                   (shell-quote-argument i)
-                                                   " "))
-                                         (projectile-ignored-files-rel)
-                                         ""))
-               (ignored-dirs (mapconcat (lambda (i)
-                                          (concat "--exclude-dir="
-                                                  (shell-quote-argument i)
-                                                  " "))
-                                        (projectile-ignored-directories-rel)
-                                        ""))
-               (ignored (concat ignored-files ignored-dirs))
-               (options
-                (if current-prefix-arg
-                    (read-string (projectile-prepend-project-name "grep options: ")
-                                 ignored
-                                 'counsel-projectile-grep-options-history)
-                  (concat ignored options-or-cmd))))
-	  (setq counsel-projectile-grep-command
-		(format counsel-projectile-grep-base-command options))
-	  (ivy-set-prompt 'counsel-projectile-grep counsel-prompt-function)
-	  (setq counsel--git-dir (projectile-project-root))
-	  (ivy-read (projectile-prepend-project-name "grep")
-		    #'counsel-projectile-grep-function
-		    :initial-input counsel-projectile-grep-initial-input
-		    :dynamic-collection t
-		    :keymap counsel-ag-map
-		    :history 'counsel-git-grep-history
-		    :action #'counsel-git-grep-action
-		    :unwind (lambda ()
-			      (counsel-delete-process)
-			      (swiper--cleanup))
-		    :caller 'counsel-projectile-grep)))
-    (user-error "You're not in a project")))
+  (if (and (eq (projectile-project-vcs) 'git)
+           projectile-use-git-grep)
+      (let ((counsel-prompt-function
+             (lambda ()
+               (ivy-add-prompt-count
+                (format "%s: " (projectile-prepend-project-name (ivy-state-prompt ivy-last)))))))
+        (counsel-git-grep (or current-prefix-arg options-or-cmd)
+                          counsel-projectile-grep-initial-input))
+    (counsel-require-program (car (split-string counsel-projectile-grep-base-command)))	
+    (let* ((ignored-files (mapconcat (lambda (i)
+                                       (concat "--exclude="
+                                               (shell-quote-argument i)
+                                               " "))
+                                     (projectile-ignored-files-rel)
+                                     ""))
+           (ignored-dirs (mapconcat (lambda (i)
+                                      (concat "--exclude-dir="
+                                              (shell-quote-argument i)
+                                              " "))
+                                    (projectile-ignored-directories-rel)
+                                    ""))
+           (ignored (concat ignored-files ignored-dirs))
+           (options
+            (if current-prefix-arg
+                (read-string (projectile-prepend-project-name "grep options: ")
+                             ignored
+                             'counsel-projectile-grep-options-history)
+              (concat ignored options-or-cmd))))
+      (setq counsel-projectile-grep-command
+            (format counsel-projectile-grep-base-command options))
+      (ivy-set-prompt 'counsel-projectile-grep counsel-prompt-function)
+      (setq counsel--git-dir (projectile-project-root))
+      (ivy-read (projectile-prepend-project-name "grep")
+                #'counsel-projectile-grep-function
+                :initial-input counsel-projectile-grep-initial-input
+                :dynamic-collection t
+                :keymap counsel-ag-map
+                :history 'counsel-git-grep-history
+                :action #'counsel-git-grep-action
+                :unwind (lambda ()
+                          (counsel-delete-process)
+                          (swiper--cleanup))
+                :caller 'counsel-projectile-grep))))
 
 (counsel-set-async-exit-code 'counsel-projectile-grep 1 "No matches found")
 (ivy-set-occur 'counsel-projectile-grep 'counsel-projectile-grep-occur)
@@ -672,25 +670,23 @@ OPTIONS, if non-nil, is a string containing additional options to
 be passed to ag. It is read from the minibuffer if the function
 is called with a prefix argument."
   (interactive)
-  (if (projectile-project-p)
-      (let* ((ignored (mapconcat (lambda (i)
-                                   (concat "--ignore "
-                                           (shell-quote-argument i)
-                                           " "))
-                                 (append (projectile-ignored-files-rel)
-                                         (projectile-ignored-directories-rel))
-                                 ""))
-             (options
-              (if current-prefix-arg
-                  (read-string (projectile-prepend-project-name "ag options: ")
-                               ignored
-                               'counsel-projectile-ag-options-history)
-                (concat ignored options))))
-        (counsel-ag (eval counsel-projectile-ag-initial-input)
-                    (projectile-project-root)
-                    options
-                    (projectile-prepend-project-name "ag")))
-    (user-error "You're not in a project")))
+  (let* ((ignored (mapconcat (lambda (i)
+                               (concat "--ignore "
+                                       (shell-quote-argument i)
+                                       " "))
+                             (append (projectile-ignored-files-rel)
+                                     (projectile-ignored-directories-rel))
+                             ""))
+         (options
+          (if current-prefix-arg
+              (read-string (projectile-prepend-project-name "ag options: ")
+                           ignored
+                           'counsel-projectile-ag-options-history)
+            (concat ignored options))))
+    (counsel-ag (eval counsel-projectile-ag-initial-input)
+                (projectile-project-root)
+                options
+                (projectile-prepend-project-name "ag"))))
 
 ;;; counsel-projectile-rg
 
@@ -705,25 +701,23 @@ OPTIONS, if non-nil, is a string containing additional options to
 be passed to rg. It is read from the minibuffer if the function
 is called with a prefix argument."
   (interactive)
-  (if (projectile-project-p)
-      (let* ((ignored (mapconcat (lambda (i)
-                                   (concat "--glob "
-                                           (shell-quote-argument (concat "!" i))
-                                           " "))
-                                 (append (projectile-ignored-files-rel)
-                                         (projectile-ignored-directories-rel))
-                                 ""))
-             (options
-              (if current-prefix-arg
-                  (read-string (projectile-prepend-project-name "rg options: ")
-                               ignored
-                               'counsel-projectile-rg-options-history)
-                (concat ignored options))))
-        (counsel-rg (eval counsel-projectile-rg-initial-input)
-                    (projectile-project-root)
-                    options
-                    (projectile-prepend-project-name "rg")))
-    (user-error "You're not in a project")))
+  (let* ((ignored (mapconcat (lambda (i)
+                               (concat "--glob "
+                                       (shell-quote-argument (concat "!" i))
+                                       " "))
+                             (append (projectile-ignored-files-rel)
+                                     (projectile-ignored-directories-rel))
+                             ""))
+         (options
+          (if current-prefix-arg
+              (read-string (projectile-prepend-project-name "rg options: ")
+                           ignored
+                           'counsel-projectile-rg-options-history)
+            (concat ignored options))))
+    (counsel-rg (eval counsel-projectile-rg-initial-input)
+                (projectile-project-root)
+                options
+                (projectile-prepend-project-name "rg"))))
 
 ;;; counsel-projectile-org-capture
 
