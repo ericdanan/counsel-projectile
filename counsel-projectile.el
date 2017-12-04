@@ -228,7 +228,11 @@ The format is the same as in `org-capture-templates-contexts'."
 
 (defcustom counsel-projectile-find-file-actions
   '(("j" counsel-projectile-find-file-action-other-window
-     "other window"))
+     "other window")
+    ("x" counsel-projectile-find-file-action-extern
+     "open externally")
+    ("r" counsel-projectile-find-file-action-root
+     "open as root"))
   "List of actions for `counsel-projecile-find-file'.
 
 Each action is made of:
@@ -288,7 +292,7 @@ afterwards to apply your changes."
 
 (defcustom counsel-projectile-switch-to-buffer-actions
   '(("j" switch-to-buffer-other-window
-    "other window"))
+     "other window"))
   "List of actions for `counsel-projecile-switch-to-buffer'.
 
 Each action is made of:
@@ -374,7 +378,11 @@ afterwards to apply your changes."
 
 (defcustom counsel-projectile-actions
   '(("j" counsel-projectile-action-other-window
-    "other window"))
+    "other window")
+    ("x" counsel-projectile-action-file-extern
+     "open file externally")
+    ("r" counsel-projectile-action-file-root
+     "open file as root"))
   "List of actions for `counsel-projecile'.
 
 Each action is made of:
@@ -434,6 +442,16 @@ afterwards to apply your changes."
   "Find FILE in another window and run
 `projectile-find-file-hook'."
   (find-file-other-window (projectile-expand-root file))
+  (run-hooks 'projectile-find-file-hook))
+
+(defun counsel-projectile-find-file-action-extern (file)
+  "Find FILE externally and run `projectile-find-file-hook'."
+  (counsel-find-file-extern (projectile-expand-root file))
+  (run-hooks 'projectile-find-file-hook))
+
+(defun counsel-projectile-find-file-action-root (file)
+  "Find FILE as root and run `projectile-find-file-hook'."
+  (counsel-find-file-as-root (projectile-expand-root file))
   (run-hooks 'projectile-find-file-hook))
 
 (defun counsel-projectile-find-file-transformer (name)
@@ -921,6 +939,18 @@ Relies on `ivy--switch-buffer-matcher' and
   (if (member name counsel-projectile--buffers)
       (switch-to-buffer-other-window name)
     (counsel-projectile-find-file-action-other-window name)))
+
+(defun counsel-projectile-action-file-extern (name)
+  "Find file named NAME externally."
+  (if (member name counsel-projectile--buffers)
+      (message "This action does not apply to buffers.")
+    (counsel-projectile-find-file-action-extern name)))
+
+(defun counsel-projectile-action-file-root (name)
+  "Find file named NAME as root."
+  (if (member name counsel-projectile--buffers)
+      (message "This action does not apply to buffers.")
+    (counsel-projectile-find-file-action-root name)))
 
 (defun counsel-projectile-transformer (name)
   "Fontifies modified, file-visiting buffers as well as non-visited files."
