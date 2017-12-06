@@ -48,7 +48,7 @@
   "Ivy integration for Projectile."
   :group 'ivy
   :group 'projectile)
-
+                       
 (defcustom counsel-projectile-remove-current-buffer nil
   "Non-nil if current buffer should be removed from the
 candidates list of `counsel-projectile-switch-to-buffer' and
@@ -553,7 +553,7 @@ names as in `ivy--buffer-list'."
   "Format string to use in `cousel-projectile-grep-function' to
 construct the command.")
 
-(defvar counsel-projectile-grep-base-command nil)
+(defvar counsel-projectile-grep-command nil)
 
 (defvar counsel-projectile-grep-options-history nil
   "History for `counsel-projectile-grep' options.")
@@ -760,7 +760,8 @@ is called with a prefix argument."
 
 (defun counsel-projectile-switch-project-action (project)
   "Switch to PROJECT.
-Invokes the command referenced by `projectile-switch-project-action' on switch.
+Invokes the command referenced by
+`projectile-switch-project-action' on switch.
 
 This is a replacement for `projectile-switch-project-by-name'
 with a different switching mechanism: the switch-project action
@@ -831,7 +832,7 @@ PROJECT buffers."
 PROJECT from the list of known projects."
   (projectile-remove-known-project project)
   (setq ivy--all-candidates
-        (delete dir ivy--all-candidates))
+        (delete project ivy--all-candidates))
   (ivy--reset-state ivy-last))
 
 (defun counsel-projectile-switch-project-action-edit-dir-locals (project)
@@ -878,10 +879,7 @@ something into PROJECT."
 
 ;;;###autoload
 (defun counsel-projectile-switch-project ()
-  "Switch to a project we have visited before.
-
-Invokes the command referenced by
-`projectile-switch-project-action' on switch."
+  "Switch to a project we have visited before."
   (interactive)
   (ivy-read (projectile-prepend-project-name "Switch to project: ")
             (if counsel-projectile-remove-current-project
@@ -973,71 +971,51 @@ With a prefix ARG invalidates the cache first."
  'counsel-projectile
  'counsel-projectile-transformer)
 
-;;; key bindings
+;;; counsel-projectile-mode
+
+(defvar counsel-projectile-command-map
+  (let ((map (make-sparse-keymap)))
+    (set-keymap-parent map projectile-command-map)
+    (define-key map (kbd "s r") 'counsel-projectile-rg)
+    (define-key map (kbd "C-c") 'counsel-projectile-org-capture)
+    (define-key map (kbd "SPC") 'counsel-projectile)
+    map)
+  "Keymap for Counesl-Projectile commands after `projectile-keymap-prefix'.")
+(fset 'counsel-projectile-command-map counsel-projectile-command-map)
+
+(defvar counsel-projectile-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map projectile-keymap-prefix 'counsel-projectile-command-map)
+    (define-key map [remap projectile-find-file] 'counsel-projectile-find-file)
+    (define-key map [remap projectile-find-dir] 'counsel-projectile-find-dir)
+    (define-key map [remap projectile-switch-to-buffer] 'counsel-projectile-switch-to-buffer)
+    (define-key map [remap projectile-grep] 'counsel-projectile-grep)
+    (define-key map [remap projectile-ag] 'counsel-projectile-ag)
+    (define-key map [remap projectile-switch-project] 'counsel-projectile-switch-project)
+    map)
+  "Keymap for Counsel-Projectile mode.")
 
 ;;;###autoload
-(eval-after-load 'projectile
-  '(progn
-     (define-key projectile-command-map (kbd "SPC") #'counsel-projectile)))
+(define-minor-mode counsel-projectile-mode
+  "Toggle Counsel-Projectile mode on or off.
 
-(defun counsel-projectile-commander-bindings ()
-  (def-projectile-commander-method ?f
-    "Find file in project."
-    (counsel-projectile-find-file))
-  (def-projectile-commander-method ?d
-    "Find directory in project."
-    (counsel-projectile-find-dir))
-  (def-projectile-commander-method ?b
-    "Switch to project buffer."
-    (counsel-projectile-switch-to-buffer))
-  (def-projectile-commander-method ?g
-    "Run grep on project."
-    (counsel-projectile-grep))
-  (def-projectile-commander-method ?A
-    "Search project files with ag."
-    (counsel-projectile-ag))
-  (def-projectile-commander-method ?s
-    "Switch project."
-    (counsel-projectile-switch-project)))
+With a prefix argument ARG, enable the mode if ARG is positive,
+and disable it otherwise.  If called from Lisp, enable the mode
+if ARG is omitted or nil, and toggle it if ARG is `toggle'.
 
-(defun counsel-projectile-toggle (toggle)
-  "Toggle counsel-projectile keybindings."
-  (if (> toggle 0)
-      (progn
-        (when (eq projectile-switch-project-action #'projectile-find-file)
-          (setq projectile-switch-project-action #'counsel-projectile))
-        (define-key projectile-mode-map [remap projectile-find-file] #'counsel-projectile-find-file)
-        (define-key projectile-mode-map [remap projectile-find-dir] #'counsel-projectile-find-dir)
-        (define-key projectile-mode-map [remap projectile-switch-project] #'counsel-projectile-switch-project)
-        (define-key projectile-mode-map [remap projectile-grep] #'counsel-projectile-grep)
-        (define-key projectile-mode-map [remap projectile-ag] #'counsel-projectile-ag)
-        (define-key projectile-mode-map [remap projectile-switch-to-buffer] #'counsel-projectile-switch-to-buffer)
-        (counsel-projectile-commander-bindings))
-    (progn
-      (when (eq projectile-switch-project-action #'counsel-projectile)
-        (setq projectile-switch-project-action #'projectile-find-file))
-      (define-key projectile-mode-map [remap projectile-find-file] nil)
-      (define-key projectile-mode-map [remap projectile-find-dir] nil)
-      (define-key projectile-mode-map [remap projectile-switch-project] nil)
-      (define-key projectile-mode-map [remap projectile-grep] nil)
-      (define-key projectile-mode-map [remap projectile-ag] nil)
-      (define-key projectile-mode-map [remap projectile-switch-to-buffer] nil)
-      (projectile-commander-bindings))))
+Counsel-Projectile mode triggers Projectile mode, remaps
+Projectile commands that have counsel replacements, and adds key
+bindings for Counsel-Projectile commands that have no Projectile
+counterpart.
 
-;;;###autoload
-(defun counsel-projectile-on ()
-  "Turn on counsel-projectile key bindings."
-  (interactive)
-  (message "Turn on counsel-projectile key bindings")
-  (counsel-projectile-toggle 1))
-
-;;;###autoload
-(defun counsel-projectile-off ()
-  "Turn off counsel-projectile key bindings."
-  (interactive)
-  (message "Turn off counsel-projectile key bindings")
-  (counsel-projectile-toggle -1))
-
+\\{counsel-projectile-mode-map}"
+  :group 'counsel-projectile
+  :require 'counsel-projectile
+  :keymap counsel-projectile-mode-map
+  :global t
+  (if counsel-projectile-mode
+      (projectile-mode)
+    (projectile-mode -1)))
 
 (provide 'counsel-projectile)
 
