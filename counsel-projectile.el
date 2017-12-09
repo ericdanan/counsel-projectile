@@ -42,7 +42,7 @@
 (require 'counsel)
 (require 'projectile)
 
-;;; customization
+;;; defcustoms
 
 (defgroup counsel-projectile nil
   "Ivy integration for Projectile."
@@ -226,205 +226,144 @@ The format is the same as in `org-capture-templates-contexts'."
                           (function :tag "Custom function")))))
   :group 'counsel-projectile)
 
-(defcustom counsel-projectile-find-file-actions
-  '(("j" counsel-projectile-find-file-action-other-window
-     "other window")
-    ("f" counsel-projectile-find-file-action-find-file-manually
-     "find file manually")
-    ("x" counsel-projectile-find-file-action-extern
-     "open externally")
-    ("r" counsel-projectile-find-file-action-root
-     "open as root")
-    ("p" (lambda (_) (counsel-projectile-switch-project))
-     "switch project"))
-  "List of actions for `counsel-projecile-find-file'.
+;;;; actions
 
-Each action is made of:
+(defun counsel-projectile--defcustom-action (command action group)
+  "Create a custom variable named \"COMMAND-action\" in GROUP,
+to be used as `:action' parameter for COMMAND's `ivy-read' call.
 
-- a key (one-letter string, avoiding \"o\" which is reserved for
-  the default action) to call the action, a function of one
-- variable (the selected candidate) to execute the action, a
-- name (string) for the action.
+The variable can hold either a single action function, or an
+action list whose first element is the index of the default
+action in the list and the remaining elements are the actions (a
+key, a function, and a name for each action."
+  (eval
+   `(defcustom ,(intern (format "%s-action" command))
+      ',action
+      ,(format "Action for `%s'.  
 
-If you modify this variable outside the Customize interface and
-after loading counsel-projectile, then you should evaluate
- 
-    (ivy-set-actions 
-     'counsel-projectile-find-file
-     counsel-projectile-find-file-actions)
+This variable can hold either an action function (function of one
+variable, the selected candidate) or an action list consisting
+of:
 
-afterwards to apply your changes."
-  :type '(repeat
-          (list :tag "Action"
-                (string   :tag "     key")
-                (function :tag "function")
-                (string   :tag "    name")))
-  :set (lambda (sym val)
-         (set sym val)
-         (ivy-set-actions 'counsel-projectile-find-file val))
-  :group 'counsel-projectile)
+- the index of the default action in the list (1 for the first
+  action, etc),
+- the available actions, each of which consists of:
+  - a key (one-letter string) to call the action,
+  - an action function of one variable, 
+  - a name (string) for the action.
 
-(defcustom counsel-projectile-find-dir-actions
-  '(("j" counsel-projectile-find-dir-action-other-window
-     "other window")
-    ("f" counsel-projectile-find-file-action-find-file-manually
-     "find file manually")
-    ("p" (lambda (_) (counsel-projectile-switch-project))
-     "switch project"))
-  "List of actions for `counsel-projecile-find-dir'.
+In both cases, extra actions can be added with `ivy-set-actions'.
+An action is triggered for the selected candidate with `M-o
+<key>' or `C-M-o <key>'.  The default action can also be
+triggered with `M-RET' or `C-M-RET'. If this variable holds a
+single action function, this action becomes the default action
+and is assigned the key \"o\".  For an action list, it is also
+usual to assign the key \"o\" to the default action."  command)
+      :type '(choice
+              (function :tag "Single action function")
+              (cons :tag "Action list"
+                    (integer :tag "Index of default action" :value 1)
+                    (repeat :tag "Available actions"
+                            (list :tag "Action"
+                                  (string   :tag "     key")
+                                  (function :tag "function")
+                                  (string   :tag "    name")))))
+      :group ',group)))
 
-Each action is made of:
-
-- a key (one-letter string, avoiding \"o\" which is reserved for
-  the default action) to call the action, a function of one
-- variable (the selected candidate) to execute the action, a
-- name (string) for the action.
-
-If you modify this variable outside the Customize interface and
-after loading counsel-projectile, then you should evaluate
- 
-    (ivy-set-actions 
-     'counsel-projectile-find-dir
-     counsel-projectile-find-dir-actions)
-
-afterwards to apply your changes."
-  :type '(repeat
-          (list :tag "Action"
-                (string   :tag "     key")
-                (function :tag "function")
-                (string   :tag "    name")))
-  :set (lambda (sym val)
-         (set sym val)
-         (ivy-set-actions 'counsel-projectile-find-dir val))
-  :group 'counsel-projectile)
-
-(defcustom counsel-projectile-switch-to-buffer-actions
-  '(("j" switch-to-buffer-other-window
-     "other window")
-    ("f" counsel-projectile-switch-to-buffer-action-find-file-manually
-     "find file manually")
-    ("p" (lambda (_) (counsel-projectile-switch-project))
-     "switch project"))
-  "List of actions for `counsel-projecile-switch-to-buffer'.
-
-Each action is made of:
-
-- a key (one-letter string, avoiding \"o\" which is reserved for
-  the default action) to call the action, a function of one
-- variable (the selected candidate) to execute the action, a
-- name (string) for the action.
-
-If you modify this variable outside the Customize interface and
-after loading counsel-projectile, then you should evaluate
- 
-    (ivy-set-actions 
-     'counsel-projectile-switch-to-buffer
-     counsel-projectile-switch-to-buffer-actions)
-
-afterwards to apply your changes."
-  :type '(repeat
-          (list :tag "Action"
-                (string   :tag "     key")
-                (function :tag "function")
-                (string   :tag "    name")))
-  :set (lambda (sym val)
-         (set sym val)
-         (ivy-set-actions 'counsel-projectile-switch-to-buffer val))
-  :group 'counsel-projectile)
-
-(defcustom counsel-projectile-switch-project-actions
-  '(("f" counsel-projectile-switch-project-action-find-file
-     "find file")
-    ("F" counsel-projectile-switch-project-action-find-file-manually
-     "find file manually")
-    ("d" counsel-projectile-switch-project-action-find-dir
-     "find directory")
-    ("b" counsel-projectile-switch-project-action-switch-to-buffer
-     "switch to buffer")
-    ("s" counsel-projectile-switch-project-action-save-all-buffers
-     "save all buffers")
-    ("k" counsel-projectile-switch-project-action-kill-buffers
-     "kill all buffers")
-    ("r" counsel-projectile-switch-project-action-remove-known-project
-     "remove from known projects")
-    ("l" counsel-projectile-switch-project-action-edit-dir-locals
-     "edit dir-locals")
-    ("g" counsel-projectile-switch-project-action-vc
-     "open in vc-dir / magit / monky")
-    ("e" counsel-projectile-switch-project-action-run-eshell
-     "start eshell")
-    ("G" counsel-projectile-switch-project-action-grep
-     "search with grep")
-    ("a" counsel-projectile-switch-project-action-ag
-     "search with ag")
-    ("R" counsel-projectile-switch-project-action-rg
-     "search with rg")
-    ("c" counsel-projectile-switch-project-action-org-capture
-     "org-capture"))
-  "List of actions for `counsel-projecile-switch-project'.
-
-Each action is made of:
-
-- a key (one-letter string, avoiding \"o\" which is reserved for
-  the default action) to call the action, a function of one
-- variable (the selected candidate) to execute the action, a
-- name (string) for the action.
-
-If you modify this variable outside the Customize interface and
-after loading counsel-projectile, then you should evaluate
- 
-    (ivy-set-actions 
-     'counsel-projectile-switch-project
-     counsel-projectile-switch-project-actions)
-
-afterwards to apply your changes."
-  :type '(repeat
-          (list :tag "Action"
-                (string   :tag "     key")
-                (function :tag "function")
-                (string   :tag "    name")))
-  :set (lambda (sym val)
-         (set sym val)
-         (ivy-set-actions 'counsel-projectile-switch-project val))
-  :group 'counsel-projectile)
-
-(defcustom counsel-projectile-actions
-  '(("j" counsel-projectile-action-other-window
+(counsel-projectile--defcustom-action
+ 'counsel-projectile-find-file
+ '(1
+   ("o" counsel-projectile-find-file-action
+    "current window")
+   ("j" counsel-projectile-find-file-action-other-window
     "other window")
-    ("f" counsel-projectile-action-find-file-manually
-     "find file manually")
-    ("x" counsel-projectile-action-file-extern
-     "open file externally")
-    ("r" counsel-projectile-action-file-root
-     "open file as root")
-    ("p" (lambda (_) (counsel-projectile-switch-project))
-     "switch project"))
-  "List of actions for `counsel-projecile'.
-
-Each action is made of:
-
-- a key (one-letter string, avoiding \"o\" which is reserved for
-  the default action) to call the action, a function of one
-- variable (the selected candidate) to execute the action, a
-- name (string) for the action.
-
-If you modify this variable outside the Customize interface and
-after loading counsel-projectile, then you should evaluate
+   ("f" counsel-projectile-find-file-action-find-file-manually
+    "find file manually")
+   ("x" counsel-projectile-find-file-action-extern
+    "open externally")
+   ("r" counsel-projectile-find-file-action-root
+    "open as root")
+   ("p" (lambda (_) (counsel-projectile-switch-project))
+    "switch project"))
+ 'counsel-projectile)
  
-    (ivy-set-actions 
-     'counsel-projectile
-     counsel-projectile-actions)
+(counsel-projectile--defcustom-action
+ 'counsel-projectile-find-dir
+ '(1
+   ("o" counsel-projectile-find-dir-action-other-window
+    "current window")
+   ("j" counsel-projectile-find-dir-action-other-window
+    "other window")
+   ("f" counsel-projectile-find-file-action-find-file-manually
+    "find file manually")
+   ("p" (lambda (_) (counsel-projectile-switch-project))
+    "switch project"))
+ 'counsel-projectile)
 
-afterwards to apply your changes."
-  :type '(repeat
-          (list :tag "Action"
-                (string   :tag "     key")
-                (function :tag "function")
-                (string   :tag "    name")))
-  :set (lambda (sym val)
-         (set sym val)
-         (ivy-set-actions 'counsel-projectile val))
-  :group 'counsel-projectile)
+(counsel-projectile--defcustom-action
+ 'counsel-projectile-switch-to-buffer
+ '(1
+   ("o" counsel-projectile-switch-to-buffer-action
+    "current window")
+   ("j" switch-to-buffer-other-window
+    "other window")
+   ("f" counsel-projectile-switch-to-buffer-action-find-file-manually
+    "find file manually")
+   ("p" (lambda (_) (counsel-projectile-switch-project))
+    "switch project"))
+ 'counsel-projectile)
+
+(counsel-projectile--defcustom-action
+ 'counsel-projectile-switch-project
+ '(1
+   ("o" counsel-projectile-switch-project-action
+    "jump to buffer or file")
+   ("f" counsel-projectile-switch-project-action-find-file
+    "jump to file")
+   ("F" counsel-projectile-switch-project-action-find-file-manually
+    "find file manually")
+   ("d" counsel-projectile-switch-project-action-find-dir
+    "jump to directory")
+   ("b" counsel-projectile-switch-project-action-switch-to-buffer
+    "jump to buffer")
+   ("s" counsel-projectile-switch-project-action-save-all-buffers
+    "save all buffers")
+   ("k" counsel-projectile-switch-project-action-kill-buffers
+    "kill all buffers")
+   ("r" counsel-projectile-switch-project-action-remove-known-project
+    "remove from known projects")
+   ("l" counsel-projectile-switch-project-action-edit-dir-locals
+    "edit dir-locals")
+   ("g" counsel-projectile-switch-project-action-vc
+    "open in vc-dir / magit / monky")
+   ("e" counsel-projectile-switch-project-action-run-eshell
+    "start eshell")
+   ("G" counsel-projectile-switch-project-action-grep
+    "search with grep")
+   ("a" counsel-projectile-switch-project-action-ag
+    "search with ag")
+   ("R" counsel-projectile-switch-project-action-rg
+    "search with rg")
+   ("c" counsel-projectile-switch-project-action-org-capture
+    "org-capture"))
+ 'counsel-projectile)
+
+(counsel-projectile--defcustom-action
+ 'counsel-projectile
+ '(1
+   ("o" counsel-projectile-action
+    "current window")
+   ("j" counsel-projectile-action-other-window
+    "other window")
+   ("f" counsel-projectile-action-find-file-manually
+    "find file manually")
+   ("x" counsel-projectile-action-file-extern
+    "open file externally")
+   ("r" counsel-projectile-action-file-root
+    "open file as root")
+   ("p" (lambda (_) (counsel-projectile-switch-project))
+     "switch project"))
+ 'counsel-projectile)
 
 ;;; counsel-projectile-find-file
 
@@ -472,7 +411,7 @@ With a prefix ARG, invalidate the cache first."
             (projectile-current-project-files)
             :matcher #'counsel--find-file-matcher
             :require-match t
-            :action #'counsel-projectile-find-file-action
+            :action counsel-projectile-find-file-action
             :caller 'counsel-projectile-find-file))
 
 (ivy-set-display-transformer
@@ -508,7 +447,7 @@ With a prefix ARG, invalidate the cache first."
   (ivy-read (projectile-prepend-project-name "Find dir: ")
             (counsel-projectile--project-directories)
             :require-match t
-            :action #'counsel-projectile-find-dir-action
+            :action counsel-projectile-find-dir-action
             :caller 'counsel-projectile-find-dir))
 
 ;;; counsel-projectile-switch-to-buffer
@@ -546,7 +485,7 @@ names as in `ivy--buffer-list', and remove current buffer if
             (counsel-projectile--project-buffers)
             :matcher #'ivy--switch-buffer-matcher
             :require-match t
-            :action #'counsel-projectile-switch-to-buffer-action
+            :action counsel-projectile-switch-to-buffer-action
             :caller 'counsel-projectile-switch-to-buffer))
 
 (ivy-set-display-transformer
@@ -890,7 +829,7 @@ action."
               projectile-known-projects)
             :preselect (and (projectile-project-p)
                             (abbreviate-file-name (projectile-project-root)))
-            :action #'counsel-projectile-switch-project-action
+            :action counsel-projectile-switch-project-action
             :require-match t
             :caller 'counsel-projectile-switch-project))
 
@@ -976,7 +915,7 @@ If not inside a project, call `counsel-projectile-switch-project'."
               (counsel-projectile--project-buffers-and-files)
               :matcher #'counsel-projectile--matcher
               :require-match t
-              :action #'counsel-projectile-action
+              :action counsel-projectile-action
               :caller 'counsel-projectile)))
 
 (ivy-set-display-transformer
