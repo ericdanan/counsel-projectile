@@ -41,17 +41,230 @@
 ;; the projectile key bindings.
 ;;
 ;;; Code:
+;;;; require
 
 (require 'counsel)
 (require 'projectile)
-
-;;; defcustoms
+                      
+;;;; utility
 
 (defgroup counsel-projectile nil
   "Ivy integration for Projectile."
   :group 'ivy
   :group 'projectile)
-                       
+
+(defun counsel-projectile--defcustom-action (command action group)
+  "Create a custom variable named \"COMMAND-action\" in GROUP,
+with default value ACTION, to be used as `:action' parameter for
+COMMAND's `ivy-read' call.
+
+This variable holds either a single action function, or an action
+list whose first element is the index of the default action in
+the list and the remaining elements are the actions (a key, a
+function, and a name for each action."
+  (eval
+   `(defcustom ,(intern (format "%s-action" command))
+      ',action
+      ,(format "Action(s) for `%s'.  
+
+This variable holds either a single action function (function of
+one variable, the selected candidate) or an action list
+consisting of:
+
+- the index of the default action in the list (1 for the first
+  action, etc),
+- the available actions, each of which consists of:
+  - a key (one-letter string) to call the action,
+  - an action function of one variable, 
+  - a name (string) for the action.
+
+In both cases, extra actions can be added with `ivy-set-actions'.
+An action is triggered for the selected candidate with `M-o
+<key>' or `C-M-o <key>'.  The default action can also be
+triggered with `M-RET' or `C-M-RET'. If this variable holds a
+single action function, this action becomes the default action
+and is assigned the key \"o\".  For an action list, it is also
+usual to assign the key \"o\" to the default action."  command)
+      :type '(choice
+              (function :tag "Single action function")
+              (cons :tag "Action list"
+                    (integer :tag "Index of default action" :value 1)
+                    (repeat :tag "Actions"
+                            (list :tag "Action"
+                                  (string   :tag "     key")
+                                  (function :tag "function")
+                                  (string   :tag "    name")))))
+      :group ',group)))
+
+(defun counsel-projectile--defcustom-sub-action (action sub-action group)
+  "Create a custom variable named \"ACTION-sub-action\" in GROUP,
+with default value SUB-ACTION, to be passed by ACTION to
+`counsel-projectile-sub-action'.
+
+This variable holds a list of sub-actions for ACTION (a key, a
+function, and a name for each action)."
+  (eval
+   `(defcustom ,(intern (format "%s-sub-action" action))
+      ',sub-action
+      ,(format "Sub-action(s) for `%s'.
+
+This variable holds a list of sub-actions, each or which consists
+of:
+
+- a key (one-letter string) to call the action,
+- an action function of one variable, 
+- a name (string) for the action.
+
+When `%s' is called, a key is read from the minibuffer and the
+corresponding sub-action is executed."  action action)
+      :type '(repeat :tag "Sub-actions"
+                     (list :tag "Sub-action"
+                           (string   :tag "     key")
+                           (function :tag "function")
+                           (string   :tag "    name")))
+      :group ',group)))
+
+(defun counsel-projectile-sub-action (cand sub-actions)
+  "Read a key from the minibuffer and apply the corresponding
+action from SUB-ACTIONS to CAND.
+
+SUB-ACTIONS is list of ivy actions: a key, an action function,
+and a name for each action.  Binding a key to a call to this
+function in an ivy action list makes this key behave like a
+prefix key and the keys in SUB-ACTIONS like sub-keys."
+  ;; adapted from `ivy-read-action'
+   (let* ((hint (funcall ivy-read-action-format-function sub-actions))
+         (resize-mini-windows t)
+         (key (string (read-key hint)))
+         (action-fun (nth 1 (assoc key sub-actions))))
+    (cond ((member key '("" ""))
+           (when (eq ivy-exit 'done)
+             (ivy-resume)))
+          ((null action-fun)
+           (message "%s is not bound" key)
+           (when (eq ivy-exit 'done)
+             (ivy-resume)))
+          (t
+           (message "")
+           (funcall action-fun cand)))))
+
+;;;; counsel-projectile-find-file
+
+(counsel-projectile--defcustom-action
+ 'counsel-projectile-find-file
+ '(1
+   ("o" counsel-projectile-find-file-action
+    "current window")
+   ("j" counsel-projectile-find-file-action-other-window
+    "other window")
+   ("x" counsel-projectile-find-file-action-extern
+    "open externally")
+   ("r" counsel-projectile-find-file-action-root
+    "open as root")
+   ("m" counsel-projectile-find-file-action-find-file-manually
+    "find file manually")
+   ("p" (lambda (_) (counsel-projectile-switch-project))
+    "switch project"))
+ 'counsel-projectile)
+
+(defun counsel-projectile-find-file-action (file)
+  "Find FILE and run `projectile-find-file-hook'."
+  (find-file (projectile-expand-root file))
+  (run-hooks 'projectile-find-file-hook))
+
+(defun counsel-projectile-find-file-action-other-window (file)
+  "Find FILE in another window and run
+`projectile-find-file-hook'."
+  (find-file-other-window (projectile-expand-root file))
+  (run-hooks 'projectile-find-file-hook))
+
+(defun counsel-projectile-find-file-action-find-file-manually (file)
+  "Call `counsel-find-file' from FILE's directory."
+  (let* ((f (projectile-expand-root file))
+         (default-directory (file-name-directory f)))
+    (counsel-find-file)))
+
+(defun counsel-projectile-find-file-action-extern (file)
+  "Find FILE externally and run `projectile-find-file-hook'."
+  (counsel-find-file-extern (projectile-expand-root file))
+  (run-hooks 'projectile-find-file-hook))
+
+(defun counsel-projectile-find-file-action-root (file)
+  "Find FILE as root and run `projectile-find-file-hook'."
+  (counsel-find-file-as-root (projectile-expand-root file))
+  (run-hooks 'projectile-find-file-hook))
+
+(defun counsel-projectile-find-file-transformer (str)
+  "Transform non-visited file names with `ivy-virtual' face."
+  (if (not (get-file-buffer (projectile-expand-root str)))
+      (propertize str 'face 'ivy-virtual)
+    str))
+
+;;;###autoload
+(defun counsel-projectile-find-file (&optional arg)
+  "Jump to a file in the current project.
+
+With a prefix ARG, invalidate the cache first."
+  (interactive "P")
+  (projectile-maybe-invalidate-cache arg)
+  (ivy-read (projectile-prepend-project-name "Find file: ")
+            (projectile-current-project-files)
+            :matcher #'counsel--find-file-matcher
+            :require-match t
+            :action counsel-projectile-find-file-action
+            :caller 'counsel-projectile-find-file))
+
+(ivy-set-display-transformer
+ 'counsel-projectile-find-file
+ 'counsel-projectile-find-file-transformer)
+
+;;;; counsel-projectile-find-dir
+
+(counsel-projectile--defcustom-action
+ 'counsel-projectile-find-dir
+ '(1
+   ("o" counsel-projectile-find-dir-action-other-window
+    "current window")
+   ("j" counsel-projectile-find-dir-action-other-window
+    "other window")
+   ("m" counsel-projectile-find-file-action-find-file-manually
+    "find file manually")
+   ("p" (lambda (_) (counsel-projectile-switch-project))
+    "switch project"))
+ 'counsel-projectile)
+
+(defun counsel-projectile--project-directories ()
+  "Return a list of current project's directories."
+  (if projectile-find-dir-includes-top-level
+      (append '("./") (projectile-current-project-dirs))
+    (projectile-current-project-dirs)))
+
+(defun counsel-projectile-find-dir-action (dir)
+  "Visit DIR with dired and run `projectile-find-dir-hook'."
+  (dired (projectile-expand-root dir))
+  (run-hooks 'projectile-find-dir-hook))
+
+(defun counsel-projectile-find-dir-action-other-window (dir)
+  "Visit DIR with dired in another window and run
+`projectile-find-dir-hook'."
+ (dired-other-window (projectile-expand-root dir))
+ (run-hooks 'projectile-find-dir-hook))
+
+;;;###autoload
+(defun counsel-projectile-find-dir (&optional arg)
+  "Jump to a directory in the current project.
+
+With a prefix ARG, invalidate the cache first."
+  (interactive "P")
+  (projectile-maybe-invalidate-cache arg)
+  (ivy-read (projectile-prepend-project-name "Find dir: ")
+            (counsel-projectile--project-directories)
+            :require-match t
+            :action counsel-projectile-find-dir-action
+            :caller 'counsel-projectile-find-dir))
+
+;;;; counsel-projectile-switch-to-buffer
+
 (defcustom counsel-projectile-remove-current-buffer nil
   "Non-nil if current buffer should be removed from the
 candidates list of `counsel-projectile-switch-to-buffer' and
@@ -59,11 +272,60 @@ candidates list of `counsel-projectile-switch-to-buffer' and
   :type 'boolean
   :group 'counsel-projectile)
 
-(defcustom counsel-projectile-remove-current-project nil
-  "Non-nil if current project should be removed from the
-candidates list of `counsel-projectile-switch-project'."
-  :type 'boolean
-  :group 'counsel-projectile)
+(counsel-projectile--defcustom-action
+ 'counsel-projectile-switch-to-buffer
+ '(1
+   ("o" counsel-projectile-switch-to-buffer-action
+    "current window")
+   ("j" switch-to-buffer-other-window
+    "other window")
+   ("m" counsel-projectile-switch-to-buffer-action-find-file-manually
+    "find file manually")
+   ("p" (lambda (_) (counsel-projectile-switch-project))
+    "switch project"))
+ 'counsel-projectile)
+
+(defun counsel-projectile--project-buffers ()
+  "Return a list of buffers in the current project.
+
+Like `projectile-project-buffer-names', but propertize buffer
+names as in `ivy--buffer-list', and remove current buffer if
+`counsel-projectile-remove-currennt-buffer' is non-nil."
+  (let ((buffer-names (projectile-project-buffer-names)))
+    (when counsel-projectile-remove-current-buffer
+      (setq buffer-names (delete (buffer-name (current-buffer)) buffer-names)))
+    (ivy--buffer-list "" nil
+                      (lambda (x)
+                        (member (car x) buffer-names)))))
+
+(defun counsel-projectile-switch-to-buffer-action (buffer)
+  "Switch to BUFFER."
+  (switch-to-buffer buffer nil 'force-same-window))
+
+(defun counsel-projectile-switch-to-buffer-action-find-file-manually (buffer)
+  "Call `counsel-find-file' from BUFFER's default directory."
+  (let* ((b (get-buffer buffer))
+         (default-directory
+           (or (and b (buffer-local-value 'default-directory b))
+               (projectile-project-root))))
+    (counsel-find-file)))
+
+;;;###autoload
+(defun counsel-projectile-switch-to-buffer ()
+  "Jump to a buffer in the current project."
+  (interactive)
+  (ivy-read (projectile-prepend-project-name "Switch to buffer: ")
+            (counsel-projectile--project-buffers)
+            :matcher #'ivy--switch-buffer-matcher
+            :require-match t
+            :action counsel-projectile-switch-to-buffer-action
+            :caller 'counsel-projectile-switch-to-buffer))
+
+(ivy-set-display-transformer
+ 'counsel-projectile-switch-to-buffer
+ 'ivy-switch-buffer-transformer)
+
+;;;; counsel-projectile-grep
 
 (defcustom counsel-projectile-grep-initial-input nil
   "Initial minibuffer input for `counsel-projectile-grep'.  If
@@ -80,6 +342,116 @@ of `(ivy-thing-at-point)' by hitting \"M-n\" in the minibuffer."
           (sexp  :tag "Custom expression"))
   :group 'counsel-projectile)
 
+(defvar counsel-projectile-grep-base-command "grep -rnE %s -- %%s ."
+  "Format string to use in `cousel-projectile-grep-function' to
+construct the command.")
+
+(defvar counsel-projectile-grep-command nil)
+
+(defvar counsel-projectile-grep-options-history nil
+  "History for `counsel-projectile-grep' options.")
+
+(defun counsel-projectile-grep-function (string)
+  "Grep for STRING in the current project."
+  (if (< (length string) 3)
+      (counsel-more-chars 3)
+    (let ((default-directory counsel--git-dir)
+          (regex (counsel-unquote-regex-parens
+                  (setq ivy--old-re
+                        (ivy--regex string)))))
+      (counsel--async-command (format counsel-projectile-grep-command
+				      (shell-quote-argument regex)))
+      nil)))
+
+(defun counsel-projectile-grep-transformer (str)
+  "Higlight file and line number in STR, first removing the
+\"./\" prefix from the filename."
+  ;; This makes the display consistent with `counsel-git-grep' and
+  ;; `counsel-ag'-like commands.
+  (counsel-git-grep-transformer (string-remove-prefix "./" str)))
+
+(defun counsel-projectile-grep-occur ()
+  "Generate a custom occur buffer for `counsel-projectile-grep'."
+  ;; Copied from `counsel-grep-like-occur', except that we don't
+  ;; prepend "./" to the candidates since grep already does so.
+  (unless (eq major-mode 'ivy-occur-grep-mode)
+    (ivy-occur-grep-mode)
+    (setq default-directory counsel--git-dir))
+  (setq ivy-text
+        (and (string-match "\"\\(.*\\)\"" (buffer-name))
+             (match-string 1 (buffer-name))))
+  (let* ((cmd (format counsel-projectile-grep-command
+                      (shell-quote-argument
+                       (counsel-unquote-regex-parens
+                        (ivy--regex ivy-text)))))
+         (cands (split-string (shell-command-to-string cmd) "\n" t)))
+    ;; Need precise number of header lines for `wgrep' to work.
+    (insert (format "-*- mode:grep; default-directory: %S -*-\n\n\n"
+                    default-directory))
+    (insert (format "%d candidates:\n" (length cands)))
+    (ivy--occur-insert-lines cands)))
+
+(defun counsel-projectile-grep (&optional options-or-cmd)
+  "Search the current project with grep.
+
+If inside a git project and `projectile-use-git-grep' is non-nil,
+use `counsel-git-grep'. Otherwise use grep recursively.
+
+OPTIONS-OR-CMD, if non-nil, is a string containing either
+additional options to be passed to grep, or an alternative git
+grep command. It is read from the minibuffer if the function is
+called with a prefix argument."
+  (interactive)
+  (if (and (eq (projectile-project-vcs) 'git)
+           projectile-use-git-grep)
+      (let ((counsel-prompt-function
+             (lambda ()
+               (ivy-add-prompt-count
+                (format "%s: " (projectile-prepend-project-name (ivy-state-prompt ivy-last)))))))
+        (counsel-git-grep (or current-prefix-arg options-or-cmd)
+                          counsel-projectile-grep-initial-input))
+    (counsel-require-program (car (split-string counsel-projectile-grep-base-command)))	
+    (let* ((ignored-files (mapconcat (lambda (i)
+                                       (concat "--exclude="
+                                               (shell-quote-argument i)
+                                               " "))
+                                     (projectile-ignored-files-rel)
+                                     ""))
+           (ignored-dirs (mapconcat (lambda (i)
+                                      (concat "--exclude-dir="
+                                              (shell-quote-argument i)
+                                              " "))
+                                    (projectile-ignored-directories-rel)
+                                    ""))
+           (ignored (concat ignored-files ignored-dirs))
+           (options
+            (if current-prefix-arg
+                (read-string (projectile-prepend-project-name "grep options: ")
+                             ignored
+                             'counsel-projectile-grep-options-history)
+              (concat ignored options-or-cmd))))
+      (setq counsel-projectile-grep-command
+            (format counsel-projectile-grep-base-command options))
+      (ivy-set-prompt 'counsel-projectile-grep counsel-prompt-function)
+      (setq counsel--git-dir (projectile-project-root))
+      (ivy-read (projectile-prepend-project-name "grep")
+                #'counsel-projectile-grep-function
+                :initial-input counsel-projectile-grep-initial-input
+                :dynamic-collection t
+                :keymap counsel-ag-map
+                :history 'counsel-git-grep-history
+                :action #'counsel-git-grep-action
+                :unwind (lambda ()
+                          (counsel-delete-process)
+                          (swiper--cleanup))
+                :caller 'counsel-projectile-grep))))
+
+(counsel-set-async-exit-code 'counsel-projectile-grep 1 "No matches found")
+(ivy-set-occur 'counsel-projectile-grep 'counsel-projectile-grep-occur)
+(ivy-set-display-transformer 'counsel-projectile-grep  'counsel-projectile-grep-transformer)
+
+;;;; counsel-projectile-ag
+
 (defcustom counsel-projectile-ag-initial-input nil
   "Initial minibuffer input for `counsel-projectile-ag'.  If
 non-nil, it should be a Lisp expression whose evaluation yields
@@ -95,6 +467,37 @@ of `(ivy-thing-at-point)' by hitting \"M-n\" in the minibuffer."
           (sexp  :tag "Custom expression"))
   :group 'counsel-projectile)
 
+(defvar counsel-projectile-ag-options-history nil
+  "History for `counsel-projectile-ag' options.")
+
+;;;###autoload
+(defun counsel-projectile-ag (&optional options)
+  "Search the current project with ag.
+
+OPTIONS, if non-nil, is a string containing additional options to
+be passed to ag. It is read from the minibuffer if the function
+is called with a prefix argument."
+  (interactive)
+  (let* ((ignored (mapconcat (lambda (i)
+                               (concat "--ignore "
+                                       (shell-quote-argument i)
+                                       " "))
+                             (append (projectile-ignored-files-rel)
+                                     (projectile-ignored-directories-rel))
+                             ""))
+         (options
+          (if current-prefix-arg
+              (read-string (projectile-prepend-project-name "ag options: ")
+                           ignored
+                           'counsel-projectile-ag-options-history)
+            (concat ignored options))))
+    (counsel-ag (eval counsel-projectile-ag-initial-input)
+                (projectile-project-root)
+                options
+                (projectile-prepend-project-name "ag"))))
+
+;;;; counsel-projectile-rg
+
 (defcustom counsel-projectile-rg-initial-input nil
   "Initial minibuffer input for `counsel-projectile-rg'.  If
 non-nil, it should be a Lisp expression whose evaluation yields
@@ -109,6 +512,37 @@ of `(ivy-thing-at-point)' by hitting \"M-n\" in the minibuffer."
           (const :tag "Thing at point (ivy)" '(ivy-thing-at-point))
           (sexp  :tag "Custom expression"))
   :group 'counsel-projectile)
+
+(defvar counsel-projectile-rg-options-history nil
+  "History for `counsel-projectile-rg' options.")
+
+;;;###autoload
+(defun counsel-projectile-rg (&optional options)
+  "Search the current project with rg.
+
+OPTIONS, if non-nil, is a string containing additional options to
+be passed to rg. It is read from the minibuffer if the function
+is called with a prefix argument."
+  (interactive)
+  (let* ((ignored (mapconcat (lambda (i)
+                               (concat "--glob "
+                                       (shell-quote-argument (concat "!" i))
+                                       " "))
+                             (append (projectile-ignored-files-rel)
+                                     (projectile-ignored-directories-rel))
+                             ""))
+         (options
+          (if current-prefix-arg
+              (read-string (projectile-prepend-project-name "rg options: ")
+                           ignored
+                           'counsel-projectile-rg-options-history)
+            (concat ignored options))))
+    (counsel-rg (eval counsel-projectile-rg-initial-input)
+                (projectile-project-root)
+                options
+                (projectile-prepend-project-name "rg"))))
+
+;;;; counsel-projectile-org-capture
 
 (defcustom counsel-projectile-org-capture-templates nil
   "Templates for the creation of new entries with `counsel-projectile-org-capture'.
@@ -229,121 +663,52 @@ The format is the same as in `org-capture-templates-contexts'."
                           (function :tag "Custom function")))))
   :group 'counsel-projectile)
 
-;;;; actions
+;;;###autoload
+(defun counsel-projectile-org-capture ()
+  "Org-capture into the current project.
 
-(defun counsel-projectile--defcustom-action (command action group)
-  "Create a custom variable named \"COMMAND-action\" in GROUP,
-with default value ACTION, to be used as `:action' parameter for
-COMMAND's `ivy-read' call.
+The capture templates are read from the variables
+`counsel-projectile-org-capture-templates' and
+`counsel-projectile-org-capture-templates-contexts'."
+  (interactive)
+  (require 'org-capture)
+  (let* ((root (projectile-project-root))
+	 (name (projectile-project-name))
+	 (org-capture-templates
+	  (cl-loop
+	   for template in counsel-projectile-org-capture-templates
+	   collect (cl-loop
+		    for item in template
+		    if (= (cl-position item template) 3) ;; template's target
+		    collect (cl-loop
+			     for x in item
+			     if (stringp x)
+			     collect (replace-regexp-in-string
+				      "\\${[^}]+}"
+				      (lambda (s)
+					(pcase s
+					  ("${root}" root)
+					  ("${name}" name)))
+				      x)
+			     else
+			     collect x)
+		    else
+		    collect item)))
+	 (org-capture-templates-contexts counsel-projectile-org-capture-templates-contexts)
+         (ivy--prompts-list ivy--prompts-list))
+    (ivy-set-prompt 'counsel-org-capture
+                    (lambda ()
+                      (ivy-add-prompt-count
+                       (projectile-prepend-project-name (ivy-state-prompt ivy-last)))))
+    (counsel-org-capture)))
 
-This variable holds either a single action function, or an action
-list whose first element is the index of the default action in
-the list and the remaining elements are the actions (a key, a
-function, and a name for each action."
-  (eval
-   `(defcustom ,(intern (format "%s-action" command))
-      ',action
-      ,(format "Action(s) for `%s'.  
+;;;; counsel-projectile-switch-project
 
-This variable holds either a single action function (function of
-one variable, the selected candidate) or an action list
-consisting of:
-
-- the index of the default action in the list (1 for the first
-  action, etc),
-- the available actions, each of which consists of:
-  - a key (one-letter string) to call the action,
-  - an action function of one variable, 
-  - a name (string) for the action.
-
-In both cases, extra actions can be added with `ivy-set-actions'.
-An action is triggered for the selected candidate with `M-o
-<key>' or `C-M-o <key>'.  The default action can also be
-triggered with `M-RET' or `C-M-RET'. If this variable holds a
-single action function, this action becomes the default action
-and is assigned the key \"o\".  For an action list, it is also
-usual to assign the key \"o\" to the default action."  command)
-      :type '(choice
-              (function :tag "Single action function")
-              (cons :tag "Action list"
-                    (integer :tag "Index of default action" :value 1)
-                    (repeat :tag "Actions"
-                            (list :tag "Action"
-                                  (string   :tag "     key")
-                                  (function :tag "function")
-                                  (string   :tag "    name")))))
-      :group ',group)))
-
-(defun counsel-projectile--defcustom-sub-action (action sub-action group)
-  "Create a custom variable named \"ACTION-sub-action\" in GROUP,
-with default value SUB-ACTION, to be passed by ACTION to
-`counsel-projectile-sub-action'.
-
-This variable holds a list of sub-actions for ACTION (a key, a
-function, and a name for each action)."
-  (eval
-   `(defcustom ,(intern (format "%s-sub-action" action))
-      ',sub-action
-      ,(format "Sub-action(s) for `%s'.
-
-This variable holds a list of sub-actions, each or which consists
-of:
-
-- a key (one-letter string) to call the action,
-- an action function of one variable, 
-- a name (string) for the action.
-
-When `%s' is called, a key is read from the minibuffer and the
-corresponding sub-action is executed."  action action)
-      :type '(repeat :tag "Sub-actions"
-                     (list :tag "Sub-action"
-                           (string   :tag "     key")
-                           (function :tag "function")
-                           (string   :tag "    name")))
-      :group ',group)))
-
-(counsel-projectile--defcustom-action
- 'counsel-projectile-find-file
- '(1
-   ("o" counsel-projectile-find-file-action
-    "current window")
-   ("j" counsel-projectile-find-file-action-other-window
-    "other window")
-   ("x" counsel-projectile-find-file-action-extern
-    "open externally")
-   ("r" counsel-projectile-find-file-action-root
-    "open as root")
-   ("m" counsel-projectile-find-file-action-find-file-manually
-    "find file manually")
-   ("p" (lambda (_) (counsel-projectile-switch-project))
-    "switch project"))
- 'counsel-projectile)
- 
-(counsel-projectile--defcustom-action
- 'counsel-projectile-find-dir
- '(1
-   ("o" counsel-projectile-find-dir-action-other-window
-    "current window")
-   ("j" counsel-projectile-find-dir-action-other-window
-    "other window")
-   ("m" counsel-projectile-find-file-action-find-file-manually
-    "find file manually")
-   ("p" (lambda (_) (counsel-projectile-switch-project))
-    "switch project"))
- 'counsel-projectile)
-
-(counsel-projectile--defcustom-action
- 'counsel-projectile-switch-to-buffer
- '(1
-   ("o" counsel-projectile-switch-to-buffer-action
-    "current window")
-   ("j" switch-to-buffer-other-window
-    "other window")
-   ("m" counsel-projectile-switch-to-buffer-action-find-file-manually
-    "find file manually")
-   ("p" (lambda (_) (counsel-projectile-switch-project))
-    "switch project"))
- 'counsel-projectile)
+(defcustom counsel-projectile-remove-current-project nil
+  "Non-nil if current project should be removed from the
+candidates list of `counsel-projectile-switch-project'."
+  :type 'boolean
+  :group 'counsel-projectile)
 
 (counsel-projectile--defcustom-action
  'counsel-projectile-switch-project
@@ -389,389 +754,6 @@ corresponding sub-action is executed."  action action)
    ("e" counsel-projectile-switch-project-action-run-eshell "Invoke eshell from project root")
    ("t" counsel-projectile-switch-project-action-run-term "Invoke term from project root"))
  'counsel-projectile)
-  
-(counsel-projectile--defcustom-action
- 'counsel-projectile
- '(1
-   ("o" counsel-projectile-action
-    "current window")
-   ("j" counsel-projectile-action-other-window
-    "other window")
-   ("x" counsel-projectile-action-file-extern
-    "open file externally")
-   ("r" counsel-projectile-action-file-root
-    "open file as root")
-   ("m" counsel-projectile-action-find-file-manually
-    "find file manually")
-   ("p" (lambda (_) (counsel-projectile-switch-project))
-     "switch project"))
- 'counsel-projectile)
-
-;;; counsel-projectile-find-file
-
-(defun counsel-projectile-find-file-action (file)
-  "Find FILE and run `projectile-find-file-hook'."
-  (find-file (projectile-expand-root file))
-  (run-hooks 'projectile-find-file-hook))
-
-(defun counsel-projectile-find-file-action-other-window (file)
-  "Find FILE in another window and run
-`projectile-find-file-hook'."
-  (find-file-other-window (projectile-expand-root file))
-  (run-hooks 'projectile-find-file-hook))
-
-(defun counsel-projectile-find-file-action-find-file-manually (file)
-  "Call `counsel-find-file' from FILE's directory."
-  (let* ((f (projectile-expand-root file))
-         (default-directory (file-name-directory f)))
-    (counsel-find-file)))
-
-(defun counsel-projectile-find-file-action-extern (file)
-  "Find FILE externally and run `projectile-find-file-hook'."
-  (counsel-find-file-extern (projectile-expand-root file))
-  (run-hooks 'projectile-find-file-hook))
-
-(defun counsel-projectile-find-file-action-root (file)
-  "Find FILE as root and run `projectile-find-file-hook'."
-  (counsel-find-file-as-root (projectile-expand-root file))
-  (run-hooks 'projectile-find-file-hook))
-
-(defun counsel-projectile-find-file-transformer (str)
-  "Transform non-visited file names with `ivy-virtual' face."
-  (if (not (get-file-buffer (projectile-expand-root str)))
-      (propertize str 'face 'ivy-virtual)
-    str))
-
-;;;###autoload
-(defun counsel-projectile-find-file (&optional arg)
-  "Jump to a file in the current project.
-
-With a prefix ARG, invalidate the cache first."
-  (interactive "P")
-  (projectile-maybe-invalidate-cache arg)
-  (ivy-read (projectile-prepend-project-name "Find file: ")
-            (projectile-current-project-files)
-            :matcher #'counsel--find-file-matcher
-            :require-match t
-            :action counsel-projectile-find-file-action
-            :caller 'counsel-projectile-find-file))
-
-(ivy-set-display-transformer
- 'counsel-projectile-find-file
- 'counsel-projectile-find-file-transformer)
-
-;;; counsel-projectile-find-dir
-
-(defun counsel-projectile--project-directories ()
-  "Return a list of current project's directories."
-  (if projectile-find-dir-includes-top-level
-      (append '("./") (projectile-current-project-dirs))
-    (projectile-current-project-dirs)))
-
-(defun counsel-projectile-find-dir-action (dir)
-  "Visit DIR with dired and run `projectile-find-dir-hook'."
-  (dired (projectile-expand-root dir))
-  (run-hooks 'projectile-find-dir-hook))
-
-(defun counsel-projectile-find-dir-action-other-window (dir)
-  "Visit DIR with dired in another window and run
-`projectile-find-dir-hook'."
- (dired-other-window (projectile-expand-root dir))
- (run-hooks 'projectile-find-dir-hook))
-
-;;;###autoload
-(defun counsel-projectile-find-dir (&optional arg)
-  "Jump to a directory in the current project.
-
-With a prefix ARG, invalidate the cache first."
-  (interactive "P")
-  (projectile-maybe-invalidate-cache arg)
-  (ivy-read (projectile-prepend-project-name "Find dir: ")
-            (counsel-projectile--project-directories)
-            :require-match t
-            :action counsel-projectile-find-dir-action
-            :caller 'counsel-projectile-find-dir))
-
-;;; counsel-projectile-switch-to-buffer
-
-(defun counsel-projectile--project-buffers ()
-  "Return a list of buffers in the current project.
-
-Like `projectile-project-buffer-names', but propertize buffer
-names as in `ivy--buffer-list', and remove current buffer if
-`counsel-projectile-remove-currennt-buffer' is non-nil."
-  (let ((buffer-names (projectile-project-buffer-names)))
-    (when counsel-projectile-remove-current-buffer
-      (setq buffer-names (delete (buffer-name (current-buffer)) buffer-names)))
-    (ivy--buffer-list "" nil
-                      (lambda (x)
-                        (member (car x) buffer-names)))))
-
-(defun counsel-projectile-switch-to-buffer-action (buffer)
-  "Switch to BUFFER."
-  (switch-to-buffer buffer nil 'force-same-window))
-
-(defun counsel-projectile-switch-to-buffer-action-find-file-manually (buffer)
-  "Call `counsel-find-file' from BUFFER's default directory."
-  (let* ((b (get-buffer buffer))
-         (default-directory
-           (or (and b (buffer-local-value 'default-directory b))
-               (projectile-project-root))))
-    (counsel-find-file)))
-
-;;;###autoload
-(defun counsel-projectile-switch-to-buffer ()
-  "Jump to a buffer in the current project."
-  (interactive)
-  (ivy-read (projectile-prepend-project-name "Switch to buffer: ")
-            (counsel-projectile--project-buffers)
-            :matcher #'ivy--switch-buffer-matcher
-            :require-match t
-            :action counsel-projectile-switch-to-buffer-action
-            :caller 'counsel-projectile-switch-to-buffer))
-
-(ivy-set-display-transformer
- 'counsel-projectile-switch-to-buffer
- 'ivy-switch-buffer-transformer)
-
-;;; counsel-projectile-grep
-
-(defvar counsel-projectile-grep-base-command "grep -rnE %s -- %%s ."
-  "Format string to use in `cousel-projectile-grep-function' to
-construct the command.")
-
-(defvar counsel-projectile-grep-command nil)
-
-(defvar counsel-projectile-grep-options-history nil
-  "History for `counsel-projectile-grep' options.")
-
-(defun counsel-projectile-grep-function (string)
-  "Grep for STRING in the current project."
-  (if (< (length string) 3)
-      (counsel-more-chars 3)
-    (let ((default-directory counsel--git-dir)
-          (regex (counsel-unquote-regex-parens
-                  (setq ivy--old-re
-                        (ivy--regex string)))))
-      (counsel--async-command (format counsel-projectile-grep-command
-				      (shell-quote-argument regex)))
-      nil)))
-
-(defun counsel-projectile-grep-transformer (str)
-  "Higlight file and line number in STR, first removing the
-\"./\" prefix from the filename."
-  ;; This makes the display consistent with `counsel-git-grep' and
-  ;; `counsel-ag'-like commands.
-  (counsel-git-grep-transformer (string-remove-prefix "./" str)))
-
-(defun counsel-projectile-grep-occur ()
-  "Generate a custom occur buffer for `counsel-projectile-grep'."
-  ;; Copied from `counsel-grep-like-occur', except that we don't
-  ;; prepend "./" to the candidates since grep already does so.
-  (unless (eq major-mode 'ivy-occur-grep-mode)
-    (ivy-occur-grep-mode)
-    (setq default-directory counsel--git-dir))
-  (setq ivy-text
-        (and (string-match "\"\\(.*\\)\"" (buffer-name))
-             (match-string 1 (buffer-name))))
-  (let* ((cmd (format counsel-projectile-grep-command
-                      (shell-quote-argument
-                       (counsel-unquote-regex-parens
-                        (ivy--regex ivy-text)))))
-         (cands (split-string (shell-command-to-string cmd) "\n" t)))
-    ;; Need precise number of header lines for `wgrep' to work.
-    (insert (format "-*- mode:grep; default-directory: %S -*-\n\n\n"
-                    default-directory))
-    (insert (format "%d candidates:\n" (length cands)))
-    (ivy--occur-insert-lines cands)))
-
-(defun counsel-projectile-grep (&optional options-or-cmd)
-  "Search the current project with grep.
-
-If inside a git project and `projectile-use-git-grep' is non-nil,
-use `counsel-git-grep'. Otherwise use grep recursively.
-
-OPTIONS-OR-CMD, if non-nil, is a string containing either
-additional options to be passed to grep, or an alternative git
-grep command. It is read from the minibuffer if the function is
-called with a prefix argument."
-  (interactive)
-  (if (and (eq (projectile-project-vcs) 'git)
-           projectile-use-git-grep)
-      (let ((counsel-prompt-function
-             (lambda ()
-               (ivy-add-prompt-count
-                (format "%s: " (projectile-prepend-project-name (ivy-state-prompt ivy-last)))))))
-        (counsel-git-grep (or current-prefix-arg options-or-cmd)
-                          counsel-projectile-grep-initial-input))
-    (counsel-require-program (car (split-string counsel-projectile-grep-base-command)))	
-    (let* ((ignored-files (mapconcat (lambda (i)
-                                       (concat "--exclude="
-                                               (shell-quote-argument i)
-                                               " "))
-                                     (projectile-ignored-files-rel)
-                                     ""))
-           (ignored-dirs (mapconcat (lambda (i)
-                                      (concat "--exclude-dir="
-                                              (shell-quote-argument i)
-                                              " "))
-                                    (projectile-ignored-directories-rel)
-                                    ""))
-           (ignored (concat ignored-files ignored-dirs))
-           (options
-            (if current-prefix-arg
-                (read-string (projectile-prepend-project-name "grep options: ")
-                             ignored
-                             'counsel-projectile-grep-options-history)
-              (concat ignored options-or-cmd))))
-      (setq counsel-projectile-grep-command
-            (format counsel-projectile-grep-base-command options))
-      (ivy-set-prompt 'counsel-projectile-grep counsel-prompt-function)
-      (setq counsel--git-dir (projectile-project-root))
-      (ivy-read (projectile-prepend-project-name "grep")
-                #'counsel-projectile-grep-function
-                :initial-input counsel-projectile-grep-initial-input
-                :dynamic-collection t
-                :keymap counsel-ag-map
-                :history 'counsel-git-grep-history
-                :action #'counsel-git-grep-action
-                :unwind (lambda ()
-                          (counsel-delete-process)
-                          (swiper--cleanup))
-                :caller 'counsel-projectile-grep))))
-
-(counsel-set-async-exit-code 'counsel-projectile-grep 1 "No matches found")
-(ivy-set-occur 'counsel-projectile-grep 'counsel-projectile-grep-occur)
-(ivy-set-display-transformer 'counsel-projectile-grep  'counsel-projectile-grep-transformer)
-
-;;; counsel-projectile-ag
-
-(defvar counsel-projectile-ag-options-history nil
-  "History for `counsel-projectile-ag' options.")
-
-;;;###autoload
-(defun counsel-projectile-ag (&optional options)
-  "Search the current project with ag.
-
-OPTIONS, if non-nil, is a string containing additional options to
-be passed to ag. It is read from the minibuffer if the function
-is called with a prefix argument."
-  (interactive)
-  (let* ((ignored (mapconcat (lambda (i)
-                               (concat "--ignore "
-                                       (shell-quote-argument i)
-                                       " "))
-                             (append (projectile-ignored-files-rel)
-                                     (projectile-ignored-directories-rel))
-                             ""))
-         (options
-          (if current-prefix-arg
-              (read-string (projectile-prepend-project-name "ag options: ")
-                           ignored
-                           'counsel-projectile-ag-options-history)
-            (concat ignored options))))
-    (counsel-ag (eval counsel-projectile-ag-initial-input)
-                (projectile-project-root)
-                options
-                (projectile-prepend-project-name "ag"))))
-
-;;; counsel-projectile-rg
-
-(defvar counsel-projectile-rg-options-history nil
-  "History for `counsel-projectile-rg' options.")
-
-;;;###autoload
-(defun counsel-projectile-rg (&optional options)
-  "Search the current project with rg.
-
-OPTIONS, if non-nil, is a string containing additional options to
-be passed to rg. It is read from the minibuffer if the function
-is called with a prefix argument."
-  (interactive)
-  (let* ((ignored (mapconcat (lambda (i)
-                               (concat "--glob "
-                                       (shell-quote-argument (concat "!" i))
-                                       " "))
-                             (append (projectile-ignored-files-rel)
-                                     (projectile-ignored-directories-rel))
-                             ""))
-         (options
-          (if current-prefix-arg
-              (read-string (projectile-prepend-project-name "rg options: ")
-                           ignored
-                           'counsel-projectile-rg-options-history)
-            (concat ignored options))))
-    (counsel-rg (eval counsel-projectile-rg-initial-input)
-                (projectile-project-root)
-                options
-                (projectile-prepend-project-name "rg"))))
-
-;;; counsel-projectile-org-capture
-
-;;;###autoload
-(defun counsel-projectile-org-capture ()
-  "Org-capture into the current project.
-
-The capture templates are read from the variables
-`counsel-projectile-org-capture-templates' and
-`counsel-projectile-org-capture-templates-contexts'."
-  (interactive)
-  (require 'org-capture)
-  (let* ((root (projectile-project-root))
-	 (name (projectile-project-name))
-	 (org-capture-templates
-	  (cl-loop
-	   for template in counsel-projectile-org-capture-templates
-	   collect (cl-loop
-		    for item in template
-		    if (= (cl-position item template) 3) ;; template's target
-		    collect (cl-loop
-			     for x in item
-			     if (stringp x)
-			     collect (replace-regexp-in-string
-				      "\\${[^}]+}"
-				      (lambda (s)
-					(pcase s
-					  ("${root}" root)
-					  ("${name}" name)))
-				      x)
-			     else
-			     collect x)
-		    else
-		    collect item)))
-	 (org-capture-templates-contexts counsel-projectile-org-capture-templates-contexts)
-         (ivy--prompts-list ivy--prompts-list))
-    (ivy-set-prompt 'counsel-org-capture
-                    (lambda ()
-                      (ivy-add-prompt-count
-                       (projectile-prepend-project-name (ivy-state-prompt ivy-last)))))
-    (counsel-org-capture)))
-
-;;; counsel-projectile-switch-project
-
-(defun counsel-projectile-sub-action (cand sub-actions)
-  "Read a key from the minibuffer and apply the corresponding
-action from SUB-ACTIONS to CAND.
-
-SUB-ACTIONS is list of ivy actions: a key, an action function,
-and a name for each action.  Binding a key to a call to this
-function in an ivy action list makes this key behave like a
-prefix key and the keys in SUB-ACTIONS like sub-keys."
-  ;; adapted from `ivy-read-action'
-   (let* ((hint (funcall ivy-read-action-format-function sub-actions))
-         (resize-mini-windows t)
-         (key (string (read-key hint)))
-         (action-fun (nth 1 (assoc key sub-actions))))
-    (cond ((member key '("" ""))
-           (when (eq ivy-exit 'done)
-             (ivy-resume)))
-          ((null action-fun)
-           (message "%s is not bound" key)
-           (when (eq ivy-exit 'done)
-             (ivy-resume)))
-          (t
-           (message "")
-           (funcall action-fun cand)))))
 
 (defun counsel-projectile-switch-project-by-name (project)
   "Switch to PROJECT.
@@ -927,7 +909,24 @@ and apply it to PROJECT."
             :require-match t
             :caller 'counsel-projectile-switch-project))
 
-;;; counsel-projectile
+;;;; counsel-projectile
+
+(counsel-projectile--defcustom-action
+ 'counsel-projectile
+ '(1
+   ("o" counsel-projectile-action
+    "current window")
+   ("j" counsel-projectile-action-other-window
+    "other window")
+   ("x" counsel-projectile-action-file-extern
+    "open file externally")
+   ("r" counsel-projectile-action-file-root
+    "open file as root")
+   ("m" counsel-projectile-action-find-file-manually
+    "find file manually")
+   ("p" (lambda (_) (counsel-projectile-switch-project))
+     "switch project"))
+ 'counsel-projectile)
 
 (defvar counsel-projectile--buffers nil
   "Stores a list of project buffers.")
@@ -1016,7 +1015,7 @@ If not inside a project, call `counsel-projectile-switch-project'."
  'counsel-projectile
  'counsel-projectile-transformer)
 
-;;; counsel-projectile-mode
+;;;; counsel-projectile-mode
 
 (defvar counsel-projectile-command-map
   (let ((map (make-sparse-keymap)))
@@ -1061,6 +1060,8 @@ counterpart.
   (if counsel-projectile-mode
       (projectile-mode)
     (projectile-mode -1)))
+
+;;;; provide
 
 (provide 'counsel-projectile)
 
