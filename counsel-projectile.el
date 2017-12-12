@@ -909,7 +909,7 @@ and apply it to PROJECT."
    counsel-projectile-switch-project-action-prefix-search-sub-action))
 
 (defun counsel-projectile-switch-project-action-org-capture (project)
-  "Capture something into PROJECT."
+  "Org-capture into PROJECT."
   (let ((projectile-switch-project-action 'counsel-projectile-org-capture))
     (counsel-projectile-switch-project-by-name project)))
 
