@@ -544,7 +544,9 @@ is called with a prefix argument."
 
 ;;;; counsel-projectile-org-capture
 
-(defcustom counsel-projectile-org-capture-templates nil
+(defcustom counsel-projectile-org-capture-templates
+  '(("t" "Task" entry (file+headline "${root}/notes.org" "Tasks")
+     "* TODO %?\n  %u\n  %a"))
   "Templates for the creation of new entries with `counsel-projectile-org-capture'.
 
 The format is the same as in `org-capture-templates', except that
@@ -552,14 +554,18 @@ in all strings of in an entry's target slot, all instances of
 \"${root}\" and \"${name}\" are replaced with the current project
 root and name, respectively.
 
-Examples of template targets:
+The default value contains a single template, whose target is:
 
-    \(file+headline \"${root}/${name}.org}\" \"Notes\"\)
-    \(file+olp \"~/notes.org\" \"${root}\" \"Todos\"\)
+    \(file+headline \"${root}/notes.org}\" \"Tasks\"\)
 
-The former points to headline \"Notes\" in file
-\"<project-name>.org\" in the project root directory (one file per project), whereas the latter points to
-outline path \"<project-root>/Todos\" in file
+This points to headline \"Tasks\" in file \"notes.org\" in the
+project root directory (one file per project).
+
+Another example of a valid target is:
+
+    \(file+olp \"~/notes.org\" \"${root}\" \"Tasks\"\)
+
+This points to outline path \"<project-root>/Tasks\" in file
 \"~/notes.org\" (same file for all projects)."
   :type ;; copied from `org-capture-templates'
   (let ((file-variants '(choice :tag "Filename       "
