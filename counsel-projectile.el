@@ -31,11 +31,14 @@
 ;;; Commentary:
 ;;
 ;; Projectile has native support for using ivy as its completion
-;; system.  Counsel-projectile provides further ivy integration into
-;; projectile by taking advantage of ivy's mechanism to select from a
-;; list of actions and/or apply an action without leaving the
-;; comlpetion session.  It is inspired by helm-projectile.  See the
-;; README for more details.
+;; system. Counsel-projectile provides further ivy integration into
+;; projectile by taking advantage of ivy's support for selecting from
+;; a list of actions and applying an action without leaving the
+;; completion session. Concretely, counsel-projectile defines
+;; replacements for existing projectile commands as well as new
+;; commands that have no projectile counterparts. A minor mode is also
+;; provided that adds key bindings for all these commands on top of
+;; the projectile key bindings.
 ;;
 ;;; Code:
 
@@ -230,20 +233,21 @@ The format is the same as in `org-capture-templates-contexts'."
 
 (defun counsel-projectile--defcustom-action (command action group)
   "Create a custom variable named \"COMMAND-action\" in GROUP,
-to be used as `:action' parameter for COMMAND's `ivy-read' call.
+with default value ACTION, to be used as `:action' parameter for
+COMMAND's `ivy-read' call.
 
-The variable can hold either a single action function, or an
-action list whose first element is the index of the default
-action in the list and the remaining elements are the actions (a
-key, a function, and a name for each action."
+This variable holds either a single action function, or an action
+list whose first element is the index of the default action in
+the list and the remaining elements are the actions (a key, a
+function, and a name for each action."
   (eval
    `(defcustom ,(intern (format "%s-action" command))
       ',action
-      ,(format "Action for `%s'.  
+      ,(format "Action(s) for `%s'.  
 
-This variable can hold either an action function (function of one
-variable, the selected candidate) or an action list consisting
-of:
+This variable holds either a single action function (function of
+one variable, the selected candidate) or an action list
+consisting of:
 
 - the index of the default action in the list (1 for the first
   action, etc),
@@ -263,11 +267,39 @@ usual to assign the key \"o\" to the default action."  command)
               (function :tag "Single action function")
               (cons :tag "Action list"
                     (integer :tag "Index of default action" :value 1)
-                    (repeat :tag "Available actions"
+                    (repeat :tag "Actions"
                             (list :tag "Action"
                                   (string   :tag "     key")
                                   (function :tag "function")
                                   (string   :tag "    name")))))
+      :group ',group)))
+
+(defun counsel-projectile--defcustom-sub-action (action sub-action group)
+  "Create a custom variable named \"ACTION-sub-action\" in GROUP,
+with default value SUB-ACTION, to be passed by ACTION to
+`counsel-projectile-sub-action'.
+
+This variable holds a list of sub-actions for ACTION (a key, a
+function, and a name for each action)."
+  (eval
+   `(defcustom ,(intern (format "%s-sub-action" action))
+      ',sub-action
+      ,(format "Sub-action(s) for `%s'.
+
+This variable holds a list of sub-actions, each or which consists
+of:
+
+- a key (one-letter string) to call the action,
+- an action function of one variable, 
+- a name (string) for the action.
+
+When `%s' is called, a key is read from the minibuffer and the
+corresponding sub-action is executed."  action action)
+      :type '(repeat :tag "Sub-actions"
+                     (list :tag "Sub-action"
+                           (string   :tag "     key")
+                           (function :tag "function")
+                           (string   :tag "    name")))
       :group ',group)))
 
 (counsel-projectile--defcustom-action
@@ -277,12 +309,12 @@ usual to assign the key \"o\" to the default action."  command)
     "current window")
    ("j" counsel-projectile-find-file-action-other-window
     "other window")
-   ("f" counsel-projectile-find-file-action-find-file-manually
-    "find file manually")
    ("x" counsel-projectile-find-file-action-extern
     "open externally")
    ("r" counsel-projectile-find-file-action-root
     "open as root")
+   ("m" counsel-projectile-find-file-action-find-file-manually
+    "find file manually")
    ("p" (lambda (_) (counsel-projectile-switch-project))
     "switch project"))
  'counsel-projectile)
@@ -294,7 +326,7 @@ usual to assign the key \"o\" to the default action."  command)
     "current window")
    ("j" counsel-projectile-find-dir-action-other-window
     "other window")
-   ("f" counsel-projectile-find-file-action-find-file-manually
+   ("m" counsel-projectile-find-file-action-find-file-manually
     "find file manually")
    ("p" (lambda (_) (counsel-projectile-switch-project))
     "switch project"))
@@ -307,7 +339,7 @@ usual to assign the key \"o\" to the default action."  command)
     "current window")
    ("j" switch-to-buffer-other-window
     "other window")
-   ("f" counsel-projectile-switch-to-buffer-action-find-file-manually
+   ("m" counsel-projectile-switch-to-buffer-action-find-file-manually
     "find file manually")
    ("p" (lambda (_) (counsel-projectile-switch-project))
     "switch project"))
@@ -317,37 +349,47 @@ usual to assign the key \"o\" to the default action."  command)
  'counsel-projectile-switch-project
  '(1
    ("o" counsel-projectile-switch-project-action
-    "jump to buffer or file")
+    "jump to a project buffer or file")
    ("f" counsel-projectile-switch-project-action-find-file
-    "jump to file")
-   ("F" counsel-projectile-switch-project-action-find-file-manually
-    "find file manually")
+    "jump to a project file")
    ("d" counsel-projectile-switch-project-action-find-dir
-    "jump to directory")
+    "jump to a project directory")
    ("b" counsel-projectile-switch-project-action-switch-to-buffer
-    "jump to buffer")
-   ("s" counsel-projectile-switch-project-action-save-all-buffers
-    "save all buffers")
+    "jump to a project buffer")
+   ("m" counsel-projectile-switch-project-action-find-file-manually
+    "find file manually from project root")
+   ("S" counsel-projectile-switch-project-action-save-all-buffers
+    "save all project buffers")
    ("k" counsel-projectile-switch-project-action-kill-buffers
-    "kill all buffers")
-   ("r" counsel-projectile-switch-project-action-remove-known-project
-    "remove from known projects")
-   ("l" counsel-projectile-switch-project-action-edit-dir-locals
-    "edit dir-locals")
-   ("g" counsel-projectile-switch-project-action-vc
-    "open in vc-dir / magit / monky")
-   ("e" counsel-projectile-switch-project-action-run-eshell
-    "start eshell")
-   ("G" counsel-projectile-switch-project-action-grep
-    "search with grep")
-   ("a" counsel-projectile-switch-project-action-ag
-    "search with ag")
-   ("R" counsel-projectile-switch-project-action-rg
-    "search with rg")
-   ("c" counsel-projectile-switch-project-action-org-capture
-    "org-capture"))
+    "kill all project buffers")
+   ("K" counsel-projectile-switch-project-action-remove-known-project
+    "remove project from known projects")
+   ("E" counsel-projectile-switch-project-action-edit-dir-locals
+    "edit project dir-locals")
+   ("v" counsel-projectile-switch-project-action-vc
+    "open project in vc-dir / magit / monky")
+   ("s" counsel-projectile-switch-project-action-prefix-search
+    "search project with ag / rg / grep...")
+   ("x" counsel-projectile-switch-project-action-prefix-shell
+    "invoke shell / eshell / term from project root...")
+   ("O" counsel-projectile-switch-project-action-org-capture
+    "org-capture into project"))
  'counsel-projectile)
 
+(counsel-projectile--defcustom-sub-action
+ 'counsel-projectile-switch-project-action-prefix-search
+ '(("g" counsel-projectile-switch-project-action-grep "Search project with grep")
+   ("s" counsel-projectile-switch-project-action-ag "Search project with ag")
+   ("r" counsel-projectile-switch-project-action-rg "Search project with rg"))
+ 'counsel-projectile)
+
+(counsel-projectile--defcustom-sub-action
+ 'counsel-projectile-switch-project-action-prefix-shell
+ '(("s" counsel-projectile-switch-project-action-run-shell "Invoke shell from project root")
+   ("e" counsel-projectile-switch-project-action-run-eshell "Invoke eshell from project root")
+   ("t" counsel-projectile-switch-project-action-run-term "Invoke term from project root"))
+ 'counsel-projectile)
+  
 (counsel-projectile--defcustom-action
  'counsel-projectile
  '(1
@@ -355,12 +397,12 @@ usual to assign the key \"o\" to the default action."  command)
     "current window")
    ("j" counsel-projectile-action-other-window
     "other window")
-   ("f" counsel-projectile-action-find-file-manually
-    "find file manually")
    ("x" counsel-projectile-action-file-extern
     "open file externally")
    ("r" counsel-projectile-action-file-root
     "open file as root")
+   ("m" counsel-projectile-action-find-file-manually
+    "find file manually")
    ("p" (lambda (_) (counsel-projectile-switch-project))
      "switch project"))
  'counsel-projectile)
@@ -668,7 +710,7 @@ is called with a prefix argument."
 
 ;;;###autoload
 (defun counsel-projectile-org-capture ()
-  "Capture something into the current project.
+  "Org-capture into the current project.
 
 The capture templates are read from the variables
 `counsel-projectile-org-capture-templates' and
@@ -706,6 +748,30 @@ The capture templates are read from the variables
     (counsel-org-capture)))
 
 ;;; counsel-projectile-switch-project
+
+(defun counsel-projectile-sub-action (cand sub-actions)
+  "Read a key from the minibuffer and apply the corresponding
+action from SUB-ACTIONS to CAND.
+
+SUB-ACTIONS is list of ivy actions: a key, an action function,
+and a name for each action.  Binding a key to a call to this
+function in an ivy action list makes this key behave like a
+prefix key and the keys in SUB-ACTIONS like sub-keys."
+  ;; adapted from `ivy-read-action'
+   (let* ((hint (funcall ivy-read-action-format-function sub-actions))
+         (resize-mini-windows t)
+         (key (string (read-key hint)))
+         (action-fun (nth 1 (assoc key sub-actions))))
+    (cond ((member key '("" ""))
+           (when (eq ivy-exit 'done)
+             (ivy-resume)))
+          ((null action-fun)
+           (message "%s is not bound" key)
+           (when (eq ivy-exit 'done)
+             (ivy-resume)))
+          (t
+           (message "")
+           (funcall action-fun cand)))))
 
 (defun counsel-projectile-switch-project-by-name (project)
   "Switch to PROJECT.
@@ -794,10 +860,30 @@ action."
   (let ((projectile-switch-project-action 'projectile-vc))
     (counsel-projectile-switch-project-by-name project)))
 
+(defun counsel-projectile-switch-project-action-run-shell (project)
+  "Invoke `shell' from PROJECT's root."
+  (let ((projectile-switch-project-action 'projectile-run-shell))
+    (counsel-projectile-switch-project-by-name project)))
+
 (defun counsel-projectile-switch-project-action-run-eshell (project)
-  "Start `eshell' from PROJECT's root."
+  "Invoke `eshell' from PROJECT's root."
   (let ((projectile-switch-project-action 'projectile-run-eshell))
     (counsel-projectile-switch-project-by-name project)))
+
+(defun counsel-projectile-switch-project-action-run-term (project)
+  "Invoke `term' from PROJECT's root."
+  (let ((projectile-switch-project-action
+         (lambda ()
+           (projectile-run-term nil))))
+    (counsel-projectile-switch-project-by-name project)))
+
+(defun counsel-projectile-switch-project-action-prefix-shell (project)
+  "Select a sub-action from
+`counsel-projectile-switch-project-action-prefix-shell-sub-action'
+and apply it to PROJECT."
+  (counsel-projectile-sub-action
+   project
+   counsel-projectile-switch-project-action-prefix-shell-sub-action))
 
 (defun counsel-projectile-switch-project-action-grep (project)
   "Search PROJECT with `grep'."
@@ -814,6 +900,14 @@ action."
   (let ((projectile-switch-project-action 'counsel-projectile-rg))
     (counsel-projectile-switch-project-by-name project)))
 
+(defun counsel-projectile-switch-project-action-prefix-search (project)
+  "Select a sub-action from
+`counsel-projectile-switch-project-action-prefix-search-sub-action'
+and apply it to PROJECT."
+  (counsel-projectile-sub-action
+   project
+   counsel-projectile-switch-project-action-prefix-search-sub-action))
+
 (defun counsel-projectile-switch-project-action-org-capture (project)
   "Capture something into PROJECT."
   (let ((projectile-switch-project-action 'counsel-projectile-org-capture))
@@ -821,7 +915,7 @@ action."
 
 ;;;###autoload
 (defun counsel-projectile-switch-project ()
-  "Switch to a project."
+  "Switch project."
   (interactive)
   (ivy-read (projectile-prepend-project-name "Switch to project: ")
             (if counsel-projectile-remove-current-project
