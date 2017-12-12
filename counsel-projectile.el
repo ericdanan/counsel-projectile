@@ -729,6 +729,10 @@ candidates list of `counsel-projectile-switch-project'."
     "kill all project buffers")
    ("K" counsel-projectile-switch-project-action-remove-known-project
     "remove project from known projects")
+   ("c" counsel-projectile-switch-project-action-compile
+    "run project compilation command")
+   ("C" counsel-projectile-switch-project-action-configure
+    "run project configure command")
    ("E" counsel-projectile-switch-project-action-edit-dir-locals
     "edit project dir-locals")
    ("v" counsel-projectile-switch-project-action-vc
@@ -831,6 +835,20 @@ action."
   (setq ivy--all-candidates
         (delete project ivy--all-candidates))
   (ivy--reset-state ivy-last))
+
+(defun counsel-projectile-switch-project-action-compile (project)
+  "Run PROJECT compliation command."
+  (let ((projectile-switch-project-action
+         (lambda ()
+           (projectile-compile-project ivy-current-prefix-arg))))
+    (counsel-projectile-switch-project-by-name project)))
+
+(defun counsel-projectile-switch-project-action-configure (project)
+  "Run PROJECT configure command."
+  (let ((projectile-switch-project-action
+         (lambda ()
+           (projectile-configure-project ivy-current-prefix-arg))))
+    (counsel-projectile-switch-project-by-name project)))
 
 (defun counsel-projectile-switch-project-action-edit-dir-locals (project)
   "Edit PROJECT's dir-locals."
