@@ -240,7 +240,7 @@ The following sub-action variables are defined:
 
 ** Setting ~counsel-projectile-org-capture~ templates
  
-The available capture templates for ~counsel-projectile-org-capture~ are read from the variable ~counsel-projectile-org-capture-templates~. This variable has the same format as the variable ~org-capture-templates~, except that in all strings of in an entry’s target slot, all instances of "${root}" and "${name}" are replaced with the current project root and name, respectively.
+The available capture templates for ~counsel-projectile-org-capture~ are read from the variable ~counsel-projectile-org-capture-templates~. This variable has the same format as the variable ~org-capture-templates~, except that in all strings of in an entry’s target slot, all instances of ~${root}~ and ~${name}~ are replaced with the current project root and name, respectively.
 
 The default value contains a single template, whose target is:
 
@@ -248,7 +248,7 @@ The default value contains a single template, whose target is:
   (file+headline "${root}/notes.org}" "Tasks")
 #+END_SRC
 
-This points to headline "Tasks" in file "notes.org" in the
+This points to headline ~Tasks~ in file ~notes.org~ in the
 project root directory (one file per project).
 
 Another example of a valid target is:
@@ -257,8 +257,8 @@ Another example of a valid target is:
   (file+olp "~/notes.org" "${root}" "Tasks")
 #+END_SRC
 
-This points to outline path "<project-root>/Tasks" in file
-"~/notes.org" (same file for all projects).
+This points to outline path ~<project-root>/Tasks~ in file
+~~/notes.org~ (same file for all projects).
 
 Templates contexts are read from the variable ~counsel-projectile-org-capture-templates-contexts~, which has the same format as ~capture-templates-contexts~
 
