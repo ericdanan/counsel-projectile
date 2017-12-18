@@ -1,4 +1,5 @@
 #+TITLE: Counsel-projectile -- Ivy UI for Projectile
+#+OPTIONS: num:nil
 
 [[http://melpa.org/#/counsel-projectile][[[http://melpa.org/packages/counsel-projectile-badge.svg]]]]
 
