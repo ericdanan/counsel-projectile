@@ -271,7 +271,7 @@ If you want some initial input to be inserted in the minibuffer every time you c
 
 * Upgrading from previous version (~0.1~)
 :PROPERTIES:
-:CUSTOM_ID:          upgrading
+:CUSTOM_ID: upgrading
 :END:
 
 If you are upgrading from version ~0.1~ to version ~0.2~, please read below about important changes, some of which may require you to update your configuration.
