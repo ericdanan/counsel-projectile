@@ -819,7 +819,7 @@ PROJECT buffers."
 PROJECT from the list of known projects."
   (projectile-remove-known-project project)
   (setq ivy--all-candidates
-        (delete dir ivy--all-candidates))
+        (delete project ivy--all-candidates))
   (ivy--reset-state ivy-last))
 
 (defun counsel-projectile-switch-project-action-edit-dir-locals (project)
