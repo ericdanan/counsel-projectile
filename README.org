@@ -1,6 +1,6 @@
 #+TITLE: Counsel-projectile -- Ivy UI for Projectile
 
-[[https://melpa.org/#/counsel-projectile][[[https://melpa.org/packages/counsel-projectile-badge.svg]]]]
+[[http://melpa.org/#/counsel-projectile][[[http://melpa.org/packages/counsel-projectile-badge.svg]]]]
 
 * Description
 :PROPERTIES:
@@ -26,6 +26,7 @@ Install the package from [[https://melpa.org][MELPA]] or [[https://github.com/di
 :PROPERTIES:
 :CUSTOM_ID:          start
 :END:
+
 To turn on counsel-projectile mode, either call the command ~counsel-projectile-mode~ or use the Customize interface to toggle on the variable ~counsel-projectile-mode~. This will turn on projectile mode, thus enabling all projectile key bindings, and add the counsel-projectile key bindings on top of them.
 
 The counsel-projectile key bindings either remap existing projectile commands to their counsel-projectile replacements (e.g. ~C-c p f~ now calls ~counsel-projectile-find-file~ instead of ~projectile-find-file~) or bind keys to counsel-projectile commands that have no projectile counterparts (e.g. ~C-c p SPC~ calls the command ~counsel-projectile~).
@@ -52,78 +53,78 @@ New commands:
 |-------------+----------------------------------+-----------------------------------------------------|
 | ~C-c p SPC~ | ~counsel-projectile~             | Jump to a project buffer or file, or switch project |
 | ~C-c p s r~ | ~counsel-projectile-rg~          | Search project with rg                              |
-| ~C-c p O~   | ~counsel-projectile-org-capture~ | Org-capture something into project                  |
+| ~C-c p O~   | ~counsel-projectile-org-capture~ | Org-capture into project                            |
 ** The ~counsel-projectile~ command
 Default key binding: ~C-c p SPC~.
 
 This command lets you quickly jump to a project buffer or file. It uses ivy to display in the minibuffer a list of all project buffers as well as all project files that are not currently visited by a buffer. Buffers are fontified according to their major mode and files are fontified as "virtual buffers", as in the command ~ivy-switch-buffer~. As in all ivy commands, you can use ~M-o~ / ~C-M-o~ + ~<key>~ to select from a list of actions to apply (or ~M-RET~ / ~C-M-REG~ to apply the default action) to the selected candidate:
-| Key | Action                                                                                                                                          |
-|-----+-------------------------------------------------------------------------------------------------------------------------------------------------|
-| ~o~ | Open buffer or file in current window (default action)                                                                                          |
-| ~j~ | Open buffer or file in other window                                                                                                             |
-| ~x~ | Open file externally (does nothing for buffers)                                                                                                 |
-| ~r~ | Open file as root (does nothing for buffers)                                                                                                    |
-| ~m~ | Find file manually: call ~counsel-find-file~ from buffer or file's directory, allowing to acces files ignored by projectile or create new files |
-| ~p~ | Switch project: call ~counsel-projectile-switch-project~ (see below)                                                                            |
+| Key | Action                                                                       |
+|-----+------------------------------------------------------------------------------|
+| ~o~ | Open buffer or file in current window (default action)                       |
+| ~j~ | Open buffer or file in other window                                          |
+| ~x~ | Open file externally (does nothing for buffers)                              |
+| ~r~ | Open file as root (does nothing for buffers)                                 |
+| ~m~ | Find file manually: call ~counsel-find-file~ from buffer or file's directory |
+| ~p~ | Switch project: call ~counsel-projectile-switch-project~ (see below)         |
 
 If not called inside a project, ~counsel-projectile~ first offers to select a project to switch to by calling ~counsel-projectile-switch-project~ (see below). Once you select a project and hit ~RET~, it lets you jump to a buffer or file in this project as described above.
 ** ~counsel-projectile-switch-project~
 Default key binding: ~C-c p p~.
 
 This command is a replacement for ~projectile-switch-project~. It adds the possibility to select from a list of switch-project actions to apply to the selected project:
-| Key   | Action                                                                                                                                |
-|-------+---------------------------------------------------------------------------------------------------------------------------------------|
-| ~o~   | Jump to a project buffer or file: call ~counsel-projectile~ (default action; see above)                                               |
-| ~f~   | Jump to a project file: call ~counsel-projectile-find-file~ (see below)                                                               |
-| ~d~   | Jump to a project directory: call ~counsel-projectile-find-dir~ (see below)                                                           |
-| ~b~   | Jump to a project buffer: call ~counsel-projectile-switch-to-buffer~ (see below)                                                      |
-| ~m~   | Find file manually: call ~counsel-find-file~ from the project root, allowing to acces files ignored by projectile or create new files |
-| ~S~   | Save all project buffers                                                                                                              |
-| ~k~   | Kill all project buffers                                                                                                              |
-| ~K~   | Remove project from the list of known projects                                                                                        |
-| ~c~   | Run project compilation command                                                                                                       |
-| ~C~   | Run project configure command                                                                                                         |
-| ~E~   | Edit project directory-local variables                                                                                                |
-| ~v~   | Open project in vc-dir / magit / monky                                                                                                |
-| ~s g~ | Search project with grep: call ~counsel-projectile-grep~ (see below)                                                                  |
-| ~s s~ | Search project with ag: call ~counsel-projectile-ag~ (see below)                                                                      |
-| ~s r~ | Search project with rg: call ~counsel-projectile-rg~ (see below)                                                                      |
-| ~x s~ | Invoke shell from the project root                                                                                                    |
-| ~x e~ | Invoke eshell from the project root                                                                                                   |
-| ~x t~ | Invoke term from the project root                                                                                                     |
-| ~O~   | Org-capture something into project: call ~counsel-projectile-org-capture~ (see below)                                                 |
+| Key   | Action                                                                                  |
+|-------+-----------------------------------------------------------------------------------------|
+| ~o~   | Jump to a project buffer or file: call ~counsel-projectile~ (default action; see above) |
+| ~f~   | Jump to a project file: call ~counsel-projectile-find-file~ (see below)                 |
+| ~d~   | Jump to a project directory: call ~counsel-projectile-find-dir~ (see below)             |
+| ~b~   | Jump to a project buffer: call ~counsel-projectile-switch-to-buffer~ (see below)        |
+| ~m~   | Find file manually: call ~counsel-find-file~ from the project root                      |
+| ~S~   | Save all project buffers                                                                |
+| ~k~   | Kill all project buffers                                                                |
+| ~K~   | Remove project from the list of known projects                                          |
+| ~c~   | Run project compilation command                                                         |
+| ~C~   | Run project configure command                                                           |
+| ~E~   | Edit project directory-local variables                                                  |
+| ~v~   | Open project in vc-dir / magit / monky                                                  |
+| ~s g~ | Search project with grep: call ~counsel-projectile-grep~ (see below)                    |
+| ~s s~ | Search project with ag: call ~counsel-projectile-ag~ (see below)                        |
+| ~s r~ | Search project with rg: call ~counsel-projectile-rg~ (see below)                        |
+| ~x s~ | Invoke shell from the project root                                                      |
+| ~x e~ | Invoke eshell from the project root                                                     |
+| ~x t~ | Invoke term from the project root                                                       |
+| ~O~   | Org-capture into project: call ~counsel-projectile-org-capture~ (see below)             |
 ** ~counsel-projectile-find-file~
 Default key binding: ~C-c p f~.
 
 This command is a replacement for ~projectile-find-file~. It displays a list of all project files and offers several actions:
-| Key | Action                                                                                                                                |
-|-----+---------------------------------------------------------------------------------------------------------------------------------------|
-| ~o~ | Open file in current window (default action)                                                                                          |
-| ~j~ | Open file in other window                                                                                                             |
-| ~x~ | Open file externally (does nothing for buffers)                                                                                       |
-| ~r~ | Open file as root (does nothing for buffers)                                                                                          |
-| ~m~ | Find file manually: call ~counsel-find-file~ from file's directory, allowing to acces files ignored by projectile or create new files |
-| ~p~ | Switch project: call ~counsel-projectile-switch-project~ (see above)                                                             |
+| Key | Action                                                               |
+|-----+----------------------------------------------------------------------|
+| ~o~ | Open file in current window (default action)                         |
+| ~j~ | Open file in other window                                            |
+| ~x~ | Open file externally (does nothing for buffers)                      |
+| ~r~ | Open file as root (does nothing for buffers)                         |
+| ~m~ | Find file manually: call ~counsel-find-file~ from file's directory   |
+| ~p~ | Switch project: call ~counsel-projectile-switch-project~ (see above) |
 ** ~counsel-projectile-find-dir~
 Default key binding: ~C-c p d~.
 
 This command is a replacement for ~projectile-find-dir~. It displays a list of all project directories and offers several actions:
-| Key | Action                                                                                                                         |
-|-----+--------------------------------------------------------------------------------------------------------------------------------|
-| ~o~ | Open directory with ~dired~ in current window (default action)                                                                 |
-| ~j~ | Open director with ~dired~ in other window                                                                                     |
-| ~m~ | Find file manually: call ~counsel-find-file~ from directory, allowing to acces files ignored by projectile or create new files |
-| ~p~ | Switch project: call ~counsel-projectile-switch-project~ (see above)                                                           |
+| Key | Action                                                               |
+|-----+----------------------------------------------------------------------|
+| ~o~ | Open directory with ~dired~ in current window (default action)       |
+| ~j~ | Open director with ~dired~ in other window                           |
+| ~m~ | Find file manually: call ~counsel-find-file~ from directory          |
+| ~p~ | Switch project: call ~counsel-projectile-switch-project~ (see above) |
 ** ~counsel-projectile-switch-to-buffer~
 Default key binding: ~C-c p b~.
 
 This command is a replacement for ~projectile-switch-to-buffer~. It displays a list of all project buffers and offers several actions:
-| Key | Action                                                                                                                                  |
-|-----+-----------------------------------------------------------------------------------------------------------------------------------------|
-| ~o~ | Open buffer in current window (default action)                                                                                          |
-| ~j~ | Open buffer in other window                                                                                                             |
-| ~m~ | Find file manually: call ~counsel-find-file~ from buffer's directory, allowing to acces files ignored by projectile or create new files |
-| ~p~ | Switch project: call ~counsel-projectile-switch-project~ (see above)                                                                    |
+| Key | Action                                                               |
+|-----+----------------------------------------------------------------------|
+| ~o~ | Open buffer in current window (default action)                       |
+| ~j~ | Open buffer in other window                                          |
+| ~m~ | Find file manually: call ~counsel-find-file~ from buffer's directory |
+| ~p~ | Switch project: call ~counsel-projectile-switch-project~ (see above) |
 ** ~counsel-projectile-grep~
 Default key binding: ~C-c p s g~.
 
@@ -177,7 +178,7 @@ For instance, the default value of ~counsel-projectile-action~ is:
 #+END_SRC
 The first element is the index of the default action, and the remainig ones are the available actions (a key, an action function, and a name for each action). Thus the default action in this list is the first one ("current window").
 
-Extra actions can be added to these lists or, alternatively, can be set through ivy's ~ivy-set-actions~ mechanism. If you prefer setting all actions (except the default one) through this mechanism, you can set the action list variable to a single action (e.g. ~'counsel-projectile-action~) instead of a list.
+Extra actions can be added to these lists or, alternatively, can be set through ivy's ~ivy-set-actions~ mechanism. If you prefer setting all actions (except the default one) through this mechanism, you can set the action list variable to a single action (e.g. ~counsel-projectile-action~) instead of a list.
 
 Note that ivy only supports one-character keys for actions. Hence, for instance, it is not possible to directly set the keys ~s g~, ~s s~, and ~s r~ for the three project search commands in ~projectile-switch-project-action~. Instead, the key ~s~ is set for a "prefix" action ~counsel-projectile-switch-project-action-prefix-search~ that reads a secondary one-character key and calls the corresponding search command as a "sub-action". The list of available sub-actions is read from the variable ~counsel-projectile-switch-project-action-prefix-search-sub-action~, which can be customized separately. This variable has the same format as an action list, except that the index is not present. Its default value is:
 #+BEGIN_SRC emacs-lisp
