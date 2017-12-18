@@ -4,9 +4,8 @@
 
 ;; Author: Eric Danan
 ;; URL: https://github.com/ericdanan/counsel-projectile
-;; Created: 2016-04-11
 ;; Keywords: project, convenience
-;; Version: 0.1
+;; Version: 0.2
 ;; Package-Requires: ((counsel "0.10.0") (projectile "0.14.0"))
 
 ;; This file is NOT part of GNU Emacs.
