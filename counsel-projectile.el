@@ -74,7 +74,7 @@ consisting of:
 - the index of the default action in the list (1 for the first
   action, etc),
 - the available actions, each of which consists of:
-  - a key (one-letter string) to call the action,
+  - a key (one-character string) to call the action,
   - an action function of one variable, 
   - a name (string) for the action.
 
@@ -111,7 +111,7 @@ function, and a name for each action)."
 This variable holds a list of sub-actions, each or which consists
 of:
 
-- a key (one-letter string) to call the action,
+- a key (one-character string) to call the action,
 - an action function of one variable, 
 - a name (string) for the action.
 
@@ -753,16 +753,22 @@ candidates list of `counsel-projectile-switch-project'."
 
 (counsel-projectile--defcustom-sub-action
  'counsel-projectile-switch-project-action-prefix-search
- '(("g" counsel-projectile-switch-project-action-grep "Search project with grep")
-   ("s" counsel-projectile-switch-project-action-ag "Search project with ag")
-   ("r" counsel-projectile-switch-project-action-rg "Search project with rg"))
+ '(("g" counsel-projectile-switch-project-action-grep
+    "Search project with grep")
+   ("s" counsel-projectile-switch-project-action-ag
+    "Search project with ag")
+   ("r" counsel-projectile-switch-project-action-rg
+    "Search project with rg"))
  'counsel-projectile)
 
 (counsel-projectile--defcustom-sub-action
  'counsel-projectile-switch-project-action-prefix-shell
- '(("s" counsel-projectile-switch-project-action-run-shell "Invoke shell from project root")
-   ("e" counsel-projectile-switch-project-action-run-eshell "Invoke eshell from project root")
-   ("t" counsel-projectile-switch-project-action-run-term "Invoke term from project root"))
+ '(("s" counsel-projectile-switch-project-action-run-shell
+    "Invoke shell from project root")
+   ("e" counsel-projectile-switch-project-action-run-eshell
+    "Invoke eshell from project root")
+   ("t" counsel-projectile-switch-project-action-run-term
+    "Invoke term from project root"))
  'counsel-projectile)
 
 (defun counsel-projectile-switch-project-by-name (project)
