@@ -38,7 +38,7 @@ New commands:
 ## The `counsel-projectile` command
 Default key binding: <kbd>C-c p SPC</kbd>.
 
-This command lets you quickly jump to a project buffer or file. It uses ivy to display in the minibuffer a list of all project buffers as well as all project files that are not currently visited by a buffer. Buffers are fontified according to their major mode and files are fontified as virtual buffers, as in the command `ivy-switch-buffer`. As in all ivy commands, you can use <kbd>M-o <key></kbd> / <kbd>C-M-o <key></kbd> to select from a list of actions to apply (or <kbd>M-RET</kbd> / <kbd>C-M-RET</kbd> to apply the default action) to the selected candidate:
+This command lets you quickly jump to a project buffer or file. It uses ivy to display in the minibuffer a list of all project buffers as well as all project files that are not currently visited by a buffer. Buffers are fontified according to their major mode and files are fontified as virtual buffers, as in the command `ivy-switch-buffer`. As in all ivy commands, you can use <kbd>M-o</kbd> / <kbd>C-M-o</kbd> + <kbd>key</kbd> to select from a list of actions to apply (or <kbd>M-RET</kbd> / <kbd>C-M-RET</kbd> to apply the default action) to the selected candidate:
 
 | Key          | Action                                                                             |
 | :----------- | :--------------------------------------------------------------------------------- |
@@ -195,7 +195,7 @@ Another example of a valid target is:
 
 This points to outline path `<project-root>/Tasks` in file `~/notes.org` (same file for all projects).
 
-Templates contexts are read from the variable `counsel-projectile-org-capture-templates-contexts`, which has the same format as `capture-templates-contexts`
+Templates contexts are read from the variable `counsel-projectile-org-capture-templates-contexts`, which has the same format as `org-capture-templates-contexts`
 ## Removing the current project or buffer from the list of candidates
 By default, when calling `counsel-projectile-switch-project`, the current project (if any) is included in the candidates list and preselected. Similarly, when calling `counsel-projectile-switch-to-buffer`, the current buffer is included in the candidates list and preselected. If you prefer removing these elements from the candidate lists of these commands, you can set the variables `counsel-projectile-remove-current-project` and `counsel-projectile-remove-current-buffer` accordingly.
 ## Initial input for the project search commands
@@ -217,6 +217,6 @@ See [Customizing action lists](#customizing-action-lists) above for details.
 
 Also, in the default action lists, the keys set for some actions have changed, mainly for the `counsel-projectile-switch-project` command. Indeed, as new actions were added to this command, the corresponding list of keys was becoming somewhat inconsistent. The new keys replicate the default projectile key bindings (for instance, the action to save all project buffers is now called with the key <kbd>S</kbd>, mimicking the default key binding <kbd>C-c p S</kbd> for the command `projectile-save-project-buffers`). When an action calls a command that has no default projectile key binding, its key is chosen among those that are not bound by projectile by default.
 ## Minibuffer keymap
-The minibuffer keymap `counsel-projectile-map` no longer exists. It was only used to bind a key (<kbd>M-SPC</kbd> by default) to the command `counsel-projectile-drop-to-switch-project` exiting the current command and calling `counsel-projectile-switch-project`. The same functionality is now implemented in a simpler way through an action that calls `counsel-projectile-switch-project`, whose key is <kbd>p</kbd> by default. Concretely, you should now hit <kbd>M-o p</kbd> instead of <kbd>M-SP</kbd>C.
+The minibuffer keymap `counsel-projectile-map` no longer exists. It was only used to bind a key (<kbd>M-SPC</kbd> by default) to the command `counsel-projectile-drop-to-switch-project` exiting the current command and calling `counsel-projectile-switch-project`. The same functionality is now implemented in a simpler way through an action that calls `counsel-projectile-switch-project`, whose key is <kbd>p</kbd> by default. Concretely, you should now hit <kbd>M-o p</kbd> instead of <kbd>M-SP</kbd>.
 # Contributors
 Counsel-projectile is inspired by [helm-projectile](https://github.com/bbatsov/helm-projectile). Many thanks to [abo-abo](https://github.com/abo-abo) and [DamienCassou](https://github.com/DamienCassou) who encouraged and helped me to start this repository, as well as all contributors and users who have submitted issues and pull requests.
