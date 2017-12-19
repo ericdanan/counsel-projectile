@@ -1,4 +1,4 @@
-[![MELPA](http://melpa.org/packages/counsel-projectile-badge.svg)](http://melpa.org/#/counsel-projectile)
+[![MELPA](https://melpa.org/packages/counsel-projectile-badge.svg)](https://melpa.org/#/counsel-projectile)
 
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 **Table of Contents**
