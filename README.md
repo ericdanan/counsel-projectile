@@ -1,5 +1,37 @@
 [![MELPA](http://melpa.org/packages/counsel-projectile-badge.svg)](http://melpa.org/#/counsel-projectile)
 
+<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
+**Table of Contents**
+
+- [Description](#description)
+- [News](#news)
+- [Installation](#installation)
+- [Usage](#usage)
+    - [Getting started](#getting-started)
+    - [Summary of interactive commands](#summary-of-interactive-commands)
+    - [The `counsel-projectile` command](#the-counsel-projectile-command)
+    - [The `counsel-projectile-switch-project` command](#the-counsel-projectile-switch-project-command)
+    - [The `counsel-projectile-find-file` command](#the-counsel-projectile-find-file-command)
+    - [The `counsel-projectile-find-dir` command](#the-counsel-projectile-find-dir-command)
+    - [The `counsel-projectile-switch-to-buffer` command](#the-counsel-projectile-switch-to-buffer-command)
+    - [The `counsel-projectile-grep` command](#the-counsel-projectile-grep-command)
+    - [The `counsel-projectile-ag` command](#the-counsel-projectile-ag-command)
+    - [The `counsel-projectile-rg` command](#the-counsel-projectile-rg-command)
+    - [The `counsel-projectile-org-capture` command](#the-counsel-projectile-org-capture-command)
+- [Configuration](#configuration)
+    - [Enabling counsel-projectile mode when emacs starts](#enabling-counsel-projectile-mode-when-emacs-starts)
+    - [Customizing action lists](#customizing-action-lists)
+    - [Setting `counsel-projectile-org-capture` templates](#setting-counsel-projectile-org-capture-templates)
+    - [Removing the current project or buffer from the list of candidates](#removing-the-current-project-or-buffer-from-the-list-of-candidates)
+    - [Initial input for the project search commands](#initial-input-for-the-project-search-commands)
+- [Upgrading from previous version](#upgrading-from-previous-version)
+    - [Key bindings](#key-bindings)
+    - [Action lists](#action-lists)
+    - [Minibuffer keymap](#minibuffer-keymap)
+- [Contributors](#contributors)
+
+<!-- markdown-toc end -->
+
 # Description
 [Projectile](https://github.com/bbatsov/projectile) has native support for using [ivy](https://github.com/abo-abo/swiper) as its completion system. Counsel-projectile provides further ivy integration into projectile by taking advantage of ivy's support for selecting from a list of actions and applying an action without leaving the completion session. Concretely, counsel-projectile defines replacements for existing projectile commands as well as new commands that have no projectile counterparts. A minor mode is also provided that adds key bindings for all these commands on top of the projectile key bindings.
 # News
