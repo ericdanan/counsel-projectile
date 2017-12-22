@@ -560,12 +560,17 @@ The default value contains a single template, whose target is:
 This points to headline \"Tasks\" in file \"notes.org\" in the
 project root directory (one file per project).
 
-Another example of a valid target is:
+Two other examples of valid targets are:
 
+    \(file+headline \"${root}/${name}.org}\" \"Tasks\"\)
     \(file+olp \"~/notes.org\" \"${root}\" \"Tasks\"\)
 
-This points to outline path \"<project-root>/Tasks\" in file
-\"~/notes.org\" (same file for all projects)."
+The first one is similar to the default value's target, except
+that the file is named after the project name (this can be handy
+if you use org-mode's agenda since the project name is then
+displayed as category). The second one points to outline path
+\"<project-root>/Tasks\" in file \"~/notes.org\" (same file for
+all projects)."
   :type ;; copied from `org-capture-templates'
   (let ((file-variants '(choice :tag "Filename       "
 				(file :tag "Literal")
