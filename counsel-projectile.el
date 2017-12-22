@@ -871,7 +871,7 @@ action."
 
 (defun counsel-projectile-switch-project-action-grep (project)
   "Search PROJECT with `grep'."
-  (let ((projectile-switch-project-action 'counsel-projectile-ag))
+  (let ((projectile-switch-project-action 'counsel-projectile-grep))
     (counsel-projectile-switch-project-by-name project)))
 
 (defun counsel-projectile-switch-project-action-ag (project)
