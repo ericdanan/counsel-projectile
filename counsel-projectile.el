@@ -83,7 +83,12 @@ An action is triggered for the selected candidate with `M-o
 triggered with `M-RET' or `C-M-RET'. If this variable holds a
 single action function, this action becomes the default action
 and is assigned the key \"o\".  For an action list, it is also
-usual to assign the key \"o\" to the default action."  command)
+usual to assign the key \"o\" to the default action.
+
+It is in fact possible to include actions with a two-character
+key in the list.  To do so, however, it is necessary to also
+include an action whose key is the first of these two characters
+and whose action function is `counsel-projectile-prefix-action'." command)
       :type '(choice
               (function :tag "Single action function")
               (cons :tag "Action list"
@@ -95,47 +100,26 @@ usual to assign the key \"o\" to the default action."  command)
                                   (string   :tag "    name")))))
       :group ',group)))
 
-(defun counsel-projectile--defcustom-sub-action (action sub-action group)
-  "Create a custom variable named \"ACTION-sub-action\" in GROUP,
-with default value SUB-ACTION, to be passed by ACTION to
-`counsel-projectile-sub-action'.
+(defun counsel-projectile-prefix-action (cand)
+  "Generic action for a prefix key in any counsel-projectile command.
 
-This variable holds a list of sub-actions for ACTION (a key, a
-function, and a name for each action)."
-  (eval
-   `(defcustom ,(intern (format "%s-sub-action" action))
-      ',sub-action
-      ,(format "Sub-action(s) for `%s'.
-
-This variable holds a list of sub-actions, each or which consists
-of:
-
-- a key (one-character string) to call the action,
-- an action function of one variable, 
-- a name (string) for the action.
-
-When `%s' is called, a key is read from the minibuffer and the
-corresponding sub-action is executed."  action action)
-      :type '(repeat :tag "Sub-actions"
-                     (list :tag "Sub-action"
-                           (string   :tag "     key")
-                           (function :tag "function")
-                           (string   :tag "    name")))
-      :group ',group)))
-
-(defun counsel-projectile-sub-action (cand sub-actions)
-  "Read a key from the minibuffer and apply the corresponding
-action from SUB-ACTIONS to CAND.
-
-SUB-ACTIONS is list of ivy actions: a key, an action function,
-and a name for each action.  Binding a key to a call to this
-function in an ivy action list makes this key behave like a
-prefix key and the keys in SUB-ACTIONS like sub-keys."
-  ;; adapted from `ivy-read-action'
-   (let* ((hint (funcall ivy-read-action-format-function sub-actions))
+If used as action function in an action list, the corresponding
+key will serve as a prefix key.  That is, a secondary key will be
+read from the minibuffer and the action from the list whose key
+is the concatenation of these two keys will be called."
+  (let* ((action (ivy-state-action ivy-last))
+	 (prefix (car (nth (car action) action)))
+	 (sub-action (cl-loop
+		      for a in (cdr action)
+		      if (and (string-prefix-p prefix (car a))
+			      (not (string= prefix (car a))))
+		      collect (cons (string-remove-prefix prefix (car a))
+				    (cdr a))))
+	 ;; adapted from `ivy-read-action' from here on
+	 (hint (funcall ivy-read-action-format-function sub-action))
          (resize-mini-windows t)
          (key (string (read-key hint)))
-         (action-fun (nth 1 (assoc key sub-actions))))
+         (action-fun (nth 1 (assoc key sub-action))))
     (cond ((member key '("" ""))
            (when (eq ivy-exit 'done)
              (ivy-resume)))
@@ -747,32 +731,24 @@ candidates list of `counsel-projectile-switch-project'."
     "edit project dir-locals")
    ("v" counsel-projectile-switch-project-action-vc
     "open project in vc-dir / magit / monky")
-   ("s" counsel-projectile-switch-project-action-prefix-search
-    "search project with ag / rg / grep...")
-   ("x" counsel-projectile-switch-project-action-prefix-shell
+   ("s" counsel-projectile-prefix-action
+    "search project with grep / ag / rg...")
+   ("sg" counsel-projectile-switch-project-action-grep
+    "search project with grep")
+   ("ss" counsel-projectile-switch-project-action-ag
+    "search project with ag")
+   ("sr" counsel-projectile-switch-project-action-rg
+    "search project with rg")
+   ("x" counsel-projectile-prefix-action
     "invoke shell / eshell / term from project root...")
+   ("xs" counsel-projectile-switch-project-action-run-shell
+    "invoke shell from project root")
+   ("xe" counsel-projectile-switch-project-action-run-eshell
+    "invoke eshell from project root")
+   ("xt" counsel-projectile-switch-project-action-run-term
+    "invoke term from project root")
    ("O" counsel-projectile-switch-project-action-org-capture
     "org-capture into project"))
- 'counsel-projectile)
-
-(counsel-projectile--defcustom-sub-action
- 'counsel-projectile-switch-project-action-prefix-search
- '(("g" counsel-projectile-switch-project-action-grep
-    "Search project with grep")
-   ("s" counsel-projectile-switch-project-action-ag
-    "Search project with ag")
-   ("r" counsel-projectile-switch-project-action-rg
-    "Search project with rg"))
- 'counsel-projectile)
-
-(counsel-projectile--defcustom-sub-action
- 'counsel-projectile-switch-project-action-prefix-shell
- '(("s" counsel-projectile-switch-project-action-run-shell
-    "Invoke shell from project root")
-   ("e" counsel-projectile-switch-project-action-run-eshell
-    "Invoke eshell from project root")
-   ("t" counsel-projectile-switch-project-action-run-term
-    "Invoke term from project root"))
  'counsel-projectile)
 
 (defun counsel-projectile-switch-project-by-name (project)
@@ -893,14 +869,6 @@ action."
            (projectile-run-term nil))))
     (counsel-projectile-switch-project-by-name project)))
 
-(defun counsel-projectile-switch-project-action-prefix-shell (project)
-  "Select a sub-action from
-`counsel-projectile-switch-project-action-prefix-shell-sub-action'
-and apply it to PROJECT."
-  (counsel-projectile-sub-action
-   project
-   counsel-projectile-switch-project-action-prefix-shell-sub-action))
-
 (defun counsel-projectile-switch-project-action-grep (project)
   "Search PROJECT with `grep'."
   (let ((projectile-switch-project-action 'counsel-projectile-ag))
@@ -915,14 +883,6 @@ and apply it to PROJECT."
   "Search PROJECT with `rg'."
   (let ((projectile-switch-project-action 'counsel-projectile-rg))
     (counsel-projectile-switch-project-by-name project)))
-
-(defun counsel-projectile-switch-project-action-prefix-search (project)
-  "Select a sub-action from
-`counsel-projectile-switch-project-action-prefix-search-sub-action'
-and apply it to PROJECT."
-  (counsel-projectile-sub-action
-   project
-   counsel-projectile-switch-project-action-prefix-search-sub-action))
 
 (defun counsel-projectile-switch-project-action-org-capture (project)
   "Org-capture into PROJECT."

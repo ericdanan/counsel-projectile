@@ -87,27 +87,27 @@ Default key binding: <kbd>C-c p p</kbd>.
 
 This command is a replacement for `projectile-switch-project`. It adds the possibility to select from a list of switch-project actions to apply to the selected project:
 
-| Key            | Action                                                                                  |
-| :------------- | :-------------------------------------------------------------------------------------- |
-| <kbd>o</kbd>   | Jump to a project buffer or file: call `counsel-projectile` (default action; see above) |
-| <kbd>f</kbd>   | Jump to a project file: call `counsel-projectile-find-file` (see below)                 |
-| <kbd>d</kbd>   | Jump to a project directory: call `counsel-projectile-find-dir` (see below)             |
-| <kbd>b</kbd>   | Jump to a project buffer: call `counsel-projectile-switch-to-buffer` (see below)        |
-| <kbd>m</kbd>   | Find file manually: call `counsel-find-file` from the project root                      |
-| <kbd>S</kbd>   | Save all project buffers                                                                |
-| <kbd>k</kbd>   | Kill all project buffers                                                                |
-| <kbd>K</kbd>   | Remove project from the list of known projects                                          |
-| <kbd>c</kbd>   | Run project compilation command                                                         |
-| <kbd>C</kbd>   | Run project configure command                                                           |
-| <kbd>E</kbd>   | Edit project directory-local variables                                                  |
-| <kbd>v</kbd>   | Open project in vc-dir / magit / monky                                                  |
-| <kbd>s g</kbd> | Search project with grep: call `counsel-projectile-grep` (see below)                    |
-| <kbd>s s</kbd> | Search project with ag: call `counsel-projectile-ag` (see below)                        |
-| <kbd>s r</kbd> | Search project with rg: call `counsel-projectile-rg` (see below)                        |
-| <kbd>x s</kbd> | Invoke shell from the project root                                                      |
-| <kbd>x e</kbd> | Invoke eshell from the project root                                                     |
-| <kbd>x t</kbd> | Invoke term from the project root                                                       |
-| <kbd>O</kbd>   | Org-capture into project: call `counsel-projectile-org-capture` (see below)             |
+| Key           | Action                                                                                  |
+| :------------ | :-------------------------------------------------------------------------------------- |
+| <kbd>o</kbd>  | Jump to a project buffer or file: call `counsel-projectile` (default action; see above) |
+| <kbd>f</kbd>  | Jump to a project file: call `counsel-projectile-find-file` (see below)                 |
+| <kbd>d</kbd>  | Jump to a project directory: call `counsel-projectile-find-dir` (see below)             |
+| <kbd>b</kbd>  | Jump to a project buffer: call `counsel-projectile-switch-to-buffer` (see below)        |
+| <kbd>m</kbd>  | Find file manually: call `counsel-find-file` from the project root                      |
+| <kbd>S</kbd>  | Save all project buffers                                                                |
+| <kbd>k</kbd>  | Kill all project buffers                                                                |
+| <kbd>K</kbd>  | Remove project from the list of known projects                                          |
+| <kbd>c</kbd>  | Run project compilation command                                                         |
+| <kbd>C</kbd>  | Run project configure command                                                           |
+| <kbd>E</kbd>  | Edit project directory-local variables                                                  |
+| <kbd>v</kbd>  | Open project in vc-dir / magit / monky                                                  |
+| <kbd>sg</kbd> | Search project with grep: call `counsel-projectile-grep` (see below)                    |
+| <kbd>ss</kbd> | Search project with ag: call `counsel-projectile-ag` (see below)                        |
+| <kbd>sr</kbd> | Search project with rg: call `counsel-projectile-rg` (see below)                        |
+| <kbd>xs</kbd> | Invoke shell from the project root                                                      |
+| <kbd>xe</kbd> | Invoke eshell from the project root                                                     |
+| <kbd>xt</kbd> | Invoke term from the project root                                                       |
+| <kbd>O</kbd>  | Org-capture into project: call `counsel-projectile-org-capture` (see below)             |
 ## The `counsel-projectile-find-file` command
 Default key binding: <kbd>C-c p f</kbd>.
 
@@ -163,7 +163,7 @@ This command lets you capture something (a note, todo item, ...) into the curren
 ## Enabling counsel-projectile mode when emacs starts
 To automatically enable counsel-projectile mode when emacs starts, you can either use the Customize interface to toggle on the variable `counsel-projectile-mode` and save your customization, or add `(counsel-projectile-mode)` to your init file.
 ## Customizing action lists
-The lists of available actions (including the default action) for most of the commands above are stored in custom variables. If you set one of these variables, either through the Customize interface or directly with `setq`, the new value will be picked up the next time you invoke the correspodiding commmand.
+The lists of available actions (including the default action) for most of the commands above are stored in custom variables. If you set one of these variables, either through the Customize interface or directly with `setq`, the new value will be picked up the next time you invoke the corresponding commmand.
 
 The variable holding the action list for `<command>` is named `<command>-action`. The following action list variables are defined:
 - `counsel-projectile-action`
@@ -194,20 +194,19 @@ The first element is the index of the default action, and the remainig ones are 
 
 Extra actions can be added to these lists or, alternatively, can be set through ivy's `ivy-set-actions` mechanism. If you prefer setting all actions (except the default one) through this mechanism, you can set the action list variable to a single action (e.g. `counsel-projectile-action`) instead of a list.
 
-Note that ivy only supports one-character keys for actions. Hence, for instance, it is not possible to directly set the keys <kbd>s g</kbd>, <kbd>s s</kbd>, and <kbd>s r</kbd> for the three project search commands in `projectile-switch-project-action`. Instead, the key <kbd>s</kbd> is set for a prefix action `counsel-projectile-switch-project-action-prefix-search` that reads a secondary one-character key and calls the corresponding search command as a sub-action. The list of available sub-actions is read from the variable `counsel-projectile-switch-project-action-prefix-search-sub-action`, which can be customized separately. This variable has the same format as an action list, except that the index is not present. Its default value is:
+Although ivy does not support this natively, it is in fact possible to include actions with a two-character key in the list.  To do so, however, it is necessary to also include an action whose key is the first of these two characters and whose action function is `counsel-projectile-prefix-action`. For instance, the default value of `counsel-projectile-switch-project-action` includes the following actions:
 
 ```emacs-lisp
-'(("g" counsel-projectile-switch-project-action-grep
-   "Search project with grep")
-  ("s" counsel-projectile-switch-project-action-ag
-   "Search project with ag")
-  ("r" counsel-projectile-switch-project-action-rg
-   "Search project with rg"))
-```
+  ("s" counsel-projectile-prefix-action
+   "search project with grep / ag / rg...")
+  ("sg" counsel-projectile-switch-project-action-grep
+   "search project with grep")
+  ("ss" counsel-projectile-switch-project-action-ag
+   "search project with ag")
+  ("sr" counsel-projectile-switch-project-action-rg
+   "search project with rg")
 
-The following sub-action variables are defined:
-- `counsel-projectile-switch-project-action-prefix-search-sub-action`
-- `counsel-projectile-switch-project-action-prefix-shell-sub-action`
+```
 ## Setting `counsel-projectile-org-capture` templates
 The available capture templates for `counsel-projectile-org-capture` are read from the variable `counsel-projectile-org-capture-templates`. This variable has the same format as the variable `org-capture-templates`, except that in all strings of in an entry’s target slot, all instances of `${root}` and `${name}` are replaced with the current project root and name, respectively.
 
