@@ -163,7 +163,7 @@ This command lets you capture something (a note, todo item, ...) into the curren
 ## Enabling counsel-projectile mode when emacs starts
 To automatically enable counsel-projectile mode when emacs starts, you can either use the Customize interface to toggle on the variable `counsel-projectile-mode` and save your customization, or add `(counsel-projectile-mode)` to your init file.
 ## Customizing action lists
-The lists of available actions (including the default action) for most of the commands above are stored in custom variables. If you set one of these variables, either through the Customize interface or directly with `setq`, the new value will be picked up the next time you invoke the corresponding commmand.
+The lists of available actions (including the default action) for most of the commands above are stored in custom variables. If you set one of these variables, either directly or through the through the Customize interface, the new value will be picked up the next time you invoke the corresponding commmand.
 
 The variable holding the action list for `<command>` is named `<command>-action`. The following action list variables are defined:
 - `counsel-projectile-action`
@@ -192,7 +192,11 @@ For instance, the default value of `counsel-projectile-action` is:
 
 The first element is the index of the default action, and the remainig ones are the available actions (a key, an action function, and a name for each action). Thus the default action in this list is the first one (<kbd>o</kbd> key).
 
-Extra actions can be added to these lists or, alternatively, can be set through ivy's `ivy-set-actions` mechanism. If you prefer setting all actions (except the default one) through this mechanism, you can set the action list variable to a single action (e.g. `counsel-projectile-action`) instead of a list.
+Extra actions can be added to these lists or, alternatively, can be set through ivy's `ivy-set-actions` mechanism. If you prefer setting all actions (except the default one) through this mechanism, you can set the action list variable to a single action (e.g. `counsel-projectile-action`) instead of a list. If you are not using the Customize interface and want to amend the value of one of these lists rather than setting it from scratch, you can use the function `counsel-projectile-modify-action`, which lets you easily:
+- add, remove, or move an action,
+- change an action key, function, or name,
+- change the index of the default action.
+See its docstring for details.
 
 Although ivy does not support this natively, it is in fact possible to include actions with a two-character key in the list.  To do so, however, it is necessary to also include an action whose key is the first of these two characters and whose action function is `counsel-projectile-prefix-action`. For instance, the default value of `counsel-projectile-switch-project-action` includes the following actions:
 
@@ -205,7 +209,6 @@ Although ivy does not support this natively, it is in fact possible to include a
    "search project with ag")
   ("sr" counsel-projectile-switch-project-action-rg
    "search project with rg")
-
 ```
 ## Setting `counsel-projectile-org-capture` templates
 The available capture templates for `counsel-projectile-org-capture` are read from the variable `counsel-projectile-org-capture-templates`. This variable has the same format as the variable `org-capture-templates`, except that in all strings of in an entry’s target slot, all instances of `${root}` and `${name}` are replaced with the current project root and name, respectively.

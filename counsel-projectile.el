@@ -1,4 +1,4 @@
-;;; counsel-projectile.el --- Ivy integration for Projectile
+;; counsel-projectile.el --- Ivy integration for Projectile
 
 ;; Copyright (C) 2016-2017 Eric Danan
 
@@ -45,7 +45,7 @@
 (require 'counsel)
 (require 'projectile)
                       
-;;;; utility
+;;;; global
 
 (defgroup counsel-projectile nil
   "Ivy integration for Projectile."
@@ -60,7 +60,7 @@ COMMAND's `ivy-read' call.
 This variable holds either a single action function, or an action
 list whose first element is the index of the default action in
 the list and the remaining elements are the actions (a key, a
-function, and a name for each action."
+function, and a name for each action)."
   (eval
    `(defcustom ,(intern (format "%s-action" command))
       ',action
@@ -99,6 +99,154 @@ and whose action function is `counsel-projectile-prefix-action'." command)
                                   (function :tag "function")
                                   (string   :tag "    name")))))
       :group ',group)))
+
+(defun counsel-projectile--action-index (action-item action-list)
+  "Return the index in ACTION-LIST of the action whose key,
+function, name, or index in the list (1 for the first action,
+etc) is ACTION-ITEM.  If there is no such action, throw an error.
+
+ACTION-LIST is an action list whose first element is the index of
+the default action in the list and the remaining elements are the
+actions (a key, a function, and a name for each action)."
+  (let (index)
+    (if (integerp action-item)
+	(when (and (> action-item 0)
+		   (< action-item (length action-list)))
+	  (setq index action-item))
+      (setq index (cl-position-if
+		   (cond
+		    ((functionp action-item)
+		     (lambda (action)
+		       (equal action-item
+			      (cadr action))))
+		    ((stringp action-item)
+		     (lambda (action)
+		       (member action-item
+			       (list (car action) (caddr action))))))
+		   (cdr action-list)))
+      (when index
+	(setq index (1+ index))))
+    (or index
+	(error "Action not found: %s" action-item))))
+
+(defun counsel-projectile-modify-action (action-var modifications)
+  "Make MODIFICATIONS to ACTION-VAR.
+
+ACTION-VAR is a variable holding an action list whose first
+element is the index of the default action in the list and the
+remaining elements are the actions (a key, a function, and a name
+for each action).
+
+MODIFICATIONS is a list of modifications to be applied
+sequentially to ACTION-LIST. Each modification has one of the
+following formats:
+
+    (remove ACTION-ITEM)
+        Remove the action whose key, function, name, or index in
+        the list (1 for the first action, etc) is ACTION-ITEM
+        from the list.
+
+    (add ACTION TARGET-ITEM)
+        Add ACTION (a list containing a key, a function, and a
+        name) to the list, just before the action whose key,
+        function, name, or index in the list (1 for the first
+        action, etc) is TARGET-ITEM.  If TARGET-ITEM is omitted,
+        add the action at the end of the list.
+
+    (move ACTION-ITEM TARGET-ITEM)
+        Move the action whose key, function, name, or index in
+        the list (1 for the first action, etc) is ACTION-ITEM
+        just before the action whose key, function, name, or
+        index in the list (1 for the first action, etc) is
+        TARGET-ITEM.  If TARGET-ITEM is omitted, move the action
+        to the end of the list.
+
+    (setkey ACTION-ITEM KEY)
+        Set the key of the action whose key, function, name, or
+        index in the list (1 for the first action, etc) is
+        ACTION-ITEM to KEY.
+
+    (setfun ACTION-ITEM FUNCTION)
+        Set the function of the action whose key, function, name,
+        or index in the list (1 for the first action, etc) is
+        ACTION-ITEM to FUNCTION.
+
+    (setname ACTION-ITEM NAME)
+        Set the name of the action whose key, function, name, or
+        index in the list (1 for the first action, etc) is
+        ACTION-ITEM to NAME.
+
+    (default ACTION-ITEM)
+        Set the index of the default action in the list to that
+        of the action whose key, function, name, or index in the
+        list (1 for the first action, etc) is ACTION-ITEM.
+
+If anything goes wrong, throw an error and do not modify ACTION-VAR."
+  (let ((action-list (symbol-value action-var))
+	mod)
+    ;; Make sure ACTION-VAR actually holds a list and not a single
+    ;; action function
+    (unless (listp action-list)
+      (error "%s's value is not a list" action-var))
+    (while (setq mod (pop modifications))
+      (pcase mod
+	(`(remove ,action-item)
+	 (setq action-list
+	       (remove (nth (counsel-projectile--action-index action-item action-list)
+			    action-list)
+		       action-list)))
+	(`(add ,action ,target-item)
+	 (let ((index (counsel-projectile--action-index target-item action-list)))
+	   ;; copied from `helm-append-at-nth'
+	   (setq action-list (cl-loop for a in action-list
+				      for count from 1
+				      collect a
+				      when (= count index)
+				      collect action))))
+	(`(add ,action)
+	 (setq action-list (append action-list (list action))))
+	(`(move ,action-item ,target-item)
+	 (push `(add ,(nth (counsel-projectile--action-index action-item action-list)
+			   action-list)
+		     ,target-item)
+	       modifications)
+	 (push `(remove ,action-item)
+	       modifications))
+	(`(move ,action-item)
+	 (push `(add ,(nth (counsel-projectile--action-index action-item action-list)
+			   action-list))
+	       modifications)
+	 (push `(remove ,action-item)
+	       modifications))
+	(`(setkey ,action-item ,key)
+	 (let ((index (counsel-projectile--action-index action-item action-list)))
+	   (setq action-list (cl-loop for a in action-list
+				      for count from 0
+				      if (= count index)
+				      collect (cons key (cdr a))
+				      else
+				      collect a))))
+	(`(setfun ,action-item ,fun)
+	 (let ((index (counsel-projectile--action-index action-item action-list)))
+	   (setq action-list (cl-loop for a in action-list
+				      for count from 0
+				      if (= count index)
+				      collect (list (car a) fun (caddr a))
+				      else
+				      collect a))))
+	(`(setname ,action-item ,name)
+	 (let ((index (counsel-projectile--action-index action-item action-list)))
+	   (setq action-list (cl-loop for a in action-list
+				      for count from 0
+				      if (= count index)
+				      collect (list (car a) (cadr a) name)
+				      else
+				      collect a))))
+	(`(default ,action-item)
+	 (setq action-list
+	       (cons (counsel-projectile--action-index action-item action-list)
+		     (cdr action-list))))))
+    (set action-var action-list)))
 
 (defun counsel-projectile-prefix-action (cand)
   "Generic action for a prefix key in any counsel-projectile command.
