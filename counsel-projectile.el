@@ -1,4 +1,4 @@
-;; counsel-projectile.el --- Ivy integration for Projectile
+;;; counsel-projectile.el --- Ivy integration for Projectile
 
 ;; Copyright (C) 2016-2017 Eric Danan
 
