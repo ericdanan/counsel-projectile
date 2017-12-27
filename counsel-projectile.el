@@ -261,7 +261,7 @@ is the concatenation of these two keys will be called."
 		      for a in (cdr action)
 		      if (and (string-prefix-p prefix (car a))
 			      (not (string= prefix (car a))))
-		      collect (cons (string-remove-prefix prefix (car a))
+		      collect (cons (substring (car a) (length prefix))
 				    (cdr a))))
 	 ;; adapted from `ivy-read-action' from here on
 	 (hint (funcall ivy-read-action-format-function sub-action))
