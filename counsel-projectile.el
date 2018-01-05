@@ -44,61 +44,7 @@
 
 (require 'counsel)
 (require 'projectile)
-
-;;;; compatibility
-
-;; For MELPA Stable and ELPA users, until the next version of ivy is
-;; released, we need to advise `ivy-read-action' to implement
-;; multi-character action keys. The advice only operates on
-;; counsel-projectile commands (identified by the fact that
-;; `ivy-state-caller' starts with \"counsel-projectile\"), so as not
-;; to mess up with the general ivy setup.
-
-(defun counsel-projectile--read-action ()
-  ;; This is a copy of `ivy-read-action' as of commit 7042d70
-  ;; implementing multi-character action keys.
-  (let ((actions (ivy-state-action ivy-last)))
-    (if (null (ivy--actionp actions))
-	t
-      (let* ((hint (funcall ivy-read-action-format-function (cdr actions)))
-	     (resize-mini-windows t)
-	     (key "")
-	     action-idx)
-	(while (and (setq action-idx (cl-position-if
-				      (lambda (x)
-					(string-prefix-p key (car x)))
-				      (cdr actions)))
-		    (not (string= key (car (nth (1+ action-idx) actions)))))
-	  (setq key (concat key (string (read-key hint)))))
-	(cond ((member key '("" ""))
-	       nil)
-	      ((null action-idx)
-	       (message "%s is not bound" key)
-	       nil)
-	      (t
-	       (message "")
-	       (setcar actions (1+ action-idx))
-	       (ivy-set-action actions)))))))
-
-(defun counsel-projectile--ivy-read-action-advice (oldfun)
-  ;; This is the advice function for `advice-add', falling back to the
-  ;; original function for non-counsel-projectile commands.
-  (if (string-prefix-p "counsel-projectile"
-		       (symbol-name (ivy-state-caller ivy-last)))
-      (counsel-projectile--read-action)
-    (funcall oldfun)))
-
-;; `advice-add' was introduced in Emacs 24.4, so we need to use
-;; `defadvice' instead for Emacs 24.3.
-(if (fboundp 'advice-add)
-    (advice-add #'ivy-read-action :around #'counsel-projectile--ivy-read-action-advice)
-  (defadvice ivy-read-action (around counsel-projectile-advice activate)
-    (setq ad-return-value
-	  (if (string-prefix-p "counsel-projectile"
-			       (symbol-name (ivy-state-caller ivy-last)))
-	      (counsel-projectile--read-action)
-	    ad-do-it))))
-
+                      
 ;;;; global
 
 (defgroup counsel-projectile nil
