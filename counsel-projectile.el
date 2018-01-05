@@ -73,7 +73,7 @@ consisting of:
 - the index of the default action in the list (1 for the first
   action, etc),
 - the available actions, each of which consists of:
-  - a key (one-character string) to call the action,
+  - a key (string) to call the action,
   - an action function of one variable, 
   - a name (string) for the action.
 
@@ -83,12 +83,7 @@ An action is triggered for the selected candidate with `M-o
 triggered with `M-RET' or `C-M-RET'. If this variable holds a
 single action function, this action becomes the default action
 and is assigned the key \"o\".  For an action list, it is also
-usual to assign the key \"o\" to the default action.
-
-It is in fact possible to include actions with a two-character
-key in the list.  To do so, however, it is necessary to also
-include an action whose key is the first of these two characters
-and whose action function is `counsel-projectile-prefix-action'." command)
+usual to assign the key \"o\" to the default action." command)
       :type '(choice
               (function :tag "Single action function")
               (cons :tag "Action list"
@@ -247,37 +242,6 @@ If anything goes wrong, throw an error and do not modify ACTION-VAR."
 	       (cons (counsel-projectile--action-index action-item action-list)
 		     (cdr action-list))))))
     (set action-var action-list)))
-
-(defun counsel-projectile-prefix-action (cand)
-  "Generic action for a prefix key in any counsel-projectile command.
-
-If used as action function in an action list, the corresponding
-key will serve as a prefix key.  That is, a secondary key will be
-read from the minibuffer and the action from the list whose key
-is the concatenation of these two keys will be called."
-  (let* ((action (ivy-state-action ivy-last))
-	 (prefix (car (nth (car action) action)))
-	 (sub-action (cl-loop
-		      for a in (cdr action)
-		      if (and (string-prefix-p prefix (car a))
-			      (not (string= prefix (car a))))
-		      collect (cons (substring (car a) (length prefix))
-				    (cdr a))))
-	 ;; adapted from `ivy-read-action' from here on
-	 (hint (funcall ivy-read-action-format-function sub-action))
-         (resize-mini-windows t)
-         (key (string (read-key hint)))
-         (action-fun (nth 1 (assoc key sub-action))))
-    (cond ((member key '("" ""))
-           (when (eq ivy-exit 'done)
-             (ivy-resume)))
-          ((null action-fun)
-           (message "%s is not bound" key)
-           (when (eq ivy-exit 'done)
-             (ivy-resume)))
-          (t
-           (message "")
-           (funcall action-fun cand)))))
 
 ;;;; counsel-projectile-find-file
 
@@ -879,16 +843,12 @@ candidates list of `counsel-projectile-switch-project'."
     "edit project dir-locals")
    ("v" counsel-projectile-switch-project-action-vc
     "open project in vc-dir / magit / monky")
-   ("s" counsel-projectile-prefix-action
-    "search project with grep / ag / rg...")
    ("sg" counsel-projectile-switch-project-action-grep
     "search project with grep")
    ("ss" counsel-projectile-switch-project-action-ag
     "search project with ag")
    ("sr" counsel-projectile-switch-project-action-rg
     "search project with rg")
-   ("x" counsel-projectile-prefix-action
-    "invoke shell / eshell / term from project root...")
    ("xs" counsel-projectile-switch-project-action-run-shell
     "invoke shell from project root")
    ("xe" counsel-projectile-switch-project-action-run-eshell

@@ -87,27 +87,27 @@ Default key binding: <kbd>C-c p p</kbd>.
 
 This command is a replacement for `projectile-switch-project`. It adds the possibility to select from a list of switch-project actions to apply to the selected project:
 
-| Key           | Action                                                                                  |
-| :------------ | :-------------------------------------------------------------------------------------- |
-| <kbd>o</kbd>  | Jump to a project buffer or file: call `counsel-projectile` (default action; see above) |
-| <kbd>f</kbd>  | Jump to a project file: call `counsel-projectile-find-file` (see below)                 |
-| <kbd>d</kbd>  | Jump to a project directory: call `counsel-projectile-find-dir` (see below)             |
-| <kbd>b</kbd>  | Jump to a project buffer: call `counsel-projectile-switch-to-buffer` (see below)        |
-| <kbd>m</kbd>  | Find file manually: call `counsel-find-file` from the project root                      |
-| <kbd>S</kbd>  | Save all project buffers                                                                |
-| <kbd>k</kbd>  | Kill all project buffers                                                                |
-| <kbd>K</kbd>  | Remove project from the list of known projects                                          |
-| <kbd>c</kbd>  | Run project compilation command                                                         |
-| <kbd>C</kbd>  | Run project configure command                                                           |
-| <kbd>E</kbd>  | Edit project directory-local variables                                                  |
-| <kbd>v</kbd>  | Open project in vc-dir / magit / monky                                                  |
-| <kbd>sg</kbd> | Search project with grep: call `counsel-projectile-grep` (see below)                    |
-| <kbd>ss</kbd> | Search project with ag: call `counsel-projectile-ag` (see below)                        |
-| <kbd>sr</kbd> | Search project with rg: call `counsel-projectile-rg` (see below)                        |
-| <kbd>xs</kbd> | Invoke shell from the project root                                                      |
-| <kbd>xe</kbd> | Invoke eshell from the project root                                                     |
-| <kbd>xt</kbd> | Invoke term from the project root                                                       |
-| <kbd>O</kbd>  | Org-capture into project: call `counsel-projectile-org-capture` (see below)             |
+| Key            | Action                                                                                  |
+| :------------- | :-------------------------------------------------------------------------------------- |
+| <kbd>o</kbd>   | Jump to a project buffer or file: call `counsel-projectile` (default action; see above) |
+| <kbd>f</kbd>   | Jump to a project file: call `counsel-projectile-find-file` (see below)                 |
+| <kbd>d</kbd>   | Jump to a project directory: call `counsel-projectile-find-dir` (see below)             |
+| <kbd>b</kbd>   | Jump to a project buffer: call `counsel-projectile-switch-to-buffer` (see below)        |
+| <kbd>m</kbd>   | Find file manually: call `counsel-find-file` from the project root                      |
+| <kbd>S</kbd>   | Save all project buffers                                                                |
+| <kbd>k</kbd>   | Kill all project buffers                                                                |
+| <kbd>K</kbd>   | Remove project from the list of known projects                                          |
+| <kbd>c</kbd>   | Run project compilation command                                                         |
+| <kbd>C</kbd>   | Run project configure command                                                           |
+| <kbd>E</kbd>   | Edit project directory-local variables                                                  |
+| <kbd>v</kbd>   | Open project in vc-dir / magit / monky                                                  |
+| <kbd>s g</kbd> | Search project with grep: call `counsel-projectile-grep` (see below)                    |
+| <kbd>s s</kbd> | Search project with ag: call `counsel-projectile-ag` (see below)                        |
+| <kbd>s r</kbd> | Search project with rg: call `counsel-projectile-rg` (see below)                        |
+| <kbd>x s</kbd> | Invoke shell from the project root                                                      |
+| <kbd>x e</kbd> | Invoke eshell from the project root                                                     |
+| <kbd>x t</kbd> | Invoke term from the project root                                                       |
+| <kbd>O</kbd>   | Org-capture into project: call `counsel-projectile-org-capture` (see below)             |
 ## The `counsel-projectile-find-file` command
 Default key binding: <kbd>C-c p f</kbd>.
 
@@ -197,19 +197,6 @@ Extra actions can be added to these lists or, alternatively, can be set through 
 - change an action key, function, or name,
 - change the index of the default action.
 See its docstring for details.
-
-Although ivy does not support this natively, it is in fact possible to include actions with a two-character key in the list.  To do so, however, it is necessary to also include an action whose key is the first of these two characters and whose action function is `counsel-projectile-prefix-action`. For instance, the default value of `counsel-projectile-switch-project-action` includes the following actions:
-
-```emacs-lisp
-  ("s" counsel-projectile-prefix-action
-   "search project with grep / ag / rg...")
-  ("sg" counsel-projectile-switch-project-action-grep
-   "search project with grep")
-  ("ss" counsel-projectile-switch-project-action-ag
-   "search project with ag")
-  ("sr" counsel-projectile-switch-project-action-rg
-   "search project with rg")
-```
 ## Setting `counsel-projectile-org-capture` templates
 The available capture templates for `counsel-projectile-org-capture` are read from the variable `counsel-projectile-org-capture-templates`. This variable has the same format as the variable `org-capture-templates`, except that in all strings of in an entry’s target slot, all instances of `${root}` and `${name}` are replaced with the current project root and name, respectively.
 
