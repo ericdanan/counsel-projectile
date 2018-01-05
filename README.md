@@ -1,4 +1,6 @@
 [![MELPA](https://melpa.org/packages/counsel-projectile-badge.svg)](https://melpa.org/#/counsel-projectile)
+[![MELPA Stable](https://stable.melpa.org/packages/counsel-projectile-badge.svg)](https://stable.melpa.org/#/counsel-projectile)
+[![Github commits (since latest release)](https://img.shields.io/github/commits-since/ericdanan/counsel-projectile/latest.svg)](https://github.com/ericdanan/counsel-projectile/releases)
 
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
 **Table of Contents**
@@ -35,10 +37,11 @@
 # Description
 [Projectile](https://github.com/bbatsov/projectile) has native support for using [ivy](https://github.com/abo-abo/swiper) as its completion system. Counsel-projectile provides further ivy integration into projectile by taking advantage of ivy's support for selecting from a list of actions and applying an action without leaving the completion session. Concretely, counsel-projectile defines replacements for existing projectile commands as well as new commands that have no projectile counterparts. A minor mode is also provided that adds key bindings for all these commands on top of the projectile key bindings.
 # News
+- [2018-01-05] Package now available on MELPA Stable.
 - [2017-12-18] New version `0.2`. If you are upgrading from `0.1`, please read [here](#upgrading-from-previous-version) about important changes.
 - [2016-04-12] First version `0.1`.
 # Installation
-Install the package from [MELPA](https://melpa.org) or [el-get](https://github.com/dimitri/el-get), or clone this repository somewhere in your load path.
+Install the package from [MELPA](https://melpa.org), [MELPA Stable](https://stable.melpa.org), or [el-get](https://github.com/dimitri/el-get), or clone this repository somewhere in your load path.
 # Usage
 ## Getting started
 To turn on counsel-projectile mode, either call the command `counsel-projectile-mode` or use the Customize interface to toggle on the variable `counsel-projectile-mode`. This will turn on projectile mode, thus enabling all projectile key bindings, and add the counsel-projectile key bindings on top of them.
