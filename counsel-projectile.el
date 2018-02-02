@@ -43,6 +43,7 @@
 ;;;; require
 
 (require 'counsel)
+(require 'ivy)
 (require 'projectile)
 
 ;;;; global
@@ -305,8 +306,12 @@ With a prefix ARG, invalidate the cache first."
             (projectile-current-project-files)
             :matcher #'counsel--find-file-matcher
             :require-match t
+            :sort t
             :action counsel-projectile-find-file-action
             :caller 'counsel-projectile-find-file))
+
+(unless (assq #'counsel-projectile-find-file ivy-sort-functions-alist)
+  (push (list #'counsel-projectile-find-file) ivy-sort-functions-alist))
 
 (ivy-set-display-transformer
  'counsel-projectile-find-file
@@ -354,8 +359,12 @@ With a prefix ARG, invalidate the cache first."
   (ivy-read (projectile-prepend-project-name "Find dir: ")
             (counsel-projectile--project-directories)
             :require-match t
+            :sort t
             :action counsel-projectile-find-dir-action
             :caller 'counsel-projectile-find-dir))
+
+(unless (assq #'counsel-projectile-find-dir ivy-sort-functions-alist)
+  (push (list #'counsel-projectile-find-dir) ivy-sort-functions-alist))
 
 ;;;; counsel-projectile-switch-to-buffer
 
@@ -412,8 +421,12 @@ names as in `ivy--buffer-list', and remove current buffer if
             (counsel-projectile--project-buffers)
             :matcher #'ivy--switch-buffer-matcher
             :require-match t
+            :sort t
             :action counsel-projectile-switch-to-buffer-action
             :caller 'counsel-projectile-switch-to-buffer))
+
+(unless (assq #'counsel-projectile-switch-to-buffer ivy-sort-functions-alist)
+  (push (list #'counsel-projectile-switch-to-buffer) ivy-sort-functions-alist))
 
 (ivy-set-display-transformer
  'counsel-projectile-switch-to-buffer
@@ -1008,7 +1021,11 @@ action."
                             (abbreviate-file-name (projectile-project-root)))
             :action counsel-projectile-switch-project-action
             :require-match t
+            :sort t
             :caller 'counsel-projectile-switch-project))
+
+(unless (assq #'counsel-projectile-switch-project ivy-sort-functions-alist)
+  (push (list #'counsel-projectile-switch-project) ivy-sort-functions-alist))
 
 ;;;; counsel-projectile
 
@@ -1109,8 +1126,12 @@ If not inside a project, call `counsel-projectile-switch-project'."
               (counsel-projectile--project-buffers-and-files)
               :matcher #'counsel-projectile--matcher
               :require-match t
+              :sort t
               :action counsel-projectile-action
               :caller 'counsel-projectile)))
+
+(unless (assq #'counsel-projectile ivy-sort-functions-alist)
+  (push (list #'counsel-projectile) ivy-sort-functions-alist))
 
 (ivy-set-display-transformer
  'counsel-projectile
