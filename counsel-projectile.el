@@ -44,7 +44,7 @@
 
 (require 'counsel)
 (require 'projectile)
-                      
+
 ;;;; global
 
 (defgroup counsel-projectile nil
@@ -64,7 +64,7 @@ function, and a name for each action)."
   (eval
    `(defcustom ,(intern (format "%s-action" command))
       ',action
-      ,(format "Action(s) for `%s'.  
+      ,(format "Action(s) for `%s'.
 
 This variable holds either a single action function (function of
 one variable, the selected candidate) or an action list
@@ -74,7 +74,7 @@ consisting of:
   action, etc),
 - the available actions, each of which consists of:
   - a key (string) to call the action,
-  - an action function of one variable, 
+  - an action function of one variable,
   - a name (string) for the action.
 
 In both cases, extra actions can be added with `ivy-set-actions'.
@@ -105,24 +105,24 @@ the default action in the list and the remaining elements are the
 actions (a key, a function, and a name for each action)."
   (let (index)
     (if (integerp action-item)
-	(when (and (> action-item 0)
-		   (< action-item (length action-list)))
-	  (setq index action-item))
+        (when (and (> action-item 0)
+                   (< action-item (length action-list)))
+          (setq index action-item))
       (setq index (cl-position-if
-		   (cond
-		    ((functionp action-item)
-		     (lambda (action)
-		       (equal action-item
-			      (cadr action))))
-		    ((stringp action-item)
-		     (lambda (action)
-		       (member action-item
-			       (list (car action) (caddr action))))))
-		   (cdr action-list)))
+                   (cond
+                    ((functionp action-item)
+                     (lambda (action)
+                       (equal action-item
+                              (cadr action))))
+                    ((stringp action-item)
+                     (lambda (action)
+                       (member action-item
+                               (list (car action) (caddr action))))))
+                   (cdr action-list)))
       (when index
-	(setq index (1+ index))))
+        (setq index (1+ index))))
     (or index
-	(error "Action not found: %s" action-item))))
+        (error "Action not found: %s" action-item))))
 
 (defun counsel-projectile-modify-action (action-var modifications)
   "Make MODIFICATIONS to ACTION-VAR.
@@ -178,69 +178,69 @@ following formats:
 
 If anything goes wrong, throw an error and do not modify ACTION-VAR."
   (let ((action-list (symbol-value action-var))
-	mod)
+        mod)
     ;; Make sure ACTION-VAR actually holds a list and not a single
     ;; action function
     (unless (listp action-list)
       (error "%s's value is not a list" action-var))
     (while (setq mod (pop modifications))
       (pcase mod
-	(`(remove ,action-item)
-	 (setq action-list
-	       (remove (nth (counsel-projectile--action-index action-item action-list)
-			    action-list)
-		       action-list)))
-	(`(add ,action ,target-item)
-	 (let ((index (counsel-projectile--action-index target-item action-list)))
-	   ;; copied from `helm-append-at-nth'
-	   (setq action-list (cl-loop for a in action-list
-				      for count from 1
-				      collect a
-				      when (= count index)
-				      collect action))))
-	(`(add ,action)
-	 (setq action-list (append action-list (list action))))
-	(`(move ,action-item ,target-item)
-	 (push `(add ,(nth (counsel-projectile--action-index action-item action-list)
-			   action-list)
-		     ,target-item)
-	       modifications)
-	 (push `(remove ,action-item)
-	       modifications))
-	(`(move ,action-item)
-	 (push `(add ,(nth (counsel-projectile--action-index action-item action-list)
-			   action-list))
-	       modifications)
-	 (push `(remove ,action-item)
-	       modifications))
-	(`(setkey ,action-item ,key)
-	 (let ((index (counsel-projectile--action-index action-item action-list)))
-	   (setq action-list (cl-loop for a in action-list
-				      for count from 0
-				      if (= count index)
-				      collect (cons key (cdr a))
-				      else
-				      collect a))))
-	(`(setfun ,action-item ,fun)
-	 (let ((index (counsel-projectile--action-index action-item action-list)))
-	   (setq action-list (cl-loop for a in action-list
-				      for count from 0
-				      if (= count index)
-				      collect (list (car a) fun (caddr a))
-				      else
-				      collect a))))
-	(`(setname ,action-item ,name)
-	 (let ((index (counsel-projectile--action-index action-item action-list)))
-	   (setq action-list (cl-loop for a in action-list
-				      for count from 0
-				      if (= count index)
-				      collect (list (car a) (cadr a) name)
-				      else
-				      collect a))))
-	(`(default ,action-item)
-	 (setq action-list
-	       (cons (counsel-projectile--action-index action-item action-list)
-		     (cdr action-list))))))
+        (`(remove ,action-item)
+         (setq action-list
+               (remove (nth (counsel-projectile--action-index action-item action-list)
+                            action-list)
+                       action-list)))
+        (`(add ,action ,target-item)
+         (let ((index (counsel-projectile--action-index target-item action-list)))
+           ;; copied from `helm-append-at-nth'
+           (setq action-list (cl-loop for a in action-list
+                                      for count from 1
+                                      collect a
+                                      when (= count index)
+                                      collect action))))
+        (`(add ,action)
+         (setq action-list (append action-list (list action))))
+        (`(move ,action-item ,target-item)
+         (push `(add ,(nth (counsel-projectile--action-index action-item action-list)
+                           action-list)
+                     ,target-item)
+               modifications)
+         (push `(remove ,action-item)
+               modifications))
+        (`(move ,action-item)
+         (push `(add ,(nth (counsel-projectile--action-index action-item action-list)
+                           action-list))
+               modifications)
+         (push `(remove ,action-item)
+               modifications))
+        (`(setkey ,action-item ,key)
+         (let ((index (counsel-projectile--action-index action-item action-list)))
+           (setq action-list (cl-loop for a in action-list
+                                      for count from 0
+                                      if (= count index)
+                                      collect (cons key (cdr a))
+                                      else
+                                      collect a))))
+        (`(setfun ,action-item ,fun)
+         (let ((index (counsel-projectile--action-index action-item action-list)))
+           (setq action-list (cl-loop for a in action-list
+                                      for count from 0
+                                      if (= count index)
+                                      collect (list (car a) fun (caddr a))
+                                      else
+                                      collect a))))
+        (`(setname ,action-item ,name)
+         (let ((index (counsel-projectile--action-index action-item action-list)))
+           (setq action-list (cl-loop for a in action-list
+                                      for count from 0
+                                      if (= count index)
+                                      collect (list (car a) (cadr a) name)
+                                      else
+                                      collect a))))
+        (`(default ,action-item)
+         (setq action-list
+               (cons (counsel-projectile--action-index action-item action-list)
+                     (cdr action-list))))))
     (set action-var action-list)))
 
 ;;;; counsel-projectile-find-file
@@ -342,8 +342,8 @@ With a prefix ARG, invalidate the cache first."
 (defun counsel-projectile-find-dir-action-other-window (dir)
   "Visit DIR with dired in another window and run
 `projectile-find-dir-hook'."
- (dired-other-window (projectile-expand-root dir))
- (run-hooks 'projectile-find-dir-hook))
+  (dired-other-window (projectile-expand-root dir))
+  (run-hooks 'projectile-find-dir-hook))
 
 ;;;###autoload
 (defun counsel-projectile-find-dir (&optional arg)
@@ -455,7 +455,7 @@ construct the command.")
                   (setq ivy--old-re
                         (ivy--regex string)))))
       (counsel--async-command (format counsel-projectile-grep-command
-				      (shell-quote-argument regex)))
+                                      (shell-quote-argument regex)))
       nil)))
 
 (defun counsel-projectile-grep-transformer (str)
@@ -505,7 +505,7 @@ called with a prefix argument."
                 (format "%s: " (projectile-prepend-project-name (ivy-state-prompt ivy-last)))))))
         (counsel-git-grep (or current-prefix-arg options-or-cmd)
                           counsel-projectile-grep-initial-input))
-    (counsel-require-program (car (split-string counsel-projectile-grep-base-command)))	
+    (counsel-require-program (car (split-string counsel-projectile-grep-base-command)))
     (let* ((ignored-files (mapconcat (lambda (i)
                                        (concat "--exclude="
                                                (shell-quote-argument i)
@@ -669,10 +669,10 @@ displayed as category). The second one points to outline path
 all projects)."
   :type ;; copied from `org-capture-templates'
   (let ((file-variants '(choice :tag "Filename       "
-				(file :tag "Literal")
-				(function :tag "Function")
-				(variable :tag "Variable")
-				(sexp :tag "Form"))))
+                                (file :tag "Literal")
+                                (function :tag "Function")
+                                (variable :tag "Variable")
+                                (sexp :tag "Form"))))
     `(repeat
       (choice :value ("" "" entry (file "~/org/notes.org") "")
               (list :tag "Multikey description"
@@ -779,28 +779,28 @@ The capture templates are read from the variables
   (interactive)
   (require 'org-capture)
   (let* ((root (projectile-project-root))
-	 (name (projectile-project-name))
-	 (org-capture-templates
-	  (cl-loop
-	   for template in counsel-projectile-org-capture-templates
-	   collect (cl-loop
-		    for item in template
-		    if (= (cl-position item template) 3) ;; template's target
-		    collect (cl-loop
-			     for x in item
-			     if (stringp x)
-			     collect (replace-regexp-in-string
-				      "\\${[^}]+}"
-				      (lambda (s)
-					(pcase s
-					  ("${root}" root)
-					  ("${name}" name)))
-				      x)
-			     else
-			     collect x)
-		    else
-		    collect item)))
-	 (org-capture-templates-contexts counsel-projectile-org-capture-templates-contexts)
+         (name (projectile-project-name))
+         (org-capture-templates
+          (cl-loop
+           for template in counsel-projectile-org-capture-templates
+           collect (cl-loop
+                    for item in template
+                    if (= (cl-position item template) 3) ;; template's target
+                    collect (cl-loop
+                             for x in item
+                             if (stringp x)
+                             collect (replace-regexp-in-string
+                                      "\\${[^}]+}"
+                                      (lambda (s)
+                                        (pcase s
+                                          ("${root}" root)
+                                          ("${name}" name)))
+                                      x)
+                             else
+                             collect x)
+                    else
+                    collect item)))
+         (org-capture-templates-contexts counsel-projectile-org-capture-templates-contexts)
          (ivy--prompts-list ivy--prompts-list))
     (ivy-set-prompt 'counsel-org-capture
                     (lambda ()
@@ -1027,7 +1027,7 @@ action."
    ("m" counsel-projectile-action-find-file-manually
     "find file manually")
    ("p" (lambda (_) (counsel-projectile-switch-project))
-     "switch project"))
+    "switch project"))
  'counsel-projectile)
 
 (defvar counsel-projectile--buffers nil
