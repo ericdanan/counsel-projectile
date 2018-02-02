@@ -1048,7 +1048,7 @@ action."
                file)
            (dolist (buffer counsel-projectile--buffers files)
              (when (setq file (buffer-file-name (get-buffer buffer)))
-               (setq files (delete (file-relative-name file root) files))))))))
+               (setq files (remove (file-relative-name file root) files))))))))
 
 (defun counsel-projectile--matcher (regexp candidates)
   "Return REGEXP-matching CANDIDATES for `counsel-projectile'.
