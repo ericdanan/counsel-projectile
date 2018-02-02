@@ -105,8 +105,7 @@ the default action in the list and the remaining elements are the
 actions (a key, a function, and a name for each action)."
   (let (index)
     (if (integerp action-item)
-        (when (and (> action-item 0)
-                   (< action-item (length action-list)))
+        (when (< 0 action-item (length action-list))
           (setq index action-item))
       (setq index (cl-position-if
                    (cond
