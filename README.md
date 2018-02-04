@@ -224,6 +224,18 @@ Templates contexts are read from the variable `counsel-projectile-org-capture-te
 By default, when calling `counsel-projectile-switch-project`, the current project (if any) is included in the candidates list and preselected. Similarly, when calling `counsel-projectile-switch-to-buffer`, the current buffer is included in the candidates list and preselected. If you prefer removing these elements from the candidate lists of these commands, you can set the variables `counsel-projectile-remove-current-project` and `counsel-projectile-remove-current-buffer` accordingly.
 ## Initial input for the project search commands
 If you want some initial input to be inserted in the minibuffer every time you call `counsel-projectile-grep`, `counsel-projectile-ag`, or `counsel-projectile-rg`, you can customize the variables `counsel-projectile-grep-initial-input`, `counsel-projectile-ag-initial-input`, or `counsel-projectile-rg-initial-input` accordingly. Each of these variable, if non `nil`, should hold a Lisp expression whose evaluation yields the initial input string. If you use the Customize interface, some choices are proposed based on various versions of the `thing-at-point` function. Note that you can always insert the value of `(ivy-thing-at-point)` by hitting <kbd>M-n</kbd> in the minibuffer.
+## Sorting candidates
+The following commands allow to modify the way candidates are sorted:
+- `counsel-projectile`
+- `cousnel-projectile-switch-project`
+- `counsel-projectile-find-file`
+- `counsel-projectile-find-dir`
+- `counsel-projectile-switch-to-buffer`
+To do so you need to add sorting functions to `ivy-sort-functions-alist`, e.g.
+```emacs-lisp
+(setcdr (assoc 'counsel-projectile-find-file ivy-sort-functions-alist)
+		'file-newer-than-file-p)
+	```
 # Upgrading from previous version
 If you are upgrading from version `0.1` to version `0.2`, please read below about important changes, some of which may require you to update your configuration.
 ## Key bindings
