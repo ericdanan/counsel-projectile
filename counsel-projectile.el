@@ -1,4 +1,4 @@
-;;; counsel-projectile.el --- Ivy integration for Projectile
+;;; counsel-projectile.el --- Ivy integration for Projectile -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2016-2017 Eric Danan
 
@@ -650,6 +650,9 @@ is called with a prefix argument."
 
 ;;;; counsel-projectile-org-capture
 
+(defvar org-capture-templates)
+(defvar org-capture-templates-contexts)
+
 (defcustom counsel-projectile-org-capture-templates
   '(("t" "Task" entry (file+headline "${root}/notes.org" "Tasks")
      "* TODO %?\n  %u\n  %a"))
@@ -1065,7 +1068,7 @@ action."
              (when (setq file (buffer-file-name (get-buffer buffer)))
                (setq files (remove (file-relative-name file root) files))))))))
 
-(defun counsel-projectile--matcher (regexp candidates)
+(defun counsel-projectile--matcher (regexp _candidates)
   "Return REGEXP-matching CANDIDATES for `counsel-projectile'.
 
 Relies on `ivy--switch-buffer-matcher' and
