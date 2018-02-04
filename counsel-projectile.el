@@ -244,6 +244,35 @@ If anything goes wrong, throw an error and do not modify ACTION-VAR."
 
 ;;;; counsel-projectile-find-file
 
+(defcustom counsel-projectile-find-file-matcher 'counsel--find-file-matcher
+  "Function returning candidates matching minibuffer input in
+`counsel-projectile-find-file', also used to match files in
+`counsel-projectile'.
+
+Several choices are proposed:
+
+- Ivy generic matcher (`ivy--re-filter'). This is the matcher
+  used by default in all ivy commands.
+
+- Counsel matcher (`counsel--find-file-matcher').  This is the
+  matcher used in `counsel-find-file', allowing to ignore some
+  files based on `counsel-find-file-ignore-regexp'.
+
+- Counsel-projectile basename
+  matcher (`counsel-projectile-basename-matcher').  This one only
+  displays files whose basename matches minibuffer input, or if
+  there is none all files whose name (relative to the project
+  root) matches. It also uses the counsel matcher to ignore some
+  files.
+
+It is also possible to use a custom matcher.  It must be a function taking two argument, the regexp and the candidates (see e.g. `counsel--find-file-matcher')."
+  :type '(choice
+          (const :tag "Ivy generic matcher" ivy--re-filter)
+          (const :tag "Counsel matcher" counsel--find-file-matcher)
+          (const :tag "Counsel-projectile basename matcher" counsel-projectile-find-file-matcher-basename)
+          (function :tag "Custom function"))
+  :group 'counsel-projectile)
+
 (counsel-projectile--defcustom-action
  'counsel-projectile-find-file
  '(1
@@ -260,6 +289,41 @@ If anything goes wrong, throw an error and do not modify ACTION-VAR."
    ("p" (lambda (_) (counsel-projectile-switch-project))
     "switch project"))
  'counsel-projectile)
+
+(defun counsel-projectile-find-file-matcher-basename (regexp candidates)
+  "Return the list of CANDIDATES whose basename matches REGEXP,
+or if there is none the list of all CANDIDATES matching REGEXP.
+Also uses `counsel--find-file-matcher' to ignore candidates based
+on `counsel-find-file-ignore-regexp'."
+  (let ((cands (ivy--re-filter regexp candidates)))
+    (or (and (not (string= ivy-text ""))
+             ;; We first filter `cands' to retain only matches in file
+             ;; basename. This is almost copied from `ivy--re-filter'
+             ;; because we can't quite use it directly.
+             (let ((re-list (if (stringp regexp)
+                                (list (cons regexp t))
+                              regexp))
+                   (res cands))
+               (dolist (re re-list)
+                 (setq res
+                       (ignore-errors
+                         (funcall
+                          (if (cdr re)
+                              #'cl-remove-if-not
+                            #'cl-remove-if)
+                          (let ((re-str (car re)))
+                            (lambda (x)
+                              (string-match re-str
+                                            (file-name-nondirectory x))))
+                          res))))
+               ;; We then apply `counsel--find-file-matcher' to `res'
+               ;; so we can honor `ivy-use-ignore', but we don't need
+               ;; to filter again.
+               (counsel--find-file-matcher nil res)))
+        ;; We apply `counsel--find-file-matcher' to `cands' so we can
+        ;; honor `ivy-use-ignore', but we don't need to filter
+        ;; again.
+        (counsel--find-file-matcher nil cands))))     
 
 (defun counsel-projectile-find-file-action (file)
   "Find FILE and run `projectile-find-file-hook'."
@@ -303,7 +367,7 @@ With a prefix ARG, invalidate the cache first."
   (projectile-maybe-invalidate-cache arg)
   (ivy-read (projectile-prepend-project-name "Find file: ")
             (projectile-current-project-files)
-            :matcher #'counsel--find-file-matcher
+            :matcher counsel-projectile-find-file-matcher
             :require-match t
             :sort t
             :action counsel-projectile-find-file-action
@@ -1071,10 +1135,11 @@ action."
 (defun counsel-projectile--matcher (regexp _candidates)
   "Return REGEXP-matching CANDIDATES for `counsel-projectile'.
 
-Relies on `ivy--switch-buffer-matcher' and
-`counsel--find-file-matcher'."
+Relies on `ivy--switch-buffer-matcher' for buffers and the
+matcher specified in `counsel-projectile-find-file-matcher' for
+files."
   (append (ivy--switch-buffer-matcher regexp counsel-projectile--buffers)
-          (counsel--find-file-matcher regexp counsel-projectile--non-visited-files)))
+          (funcall counsel-projectile-find-file-matcher regexp counsel-projectile--non-visited-files)))
 
 (defun counsel-projectile-action (name)
   "Switch to buffer or find file named NAME."
