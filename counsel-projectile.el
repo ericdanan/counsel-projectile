@@ -43,6 +43,7 @@
 ;;;; require
 
 (require 'counsel)
+(require 'ivy)
 (require 'projectile)
 
 ;;;; global
