@@ -235,7 +235,7 @@ To do so you need to add sorting functions to `ivy-sort-functions-alist`, e.g.
 ```emacs-lisp
 (setcdr (assoc 'counsel-projectile-find-file ivy-sort-functions-alist)
 		'file-newer-than-file-p)
-	```
+```
 # Upgrading from previous version
 If you are upgrading from version `0.1` to version `0.2`, please read below about important changes, some of which may require you to update your configuration.
 ## Key bindings
