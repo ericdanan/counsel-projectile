@@ -1210,7 +1210,7 @@ If not inside a project, call `counsel-projectile-switch-project'."
   (let ((map (make-sparse-keymap)))
     (set-keymap-parent map projectile-command-map)
     (define-key map (kbd "s r") 'counsel-projectile-rg)
-    (define-key map (kbd "C-c") 'counsel-projectile-org-capture)
+    (define-key map (kbd "O") 'counsel-projectile-org-capture)
     (define-key map (kbd "SPC") 'counsel-projectile)
     map)
   "Keymap for Counesl-Projectile commands after `projectile-keymap-prefix'.")
