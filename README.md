@@ -79,10 +79,13 @@ This command lets you quickly jump to a project buffer or file. It uses ivy to d
 | :----------- | :--------------------------------------------------------------------------------- |
 | <kbd>o</kbd> | Open buffer or file in current window (default action)                             |
 | <kbd>j</kbd> | Open buffer or file in other window                                                |
+| <kbd>k</kbd> | Kill buffer (does nothing for files)                                               |
 | <kbd>x</kbd> | Open file externally (does nothing for buffers)                                    |
 | <kbd>r</kbd> | Open file as root (does nothing for buffers)                                       |
-| <kbd>m</kbd> | Find file manually: call `counsel-find-file` from buffer or file's directory |
+| <kbd>m</kbd> | Find file manually: call `counsel-find-file` from buffer or file's directory       |
 | <kbd>p</kbd> | Switch project: call `counsel-projectile-switch-project` (see below)               |
+
+The key binding <kbd>C-c C-k</kbd> can also be used from the minibuffer to kill the buffer corresponding to the current candidate (same as <kbd>C-M-o k</kbd>).
 
 If not called inside a project, `counsel-projectile` first offers to select a project to switch to by calling `counsel-projectile-switch-project` (see below). Once you select a project and hit <kbd>RET</kbd>, it lets you jump to a buffer or file in this project as described above.
 ## The `counsel-projectile-switch-project` command
@@ -144,8 +147,11 @@ This command is a replacement for `projectile-switch-to-buffer`. It displays a l
 | :----------- | :------------------------------------------------------------------------- |
 | <kbd>o</kbd> | Open buffer in current window (default action)                             |
 | <kbd>j</kbd> | Open buffer in other window                                                |
-| <kbd>m</kbd> | Find file manually: call `counsel-find-file` from buffer's directory |
+| <kbd>k</kbd> | Kill buffer                                                                |
+| <kbd>m</kbd> | Find file manually: call `counsel-find-file` from buffer's directory       |
 | <kbd>p</kbd> | Switch project: call `counsel-projectile-switch-project` (see above)       |
+
+The key binding <kbd>C-c C-k</kbd> can also be used from the minibuffer to kill the buffer corresponding to the current candidate (same as <kbd>C-M-o k</kbd>).
 ## The `counsel-projectile-grep` command
 Default key binding: <kbd>C-c p s g</kbd>.
 
