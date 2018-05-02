@@ -488,6 +488,13 @@ names as in `ivy--buffer-list', and remove current buffer if
                (projectile-project-root))))
     (counsel-find-file)))
 
+(defun counsel-projectile-switch-to-buffer-transformer (str)
+  "Transform candidate STR when switching project buffers.
+
+This simply applies the same transformer as in `ivy-switch-buffer', which is `ivy-switch-buffer-transformer' by default but could have been modified e.g. by the ivy-rich package."
+  (funcall (plist-get ivy--display-transformers-list 'ivy-switch-buffer)
+           str))
+
 ;;;###autoload
 (defun counsel-projectile-switch-to-buffer ()
   "Jump to a buffer in the current project."
@@ -509,7 +516,7 @@ names as in `ivy--buffer-list', and remove current buffer if
 
 (ivy-set-display-transformer
  'counsel-projectile-switch-to-buffer
- 'ivy-switch-buffer-transformer)
+ 'counsel-projectile-switch-to-buffer-transformer)
 
 ;;;; counsel-projectile-grep
 
@@ -1209,7 +1216,7 @@ directory of file named NAME."
 (defun counsel-projectile-transformer (str)
   "Fontifies modified, file-visiting buffers as well as non-visited files."
   (if (member str counsel-projectile--buffers)
-      (ivy-switch-buffer-transformer str)
+      (counsel-projectile-switch-to-buffer-transformer str)
     (propertize str 'face 'ivy-virtual)))
 
 ;;;###autoload
