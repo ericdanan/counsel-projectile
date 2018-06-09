@@ -26,6 +26,8 @@
     - [Setting `counsel-projectile-org-capture` templates](#setting-counsel-projectile-org-capture-templates)
     - [Removing the current project or buffer from the list of candidates](#removing-the-current-project-or-buffer-from-the-list-of-candidates)
     - [Initial input for the project search commands](#initial-input-for-the-project-search-commands)
+    - [Matcher for `counsel-projectile-find-file`](#matcher-for-counsel-projectile-find-file)
+    - [Sorting candidates](#sorting-candidates)
 - [Upgrading from previous version](#upgrading-from-previous-version)
     - [Key bindings](#key-bindings)
     - [Action lists](#action-lists)
@@ -236,16 +238,21 @@ By default, the command `counsel-projectile-find-file` relies on the the matcher
 The matcher specified by `counsel-find-file-ignore-regexp` is also used by `counsel-projectile` to match files.
 ## Sorting candidates
 The following commands allow to modify the way candidates are sorted:
-- `counsel-projectile`
 - `cousnel-projectile-switch-project`
 - `counsel-projectile-find-file`
 - `counsel-projectile-find-dir`
 - `counsel-projectile-switch-to-buffer`
-To do so you need to add sorting functions to `ivy-sort-functions-alist`, e.g.
+Sorting for these commands is controlled by the following variables, respectively:
+- `counsel-projectile-sort-projects`
+- `counsel-projectile-sort-files`
+- `counsel-projectile-sort-directories`
+- `counsel-projectile-sort-buffers`
+If one of these variable is nil, the default, the command's candidates are not sorted. If it is non-nil, they are sorted. The sorting criterion can be customized through the variable `ivy-sort-functions-alist`. For instance, if you want files to be sorted from newest to oldest, then you need to add the following entry to this list:
 ```emacs-lisp
-(setcdr (assoc 'counsel-projectile-find-file ivy-sort-functions-alist)
-		'file-newer-than-file-p)
+'(counsel-projectile-find-file . file-newer-than-file-p)
 ```
+
+Note that the `counsel-projectile` command always sorts buffers before files. Buffers are sorted as in `counsel-projectile-switch-to-buffer` and files are sorted according to `counsel-projectile-find-file`.
 # Upgrading from previous version
 If you are upgrading from version `0.1` to version `0.2`, please read below about important changes, some of which may require you to update your configuration.
 ## Key bindings

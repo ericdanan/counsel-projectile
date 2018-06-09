@@ -244,6 +244,15 @@ If anything goes wrong, throw an error and do not modify ACTION-VAR."
 
 ;;;; counsel-projectile-find-file
 
+(defcustom counsel-projectile-sort-files nil
+  "Non-nil if files should be sorted in
+`counsel-projectile-find-file' and `counsel-projectile'.
+
+The sorting function can be modified by adding an entry for
+`counsel-projectile-find-file' in `ivy-sort-functions-alist'."
+  :type 'boolean
+  :group 'counsel-projectile)
+
 (defcustom counsel-projectile-find-file-matcher 'counsel--find-file-matcher
   "Function returning candidates matching minibuffer input in
 `counsel-projectile-find-file', also used to match files in
@@ -369,18 +378,24 @@ With a prefix ARG, invalidate the cache first."
             (projectile-current-project-files)
             :matcher counsel-projectile-find-file-matcher
             :require-match t
-            :sort t
+            :sort counsel-projectile-sort-files
             :action counsel-projectile-find-file-action
             :caller 'counsel-projectile-find-file))
-
-(unless (assq #'counsel-projectile-find-file ivy-sort-functions-alist)
-  (push (list #'counsel-projectile-find-file) ivy-sort-functions-alist))
 
 (ivy-set-display-transformer
  'counsel-projectile-find-file
  'counsel-projectile-find-file-transformer)
 
 ;;;; counsel-projectile-find-dir
+
+(defcustom counsel-projectile-sort-directories nil
+  "Non-nil if directories should be sorted in
+`counsel-projectile-find-dir'.
+
+The sorting function can be modified by adding an entry for
+`counsel-projectile-find-dir' in `ivy-sort-functions-alist'."
+  :type 'boolean
+  :group 'counsel-projectile)
 
 (counsel-projectile--defcustom-action
  'counsel-projectile-find-dir
@@ -422,14 +437,21 @@ With a prefix ARG, invalidate the cache first."
   (ivy-read (projectile-prepend-project-name "Find dir: ")
             (counsel-projectile--project-directories)
             :require-match t
-            :sort t
+            :sort counsel-projectile-sort-directories
             :action counsel-projectile-find-dir-action
             :caller 'counsel-projectile-find-dir))
 
-(unless (assq #'counsel-projectile-find-dir ivy-sort-functions-alist)
-  (push (list #'counsel-projectile-find-dir) ivy-sort-functions-alist))
-
 ;;;; counsel-projectile-switch-to-buffer
+
+(defcustom counsel-projectile-sort-buffers nil
+  "Non-nil if buffers should be sorted in
+`counsel-projectile-switch-to-buffer' and `counsel-projectile'.
+
+The sorting function can be modified by adding an entry for
+`counsel-projectile-switch-to-buffer' in
+`ivy-sort-functions-alist'."
+  :type 'boolean
+  :group 'counsel-projectile)
 
 (defcustom counsel-projectile-remove-current-buffer nil
   "Non-nil if current buffer should be removed from the
@@ -506,13 +528,10 @@ This simply applies the same transformer as in `ivy-switch-buffer', which is `iv
             #'counsel-projectile--project-buffers
             :matcher #'ivy--switch-buffer-matcher
             :require-match t
-            :sort t
+            :sort counsel-projectile-sort-buffers
             :action counsel-projectile-switch-to-buffer-action
             :keymap counsel-projectile-switch-to-buffer-map
             :caller 'counsel-projectile-switch-to-buffer))
-
-(unless (assq #'counsel-projectile--project-buffers ivy-sort-functions-alist)
-  (push (list #'counsel-projectile--project-buffers) ivy-sort-functions-alist))
 
 (ivy-set-display-transformer
  'counsel-projectile-switch-to-buffer
@@ -911,6 +930,16 @@ The capture templates are read from the variables
 
 ;;;; counsel-projectile-switch-project
 
+(defcustom counsel-projectile-sort-projects nil
+  "Non-nil if projects should be sorted in
+`counsel-projectile-switch-project'.
+
+The sorting function can be modified by adding an entry for
+`counsel-projectile-switch-project' in
+`ivy-sort-functions-alist'."
+  :type 'boolean
+  :group 'counsel-projectile)
+
 (defcustom counsel-projectile-remove-current-project nil
   "Non-nil if current project should be removed from the
 candidates list of `counsel-projectile-switch-project'."
@@ -1110,11 +1139,8 @@ action."
                             (abbreviate-file-name (projectile-project-root)))
             :action counsel-projectile-switch-project-action
             :require-match t
-            :sort t
+            :sort counsel-projectile-sort-projects
             :caller 'counsel-projectile-switch-project))
-
-(unless (assq #'counsel-projectile-switch-project ivy-sort-functions-alist)
-  (push (list #'counsel-projectile-switch-project) ivy-sort-functions-alist))
 
 ;;;; counsel-projectile
 
@@ -1155,17 +1181,39 @@ action."
 (defun counsel-projectile--project-buffers-and-files (&rest _)
   ;; The ignored arguments are so that the function can be used as
   ;; collection function in `counsel-projectile'.
-  "Return a list of buffers and files in the current project."
-  (append
-   (setq counsel-projectile--buffers
-         (counsel-projectile--project-buffers))
-   (setq counsel-projectile--non-visited-files
-         (let ((root (projectile-project-root))
-               (files (projectile-current-project-files))
-               file)
-           (dolist (buffer counsel-projectile--buffers files)
-             (when (setq file (buffer-file-name (get-buffer buffer)))
-               (setq files (remove (file-relative-name file root) files))))))))
+  "Return a list of buffers and non-visited files in the current
+  project.  Buffers and files are separately sorted depending on
+  `counsel-projectile-sort-buffers' and
+  `counsel-projectile-sort-files', respectively."
+  (let ((buffers (counsel-projectile--project-buffers))
+        (files (projectile-current-project-files))
+        (root (projectile-project-root))
+        file sort-fn)
+    ;; Remove files that are visited by a buffer:
+    (dolist (buffer buffers files)
+      (when (setq file (buffer-file-name (get-buffer buffer)))
+        (setq files (remove (file-relative-name file root) files))))
+    ;; Sort buffers and files depending on
+    ;; `counsel-projectile-sort-buffers' and
+    ;; `counsel-projectile-sort-files', respectively.
+    ;; We need to do this here because matching will be done against
+    ;; the variables `counsel-projectile--buffers' and
+    ;; `counsel-projectile--non-visited-files', not against the
+    ;; returned collection, so ivy's native sorting mechanism won't
+    ;; work.
+    (when (and counsel-projectile-sort-buffers
+               (<= (length buffers) ivy-sort-max-size)
+               (setq sort-fn (ivy--sort-function 'counsel-projectile-switch-to-buffer)))
+      (setq buffers (sort (copy-sequence buffers) sort-fn)))
+    (when (and counsel-projectile-sort-files
+               (<= (length files) ivy-sort-max-size)
+               (setq sort-fn (ivy--sort-function 'counsel-projectile-find-file)))
+      (setq files (sort (copy-sequence files) sort-fn)))
+    ;; Finally, bind `counsel-projectile--buffers' and
+    ;; `counsel-projectile--non-visited-files' and return the whole
+    ;; collection.
+    (append (setq counsel-projectile--buffers buffers)
+            (setq counsel-projectile--non-visited-files files))))
 
 (defun counsel-projectile--matcher (regexp _candidates)
   "Return REGEXP-matching CANDIDATES for `counsel-projectile'.
@@ -1237,13 +1285,9 @@ If not inside a project, call `counsel-projectile-switch-project'."
               #'counsel-projectile--project-buffers-and-files
               :matcher #'counsel-projectile--matcher
               :require-match t
-              :sort t
               :action counsel-projectile-action
               :keymap counsel-projectile-map
               :caller 'counsel-projectile)))
-
-(unless (assq #'counsel-projectile--project-buffers-and-files ivy-sort-functions-alist)
-  (push (list #'counsel-projectile--project-buffers-and-files) ivy-sort-functions-alist))
 
 (ivy-set-display-transformer
  'counsel-projectile
