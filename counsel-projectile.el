@@ -400,7 +400,7 @@ The sorting function can be modified by adding an entry for
 (counsel-projectile--defcustom-action
  'counsel-projectile-find-dir
  '(1
-   ("o" counsel-projectile-find-dir-action-other-window
+   ("o" counsel-projectile-find-dir-action
     "current window")
    ("j" counsel-projectile-find-dir-action-other-window
     "other window")
