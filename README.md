@@ -125,9 +125,9 @@ This command is a replacement for `projectile-find-file`. It displays a list of 
 | :----------- | :----------------------------------------------------------------------- |
 | <kbd>o</kbd> | Open file in current window (default action)                             |
 | <kbd>j</kbd> | Open file in other window                                                |
-| <kbd>x</kbd> | Open file externally (does nothing for buffers)                          |
-| <kbd>r</kbd> | Open file as root (does nothing for buffers)                             |
-| <kbd>m</kbd> | Find file manually: call `counsel-find-file` from file's directory |
+| <kbd>x</kbd> | Open file externally                                                     |
+| <kbd>r</kbd> | Open file as root                                                        |
+| <kbd>m</kbd> | Find file manually: call `counsel-find-file` from file's directory       |
 | <kbd>p</kbd> | Switch project: call `counsel-projectile-switch-project` (see above)     |
 ## The `counsel-projectile-find-dir` command
 Default key binding: <kbd>C-c p d</kbd>.
@@ -137,7 +137,9 @@ This command is a replacement for `projectile-find-dir`. It displays a list of a
 | Key          | Action                                                               |
 | :----------- | :------------------------------------------------------------------- |
 | <kbd>o</kbd> | Open directory with `dired` in current window (default action)       |
-| <kbd>j</kbd> | Open director with `dired` in other window                           |
+| <kbd>j</kbd> | Open directory with `dired` in other window                          |
+| <kbd>x</kbd> | Open directory externally                                            |
+| <kbd>r</kbd> | Open directory as root                                               |
 | <kbd>m</kbd> | Find file manually: call `counsel-find-file` from directory          |
 | <kbd>p</kbd> | Switch project: call `counsel-projectile-switch-project` (see above) |
 ## The `counsel-projectile-switch-to-buffer` command

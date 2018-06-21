@@ -404,6 +404,10 @@ The sorting function can be modified by adding an entry for
     "current window")
    ("j" counsel-projectile-find-dir-action-other-window
     "other window")
+   ("x" counsel-projectile-find-dir-action-extern
+    "open externally")
+   ("r" counsel-projectile-find-dir-action-root
+    "open as root")
    ("m" counsel-projectile-find-file-action-find-file-manually
     "find file manually")
    ("p" (lambda (_) (counsel-projectile-switch-project))
@@ -425,6 +429,16 @@ The sorting function can be modified by adding an entry for
   "Visit DIR with dired in another window and run
 `projectile-find-dir-hook'."
   (dired-other-window (projectile-expand-root dir))
+  (run-hooks 'projectile-find-dir-hook))
+
+(defun counsel-projectile-find-dir-action-extern (dir)
+  "Visit DIR externally and run `projectile-find-dir-hook'."
+  (counsel-find-file-extern (projectile-expand-root dir))
+  (run-hooks 'projectile-find-dir-hook))
+
+(defun counsel-projectile-find-file-action-root (dir)
+  "Visit DIR as root and run `projectile-find-dir-hook'."
+  (counsel-find-file-as-root (projectile-expand-root dir))
   (run-hooks 'projectile-find-dir-hook))
 
 ;;;###autoload
