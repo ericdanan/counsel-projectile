@@ -904,7 +904,7 @@ The format is the same as in `org-capture-templates-contexts'."
   :group 'counsel-projectile)
 
 ;;;###autoload
-(defun counsel-projectile-org-capture ()
+(defun counsel-projectile-org-capture (&optional from-buffer)
   "Org-capture into the current project.
 
 The capture templates are read from the variables
@@ -940,7 +940,8 @@ The capture templates are read from the variables
                     (lambda ()
                       (ivy-add-prompt-count
                        (projectile-prepend-project-name (ivy-state-prompt ivy-last)))))
-    (counsel-org-capture)))
+    (with-current-buffer (or from-buffer (current-buffer))
+      (counsel-org-capture))))
 
 ;;;; counsel-projectile-switch-project
 
@@ -1138,7 +1139,9 @@ action."
 
 (defun counsel-projectile-switch-project-action-org-capture (project)
   "Org-capture into PROJECT."
-  (let ((projectile-switch-project-action 'counsel-projectile-org-capture))
+  (let* ((from-buffer (ivy-state-buffer ivy-last))
+         (projectile-switch-project-action `(lambda ()
+                                              (counsel-projectile-org-capture ,from-buffer))))
     (counsel-projectile-switch-project-by-name project)))
 
 ;;;###autoload
