@@ -909,7 +909,10 @@ The format is the same as in `org-capture-templates-contexts'."
 
 The capture templates are read from the variables
 `counsel-projectile-org-capture-templates' and
-`counsel-projectile-org-capture-templates-contexts'."
+`counsel-projectile-org-capture-templates-contexts'.
+
+Optional argument FROM-BUFFER specifies the buffer from which to
+capture."
   (interactive)
   (require 'org-capture)
   (let* ((root (projectile-project-root))
