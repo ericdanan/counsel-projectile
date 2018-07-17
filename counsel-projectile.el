@@ -579,15 +579,14 @@ construct the command.")
 
 (defun counsel-projectile-grep-function (string)
   "Grep for STRING in the current project."
-  (if (< (length string) 3)
-      (counsel-more-chars 3)
-    (let ((default-directory (ivy-state-directory ivy-last))
-          (regex (counsel-unquote-regex-parens
-                  (setq ivy--old-re
-                        (ivy--regex string)))))
-      (counsel--async-command (format counsel-projectile-grep-command
-                                      (shell-quote-argument regex)))
-      nil)))
+  (or (counsel-more-chars)
+      (let ((default-directory (ivy-state-directory ivy-last))
+            (regex (counsel-unquote-regex-parens
+                    (setq ivy--old-re
+                          (ivy--regex string)))))
+        (counsel--async-command (format counsel-projectile-grep-command
+                                        (shell-quote-argument regex)))
+        nil)))
 
 (defun counsel-projectile-grep-transformer (str)
   "Higlight file and line number in STR, first removing the
