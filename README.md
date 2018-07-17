@@ -20,6 +20,7 @@
     - [The `counsel-projectile-ag` command](#the-counsel-projectile-ag-command)
     - [The `counsel-projectile-rg` command](#the-counsel-projectile-rg-command)
     - [The `counsel-projectile-org-capture` command](#the-counsel-projectile-org-capture-command)
+    - [The `counsel-projectile-org-agenda` command](#the-counsel-projectile-org-agenda-command)
 - [Configuration](#configuration)
     - [Enabling counsel-projectile mode when emacs starts](#enabling-counsel-projectile-mode-when-emacs-starts)
     - [Customizing action lists](#customizing-action-lists)
@@ -71,7 +72,8 @@ New commands:
 | :------------------- | :------------------------------- | :-------------------------------------------------- |
 | <kbd>C-c p SPC</kbd> | `counsel-projectile`             | Jump to a project buffer or file, or switch project |
 | <kbd>C-c p s r</kbd> | `counsel-projectile-rg`          | Search project with rg                              |
-| <kbd>C-c p O</kbd>   | `counsel-projectile-org-capture` | Org-capture into project                            |
+| <kbd>C-c p O c</kbd> | `counsel-projectile-org-capture` | Org-capture into project                            |
+| <kbd>C-c p O a</kbd> | `counsel-projectile-org-capture` | Open project agenda                                 |
 ## The `counsel-projectile` command
 Default key binding: <kbd>C-c p SPC</kbd>.
 
@@ -169,9 +171,13 @@ Default key binding: <kbd>C-c p s r</kbd>.
 
 This command is similar to `counsel-projectile-grep` (see above) but uses `rg` (ripgrep) instead of `grep`.
 ## The `counsel-projectile-org-capture` command
-Default key binding: <kbd>C-c p O</kbd>.
+Default key binding: <kbd>C-c p O c</kbd>.
 
 This command lets you capture something (a note, todo item, ...) into the current project using org-mode's `org-capture` (actually `counsel-org-capture`) command. Like `org-capture`, it first lets you select a capture template then file the newly captured information. By default, there is a single template storing the captured information into file `notes.org` in the project root directory, under headline `Tasks`.
+## The `counsel-projectile-org-agenda` command
+Default key binding: <kbd>C-c p O a</kbd>.
+
+This command opens the current projects agenda. It simply calls `org-agenda` after filtering out all agenda files that do not belong to the current project.
 # Configuration
 ## Enabling counsel-projectile mode when emacs starts
 To automatically enable counsel-projectile mode when emacs starts, you can either use the Customize interface to toggle on the variable `counsel-projectile-mode` and save your customization, or add `(counsel-projectile-mode)` to your init file.
