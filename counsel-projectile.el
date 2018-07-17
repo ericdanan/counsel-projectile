@@ -413,7 +413,7 @@ The sorting function can be modified by adding an entry for
    ("p" (lambda (_) (counsel-projectile-switch-project))
     "switch project"))
  'counsel-projectile)
-
+ 
 (defun counsel-projectile--project-directories ()
   "Return a list of current project's directories."
   (if projectile-find-dir-includes-top-level
@@ -436,7 +436,7 @@ The sorting function can be modified by adding an entry for
   (counsel-find-file-extern (projectile-expand-root dir))
   (run-hooks 'projectile-find-dir-hook))
 
-(defun counsel-projectile-find-file-action-root (dir)
+(defun counsel-projectile-find-dir-action-root (dir)
   "Visit DIR as root and run `projectile-find-dir-hook'."
   (counsel-find-file-as-root (projectile-expand-root dir))
   (run-hooks 'projectile-find-dir-hook))
