@@ -72,7 +72,7 @@ New commands:
 | :------------------- | :------------------------------- | :-------------------------------------------------- |
 | <kbd>C-c p SPC</kbd> | `counsel-projectile`             | Jump to a project buffer or file, or switch project |
 | <kbd>C-c p s r</kbd> | `counsel-projectile-rg`          | Search project with rg                              |
-| <kbd>C-c p O c</kbd> | `counsel-projectile-org-capture` | Org-capture into project                            |
+| <kbd>C-c p O c</kbd> | `counsel-projectile-org-capture` | Capture into project                                |
 | <kbd>C-c p O a</kbd> | `counsel-projectile-org-capture` | Open project agenda                                 |
 ## The `counsel-projectile` command
 Default key binding: <kbd>C-c p SPC</kbd>.
@@ -117,7 +117,8 @@ This command is a replacement for `projectile-switch-project`. It adds the possi
 | <kbd>x s</kbd> | Invoke shell from the project root                                                      |
 | <kbd>x e</kbd> | Invoke eshell from the project root                                                     |
 | <kbd>x t</kbd> | Invoke term from the project root                                                       |
-| <kbd>O</kbd>   | Org-capture into project: call `counsel-projectile-org-capture` (see below)             |
+| <kbd>O c</kbd> | Capture into project: call `counsel-projectile-org-capture` (see below)                 |
+| <kbd>O a</kbd> | Open project agenda: call `counsel-projectile-org-agenda` (see below)                   |
 ## The `counsel-projectile-find-file` command
 Default key binding: <kbd>C-c p f</kbd>.
 
@@ -173,7 +174,9 @@ This command is similar to `counsel-projectile-grep` (see above) but uses `rg` (
 ## The `counsel-projectile-org-capture` command
 Default key binding: <kbd>C-c p O c</kbd>.
 
-This command lets you capture something (a note, todo item, ...) into the current project using org-mode's `org-capture` (actually `counsel-org-capture`) command. Like `org-capture`, it first lets you select a capture template then file the newly captured information. By default, there is a single template storing the captured information into file `notes.org` in the project root directory, under headline `Tasks`.
+This command is a replacement for `org-capture` (or `counsel-org-capture`) offering project-specific capture templates, in addition to the regular templates available from `org-capture`. By default, there is a single project template, named `[<project-name>] Tasks`, which stores the captured information under headline `Tasks` in file `<project-root>/notes.org`.
+
+If not inside a project, the project templates are ignored and only the regular ones are offered. So you may want to systematically use `counsel-projectile-org-capture` isntead of `org-capture` or `counsel-org-capture` (you may also want to give it a global key binding, such as `C-c c`).
 ## The `counsel-projectile-org-agenda` command
 Default key binding: <kbd>C-c p O a</kbd>.
 
@@ -217,9 +220,12 @@ Extra actions can be added to these lists or, alternatively, can be set through 
 - change the index of the default action.
 See its docstring for details.
 ## Setting `counsel-projectile-org-capture` templates
-The available capture templates for `counsel-projectile-org-capture` are read from the variable `counsel-projectile-org-capture-templates`. This variable has the same format as the variable `org-capture-templates`, except that in all strings of in an entry’s target slot, all instances of `${root}` and `${name}` are replaced with the current project root and name, respectively.
+The project-specific capture templates for `counsel-projectile-org-capture` are read from the variable `counsel-projectile-org-capture-templates`. This variable has the same format as the variable `org-capture-templates`, except that in a template's name or target, the placeholders `${root}` and
+`${name}` can be used to stand for the current project root and
+name, respectively.
 
-The default value contains a single template, whose target is:
+The default value contains a single template, whose name is
+`[${name}] Task` and whose target is:
 
 ```emacs-lisp
 (file+headline "${root}/notes.org}" "Tasks")
@@ -227,15 +233,16 @@ The default value contains a single template, whose target is:
 
 This points to headline `Tasks` in file `notes.org` in the project root directory (one file per project).
 
-Another example of a valid target is:
+Two other examples of valid targets are:
 
 ```emacs-lisp
+(file+headline "${root}/${name}.org}" "Tasks")
 (file+olp "~/notes.org" "${root}" "Tasks")
 ```
 
-This points to outline path `<project-root>/Tasks` in file `~/notes.org` (same file for all projects).
+The first one is similar to the default value's target, except that the file is named after the project name (this can be handy if you use org-mode's agenda since the project name is then displayed as category). The second one points to outline path `<project-root>/Tasks` in file `~/notes.org` (same file for all projects).
 
-Templates contexts are read from the variable `counsel-projectile-org-capture-templates-contexts`, which has the same format as `org-capture-templates-contexts`
+Project-specific template contexts are read from the variable `counsel-projectile-org-capture-templates-contexts`, which has the same format as `org-capture-templates-contexts`
 ## Removing the current project or buffer from the list of candidates
 By default, when calling `counsel-projectile-switch-project`, the current project (if any) is included in the candidates list and preselected. Similarly, when calling `counsel-projectile-switch-to-buffer`, the current buffer is included in the candidates list and preselected. If you prefer removing these elements from the candidate lists of these commands, you can set the variables `counsel-projectile-remove-current-project` and `counsel-projectile-remove-current-buffer` accordingly.
 ## Initial input for the project search commands

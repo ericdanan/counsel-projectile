@@ -781,16 +781,18 @@ is called with a prefix argument."
 (defvar org-capture-templates-contexts)
 
 (defcustom counsel-projectile-org-capture-templates
-  '(("t" "Task" entry (file+headline "${root}/notes.org" "Tasks")
+  '(("t" "[${name}] Task" entry (file+headline "${root}/notes.org" "Tasks")
      "* TODO %?\n  %u\n  %a"))
-  "Templates for the creation of new entries with `counsel-projectile-org-capture'.
+  "Project-specific templates for the creation of new entries
+with `counsel-projectile-org-capture'.
 
 The format is the same as in `org-capture-templates', except that
-in all strings of in an entry's target slot, all instances of
-\"${root}\" and \"${name}\" are replaced with the current project
-root and name, respectively.
+in a template's name or target, the placeholders \"${root}\" and
+\"${name}\" can be used to stand for the current project root and
+name, respectively.
 
-The default value contains a single template, whose target is:
+The default value contains a single template, whose name is
+\"[${name}] Task\" and whose target is:
 
     \(file+headline \"${root}/notes.org}\" \"Tasks\"\)
 
@@ -912,44 +914,54 @@ The format is the same as in `org-capture-templates-contexts'."
 
 ;;;###autoload
 (defun counsel-projectile-org-capture (&optional from-buffer)
-  "Org-capture into the current project.
+  "Capture into the current project.
 
-The capture templates are read from the variables
-`counsel-projectile-org-capture-templates' and
-`counsel-projectile-org-capture-templates-contexts'.
+This command is a replacement for `org-capture' (or
+`counsel-org-capture') offering project-specific capture
+templates, in addition to the regular templates available from
+`org-capture'. These project templates, which are \"expanded\"
+relatively to the current project, are determined by the
+variables `counsel-projectile-org-capture-templates' and
+`counsel-projectile-org-capture-templates-contexts'. See the
+former variable in particular for details.
 
 Optional argument FROM-BUFFER specifies the buffer from which to
 capture."
   (interactive)
   (require 'org-capture)
-  (let* ((root (projectile-project-root))
+  (let* ((root (ignore-errors (projectile-project-root)))
          (name (projectile-project-name))
+         (org-capture-templates-contexts
+          (append (when root
+                    counsel-projectile-org-capture-templates-contexts)
+                  org-capture-templates-contexts))
          (org-capture-templates
-          (cl-loop
-           for template in counsel-projectile-org-capture-templates
-           collect (cl-loop
-                    for item in template
-                    if (= (cl-position item template) 3) ;; template's target
-                    collect (cl-loop
-                             for x in item
-                             if (stringp x)
-                             collect (replace-regexp-in-string
-                                      "\\${[^}]+}"
-                                      (lambda (s)
-                                        (pcase s
-                                          ("${root}" root)
-                                          ("${name}" name)))
-                                      x)
-                             else
-                             collect x)
-                    else
-                    collect item)))
-         (org-capture-templates-contexts counsel-projectile-org-capture-templates-contexts)
-         (ivy--prompts-list ivy--prompts-list))
-    (ivy-set-prompt 'counsel-org-capture
-                    (lambda ()
-                      (ivy-add-prompt-count
-                       (projectile-prepend-project-name (ivy-state-prompt ivy-last)))))
+          (append
+           (when root
+             (cl-loop
+              with replace-fun = `(lambda (string)
+                                    (replace-regexp-in-string
+                                     "\\${[^}]+}"
+                                     (lambda (s)
+                                       (pcase s
+                                         ("${root}" ,root)
+                                         ("${name}" ,name)))
+                                     string))
+              for template in counsel-projectile-org-capture-templates
+              collect (cl-loop
+                       for item in template
+                       if (= (cl-position item template) 1) ;; template's name
+                       collect (funcall replace-fun item)
+                       else if (= (cl-position item template) 3) ;; template's target
+                       collect (cl-loop
+                                for x in item
+                                if (stringp x)
+                                collect (funcall replace-fun x)
+                                else
+                                collect x)
+                       else
+                       collect item)))
+           org-capture-templates)))
     (with-current-buffer (or from-buffer (current-buffer))
       (counsel-org-capture))))
 
