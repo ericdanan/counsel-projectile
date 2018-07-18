@@ -441,6 +441,10 @@ The sorting function can be modified by adding an entry for
   (counsel-find-file-as-root (projectile-expand-root dir))
   (run-hooks 'projectile-find-dir-hook))
 
+(defun counsel-projectile-find-dir-transformer (str)
+  "Transform candidates with `ivy-subdir' face."
+  (propertize str 'face 'ivy-subdir))
+
 ;;;###autoload
 (defun counsel-projectile-find-dir (&optional arg)
   "Jump to a directory in the current project.
@@ -454,6 +458,10 @@ With a prefix ARG, invalidate the cache first."
             :sort counsel-projectile-sort-directories
             :action counsel-projectile-find-dir-action
             :caller 'counsel-projectile-find-dir))
+
+(ivy-set-display-transformer
+ 'counsel-projectile-find-dir
+ 'counsel-projectile-find-dir-transformer)
 
 ;;;; counsel-projectile-switch-to-buffer
 
