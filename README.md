@@ -180,7 +180,7 @@ If not inside a project, the project templates are ignored and only the regular 
 ## The `counsel-projectile-org-agenda` command
 Default key binding: <kbd>C-c p O a</kbd>.
 
-This command opens the current projects agenda. It simply calls `org-agenda` after filtering out all agenda files that do not belong to the current project.
+This command opens the current project's agenda. It simply calls `org-agenda` after filtering out all agenda files that do not belong to the current project.
 # Configuration
 ## Enabling counsel-projectile mode when emacs starts
 To automatically enable counsel-projectile mode when emacs starts, you can either use the Customize interface to toggle on the variable `counsel-projectile-mode` and save your customization, or add `(counsel-projectile-mode)` to your init file.
