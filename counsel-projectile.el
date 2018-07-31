@@ -977,6 +977,7 @@ agenda files that do not belong to the current project.
 Optional arguments ARG, ORG-KEYS, and RESTRICTION are as in
 `org-agenda'."
   (interactive "P")
+  (require 'org-agenda)
   (let* ((root (projectile-project-root))
          (org-agenda-files
           (cl-remove-if-not (lambda (file)
@@ -1043,7 +1044,7 @@ candidates list of `counsel-projectile-switch-project'."
     "invoke term from project root")
    ("Oc" counsel-projectile-switch-project-action-org-capture
     "capture into project")
-   ("Oa" counsel-projectile-switch-project-action-org-capture
+   ("Oa" counsel-projectile-switch-project-action-org-agenda
     "open project agenda"))
  'counsel-projectile)
 
@@ -1181,10 +1182,15 @@ action."
     (counsel-projectile-switch-project-by-name project)))
 
 (defun counsel-projectile-switch-project-action-org-capture (project)
-  "Org-capture into PROJECT."
+  "Capture into PROJECT."
   (let* ((from-buffer (ivy-state-buffer ivy-last))
          (projectile-switch-project-action `(lambda ()
                                               (counsel-projectile-org-capture ,from-buffer))))
+    (counsel-projectile-switch-project-by-name project)))
+
+(defun counsel-projectile-switch-project-action-org-agenda (project)
+  "Open PROJECT agenda."
+  (let ((projectile-switch-project-action 'counsel-projectile-org-agenda))
     (counsel-projectile-switch-project-by-name project)))
 
 ;;;###autoload
