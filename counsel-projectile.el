@@ -1373,8 +1373,10 @@ If not inside a project, call `counsel-projectile-switch-project'."
 (fset 'counsel-projectile-command-map counsel-projectile-command-map)
 
 (defvar counsel-projectile-mode-map
-  (let ((map (make-sparse-keymap)))
-    (define-key map [remap projectile-command-map] 'counsel-projectile-command-map)
+  (let ((map (make-sparse-keymap))
+        (projectile-command-keymap (where-is-internal 'projectile-command-map nil t)))
+    (when projectile-command-keymap
+      (define-key map projectile-command-keymap 'counsel-projectile-command-map))
     (define-key map [remap projectile-find-file] 'counsel-projectile-find-file)
     (define-key map [remap projectile-find-dir] 'counsel-projectile-find-dir)
     (define-key map [remap projectile-switch-to-buffer] 'counsel-projectile-switch-to-buffer)
