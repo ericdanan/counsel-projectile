@@ -1374,7 +1374,7 @@ If not inside a project, call `counsel-projectile-switch-project'."
 
 (defvar counsel-projectile-mode-map
   (let ((map (make-sparse-keymap)))
-    (define-key map projectile-keymap-prefix 'counsel-projectile-command-map)
+    (and projectile-keymap-prefix (define-key map projectile-keymap-prefix 'counsel-projectile-command-map))
     (define-key map [remap projectile-find-file] 'counsel-projectile-find-file)
     (define-key map [remap projectile-find-dir] 'counsel-projectile-find-dir)
     (define-key map [remap projectile-switch-to-buffer] 'counsel-projectile-switch-to-buffer)
