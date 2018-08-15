@@ -23,16 +23,20 @@
     - [The `counsel-projectile-org-agenda` command](#the-counsel-projectile-org-agenda-command)
 - [Configuration](#configuration)
     - [Enabling counsel-projectile mode when emacs starts](#enabling-counsel-projectile-mode-when-emacs-starts)
+    - [Customizing counsel-projectile key bindings](#customizing-counsel-projectile-key-bindings)
     - [Customizing action lists](#customizing-action-lists)
     - [Setting `counsel-projectile-org-capture` templates](#setting-counsel-projectile-org-capture-templates)
     - [Removing the current project or buffer from the list of candidates](#removing-the-current-project-or-buffer-from-the-list-of-candidates)
     - [Initial input for the project search commands](#initial-input-for-the-project-search-commands)
     - [Matcher for `counsel-projectile-find-file`](#matcher-for-counsel-projectile-find-file)
     - [Sorting candidates](#sorting-candidates)
-- [Upgrading from previous version](#upgrading-from-previous-version)
-    - [Key bindings](#key-bindings)
-    - [Action lists](#action-lists)
-    - [Minibuffer keymap](#minibuffer-keymap)
+- [Upgrading](#upgrading)
+    - [Breaking changes in version `0.3`](#breaking-changes-in-version-03)
+        - [Key bindings](#key-bindings)
+    - [Breaking changes in version `0.2`](#breaking-changes-in-version-02)
+        - [Key bindings](#key-bindings-1)
+        - [Action lists](#action-lists)
+        - [Minibuffer keymap](#minibuffer-keymap)
 - [Contributors](#contributors)
 
 <!-- markdown-toc end -->
@@ -41,7 +45,7 @@
 [Projectile](https://github.com/bbatsov/projectile) has native support for using [ivy](https://github.com/abo-abo/swiper) as its completion system. Counsel-projectile provides further ivy integration into projectile by taking advantage of ivy's support for selecting from a list of actions and applying an action without leaving the completion session. Concretely, counsel-projectile defines replacements for existing projectile commands as well as new commands that have no projectile counterparts. A minor mode is also provided that adds key bindings for all these commands on top of the projectile key bindings.
 # News
 - [2018-01-05] Package now available on MELPA Stable.
-- [2017-12-18] New version `0.2`. If you are upgrading from `0.1`, please read [here](#upgrading-from-previous-version) about important changes.
+- [2017-12-18] New version `0.2`. If you are upgrading from `0.1`, please read [here](#upgrading-from-version-02) about important changes.
 - [2016-04-12] First version `0.1`.
 # Installation
 Install the package from [MELPA](https://melpa.org), [MELPA Stable](https://stable.melpa.org), or [el-get](https://github.com/dimitri/el-get), or clone this repository somewhere in your load path.
@@ -282,23 +286,22 @@ If one of these variable is nil, the default, the command's candidates are not s
 ```
 
 Note that the `counsel-projectile` command always sorts buffers before files. Buffers are sorted as in `counsel-projectile-switch-to-buffer` and files are sorted according to `counsel-projectile-find-file`.
-# Upgrading from previous version
-If you are upgrading from version `0.1` to version `0.2`, please read below about important changes, some of which may require you to update your configuration.
-## Key bindings
+# Upgrading
+## Breaking changes in version `0.3`
+### Key bindings
+The keymaps `counsel-projectile-mode-map` and `counsel-projectile-command-map` no longer exist. The counsel-projectile key bindings are now determined by the variable `counsel-projectile-key-bindings`, which see, and added directly to the native projectile keymaps (`projectile-mode-map` and `projectile-command-map`).
+## Breaking changes in version `0.2`
+### Key bindings
 The commands `counsel-projectile-on`, `counsel-projectile-off` and `counsel-projectile-toggle` no longer exist. They are replaced with the counsel-projectile minor mode. You can toggle this mode either by calling the `counsel-projectile-mode` command. or by setting the `counsel-projectile-mode` variable throught the Customize interface.
-
-See [Getting started](#getting-started) above for details.
-## Action lists
+### Action lists
 The available actions for the various counsel-projectile commands are now customized differently:
 - The custom variable corresponding to `<command>` is now named `<command-action>` instead of `<command-actions>`.
 - This variable now stores all the available actions, including the default action, not only the extra actions.
 - It also stores the index of the default action (it is a list whose first element is this index and whose remaining elements are the availabe actions).
 - This variable is now used as the value of the `:action` parameter for the command's `ivy-read` call. Hence if you set it outside the Customize interface, you no longer need to call `ivy-set-actions` afterwards. If you set extra actions through `ivy-set-actions`, they will not replace the variable's actions but will be added to them.
 
-See [Customizing action lists](#customizing-action-lists) above for details.
-
 Also, in the default action lists, the keys set for some actions have changed, mainly for the `counsel-projectile-switch-project` command. Indeed, as new actions were added to this command, the corresponding list of keys was becoming somewhat inconsistent. The new keys replicate the default projectile key bindings (for instance, the action to save all project buffers is now called with the key <kbd>S</kbd>, mimicking the default key binding <kbd>C-c p S</kbd> for the command `projectile-save-project-buffers`). When an action calls a command that has no default projectile key binding, its key is chosen among those that are not bound by projectile by default.
-## Minibuffer keymap
+### Minibuffer keymap
 The minibuffer keymap `counsel-projectile-map` no longer exists. It was only used to bind a key (<kbd>M-SPC</kbd> by default) to the command `counsel-projectile-drop-to-switch-project` exiting the current command and calling `counsel-projectile-switch-project`. The same functionality is now implemented in a simpler way through an action that calls `counsel-projectile-switch-project`, whose key is <kbd>p</kbd> by default. Concretely, you should now hit <kbd>M-o p</kbd> instead of <kbd>M-SP</kbd>.
 # Contributors
 Counsel-projectile is inspired by [helm-projectile](https://github.com/bbatsov/helm-projectile). Many thanks to [abo-abo](https://github.com/abo-abo) and [DamienCassou](https://github.com/DamienCassou) who encouraged and helped me to start this repository, as well as all contributors and users who have submitted issues and pull requests.
