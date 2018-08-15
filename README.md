@@ -45,7 +45,7 @@
 [Projectile](https://github.com/bbatsov/projectile) has native support for using [ivy](https://github.com/abo-abo/swiper) as its completion system. Counsel-projectile provides further ivy integration into projectile by taking advantage of ivy's support for selecting from a list of actions and applying an action without leaving the completion session. Concretely, counsel-projectile defines replacements for existing projectile commands as well as new commands that have no projectile counterparts. A minor mode is also provided that adds key bindings for all these commands on top of the projectile key bindings.
 # News
 - [2018-01-05] Package now available on MELPA Stable.
-- [2017-12-18] New version `0.2`. If you are upgrading from `0.1`, please read [here](#upgrading-from-version-02) about important changes.
+- [2017-12-18] New version `0.2`. If you are upgrading from `0.1`, please read [here](#breaking-changes-in-version-02) about important changes.
 - [2016-04-12] First version `0.1`.
 # Installation
 Install the package from [MELPA](https://melpa.org), [MELPA Stable](https://stable.melpa.org), or [el-get](https://github.com/dimitri/el-get), or clone this repository somewhere in your load path.
@@ -53,7 +53,7 @@ Install the package from [MELPA](https://melpa.org), [MELPA Stable](https://stab
 ## Getting started
 To turn on counsel-projectile mode, either call the command `counsel-projectile-mode` or use the Customize interface to toggle on the variable `counsel-projectile-mode`. This will turn on projectile mode, thus enabling all projectile key bindings, and add the counsel-projectile key bindings on top of them.
 
-Note that starting with projectile version 1.1, the projectile (and counsel-projectile) key bindings are only available after you select a keymap prefix for them. For instance, to select <kbd>C-c p</kbd> as prefix (the default prior to version 1.1), you need to execute the following form:
+Note that starting with projectile version `1.1`, the projectile (and counsel-projectile) key bindings are only available after you select a keymap prefix for them. For instance, to select <kbd>C-c p</kbd> as prefix (the default prior to version `1.1`), you need to execute the following form:
 
 ```emacs-lisp
 (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
@@ -195,7 +195,7 @@ This command opens the current project's agenda. It simply calls `org-agenda` af
 ## Enabling counsel-projectile mode when emacs starts
 To automatically enable counsel-projectile mode when emacs starts, you can either use the Customize interface to toggle on the variable `counsel-projectile-mode` and save your customization, or add `(counsel-projectile-mode)` to your init file.
 
-Note that starting with projectile version 1.1, the projectile (and counsel-projectile) key bindings are only available after you select a keymap prefix for them. For instance, to select <kbd>C-c p</kbd> as prefix (the default prior to version 1.1), you need to add the following form to your init file:
+Note that starting with projectile version `1.1`, the projectile (and counsel-projectile) key bindings are only available after you select a keymap prefix for them. For instance, to select <kbd>C-c p</kbd> as prefix (the default prior to version `1.1`), you need to add the following form to your init file:
 
 ```emacs-lisp
 (define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
