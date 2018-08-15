@@ -40,12 +40,13 @@
 ;; the projectile key bindings.
 ;;
 ;;; Code:
-;;;; require
+
+;;* require
 
 (require 'counsel)
 (require 'projectile)
 
-;;;; global
+;;* global
 
 (defgroup counsel-projectile nil
   "Ivy integration for Projectile."
@@ -242,7 +243,7 @@ If anything goes wrong, throw an error and do not modify ACTION-VAR."
                      (cdr action-list))))))
     (set action-var action-list)))
 
-;;;; counsel-projectile-find-file
+;;* counsel-projectile-find-file
 
 (defcustom counsel-projectile-sort-files nil
   "Non-nil if files should be sorted in
@@ -397,7 +398,7 @@ With a prefix ARG, invalidate the cache first."
   (interactive "P")
   (counsel-projectile-find-file arg t))
 
-;;;; counsel-projectile-find-dir
+;;* counsel-projectile-find-dir
 
 (defcustom counsel-projectile-sort-directories nil
   "Non-nil if directories should be sorted in
@@ -474,7 +475,7 @@ With a prefix ARG, invalidate the cache first."
  'counsel-projectile-find-dir
  'counsel-projectile-find-dir-transformer)
 
-;;;; counsel-projectile-switch-to-buffer
+;;* counsel-projectile-switch-to-buffer
 
 (defcustom counsel-projectile-sort-buffers nil
   "Non-nil if buffers should be sorted in
@@ -570,7 +571,7 @@ This simply applies the same transformer as in `ivy-switch-buffer', which is `iv
  'counsel-projectile-switch-to-buffer
  'counsel-projectile-switch-to-buffer-transformer)
 
-;;;; counsel-projectile-grep
+;;* counsel-projectile-grep
 
 (defcustom counsel-projectile-grep-initial-input nil
   "Initial minibuffer input for `counsel-projectile-grep'.  If
@@ -694,7 +695,7 @@ called with a prefix argument."
 (ivy-set-occur 'counsel-projectile-grep 'counsel-projectile-grep-occur)
 (ivy-set-display-transformer 'counsel-projectile-grep  'counsel-projectile-grep-transformer)
 
-;;;; counsel-projectile-ag
+;;* counsel-projectile-ag
 
 (defcustom counsel-projectile-ag-initial-input nil
   "Initial minibuffer input for `counsel-projectile-ag'.  If
@@ -740,7 +741,7 @@ is called with a prefix argument."
                 options
                 (projectile-prepend-project-name "ag"))))
 
-;;;; counsel-projectile-rg
+;;* counsel-projectile-rg
 
 (defcustom counsel-projectile-rg-initial-input nil
   "Initial minibuffer input for `counsel-projectile-rg'.  If
@@ -786,7 +787,7 @@ is called with a prefix argument."
                 options
                 (projectile-prepend-project-name "rg"))))
 
-;;;; counsel-projectile-org-capture
+;;* counsel-projectile-org-capture
 
 (defvar org-capture-templates)
 (defvar org-capture-templates-contexts)
@@ -976,7 +977,7 @@ capture."
     (with-current-buffer (or from-buffer (current-buffer))
       (counsel-org-capture))))
 
-;;;; counsel-projectile-org-agenda
+;;* counsel-projectile-org-agenda
 
 ;;;###autoload
 (defun counsel-projectile-org-agenda (&optional arg org-keys restriction)
@@ -996,7 +997,7 @@ Optional arguments ARG, ORG-KEYS, and RESTRICTION are as in
                             (org-agenda-files t 'ifmode))))
     (org-agenda arg org-keys restriction)))
 
-;;;; counsel-projectile-switch-project
+;;* counsel-projectile-switch-project
 
 (defcustom counsel-projectile-sort-projects nil
   "Non-nil if projects should be sorted in
@@ -1219,7 +1220,7 @@ action."
             :sort counsel-projectile-sort-projects
             :caller 'counsel-projectile-switch-project))
 
-;;;; counsel-projectile
+;;* counsel-projectile
 
 (counsel-projectile--defcustom-action
  'counsel-projectile
@@ -1370,7 +1371,7 @@ If not inside a project, call `counsel-projectile-switch-project'."
  'counsel-projectile
  'counsel-projectile-transformer)
 
-;;;; counsel-projectile-mode
+;;* counsel-projectile-mode
 
 (defcustom counsel-projectile-key-bindings
   '((projectile-find-file        . counsel-projectile-find-file)
@@ -1428,7 +1429,7 @@ counterparts."
         (define-key projectile-command-map (car binding) nil)))
     (projectile-mode -1))))
 
-;;;; provide
+;;* provide
 
 (provide 'counsel-projectile)
 
