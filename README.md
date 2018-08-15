@@ -75,13 +75,13 @@ Replacements for existing commands:
 | <kbd>C-c p b</kbd>   | `counsel-projectile-switch-to-buffer` | Jump to a project buffer    |
 | <kbd>C-c p s g</kbd> | `counsel-projectile-grep`             | Search project with grep    |
 | <kbd>C-c p s s</kbd> | `counsel-projectile-ag`               | Search project with ag      |
+| <kbd>C-c p s r</kbd> | `counsel-projectile-rg`               | Search project with rg      |
 
 New commands:
 
 | Key binding          | Command                          | Description                                         |
 | :------------------- | :------------------------------- | :-------------------------------------------------- |
 | <kbd>C-c p SPC</kbd> | `counsel-projectile`             | Jump to a project buffer or file, or switch project |
-| <kbd>C-c p s r</kbd> | `counsel-projectile-rg`          | Search project with rg                              |
 | <kbd>C-c p O c</kbd> | `counsel-projectile-org-capture` | Capture into project                                |
 | <kbd>C-c p O a</kbd> | `counsel-projectile-org-capture` | Open project agenda                                 |
 ## The `counsel-projectile` command
@@ -180,7 +180,7 @@ This command is a replacement for `projectile-ag`. It is similar to `counsel-pro
 ## The `counsel-projectile-rg` command
 Default key binding: <kbd>C-c p s r</kbd>.
 
-This command is similar to `counsel-projectile-grep` (see above) but uses `rg` (ripgrep) instead of `grep`.
+This command is a replacement for `projectile-ripgrep`. It is similar to `counsel-projectile-grep` (see above) but uses `rg` (ripgrep) instead of `grep`.
 ## The `counsel-projectile-org-capture` command
 Default key binding: <kbd>C-c p O c</kbd>.
 

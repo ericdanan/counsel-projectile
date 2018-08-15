@@ -1367,9 +1367,9 @@ If not inside a project, call `counsel-projectile-switch-project'."
     (projectile-switch-to-buffer . counsel-projectile-switch-to-buffer)
     (projectile-grep             . counsel-projectile-grep)
     (projectile-ag               . counsel-projectile-ag)
+    (projectile-ripgrep          . counsel-projectile-rg)
     (projectile-switch-project   . counsel-projectile-switch-project)
     (" "                         . counsel-projectile)
-    ("sr"                        . counsel-projectile-rg)
     ("Oc"                        . counsel-projectile-org-capture)
     ("Oa"                        . counsel-projectile-org-agenda))
   "Alist of counsel-projectile key bindings.
