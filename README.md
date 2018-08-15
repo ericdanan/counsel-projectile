@@ -49,6 +49,12 @@ Install the package from [MELPA](https://melpa.org), [MELPA Stable](https://stab
 ## Getting started
 To turn on counsel-projectile mode, either call the command `counsel-projectile-mode` or use the Customize interface to toggle on the variable `counsel-projectile-mode`. This will turn on projectile mode, thus enabling all projectile key bindings, and add the counsel-projectile key bindings on top of them.
 
+Note that starting with projectile version 1.1, the projectile (and counsel-projectile) key bindings are only available after you select a keymap prefix for them. For instance, to select <kbd>C-c p</kbd> as prefix (the default prior to version 1.1), you need to execute the following form:
+
+```emacs-lisp
+(define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+```
+
 The counsel-projectile key bindings either remap existing projectile commands to their counsel-projectile replacements (e.g. <kbd>C-c p f</kbd> now calls `counsel-projectile-find-file` instead of `projectile-find-file`) or bind keys to counsel-projectile commands that have no projectile counterparts (e.g. <kbd>C-c p SPC</kbd> calls the command `counsel-projectile`).
 
 Calling the command `counsel-projectile-mode` once again or toggling off the variable `counsel-projectile-mode` disables the counsel-projectile key bindings and turns off projectile mode.
@@ -184,6 +190,14 @@ This command opens the current project's agenda. It simply calls `org-agenda` af
 # Configuration
 ## Enabling counsel-projectile mode when emacs starts
 To automatically enable counsel-projectile mode when emacs starts, you can either use the Customize interface to toggle on the variable `counsel-projectile-mode` and save your customization, or add `(counsel-projectile-mode)` to your init file.
+
+Note that starting with projectile version 1.1, the projectile (and counsel-projectile) key bindings are only available after you select a keymap prefix for them. For instance, to select <kbd>C-c p</kbd> as prefix (the default prior to version 1.1), you need to add the following form to your init file:
+
+```emacs-lisp
+(define-key projectile-mode-map (kbd "C-c p") 'projectile-command-map)
+```
+## Customizing counsel-projectile key bindings
+The key bindings that are added when counsel-projectile-mode is turned on are determined by the variable `counsel-projectile-key-bindings`. You can set this variable, either directly or through the customize interface, to customize these key bindings. It holds an alist of `(KEY . DEF)` pairs, where KEY is either a key sequence to bind in `projectile-command-map` or a projectile command to remap in `projectile-mode-map`, and DEF is the counsel-projectile command to which KEY is remapped or bound.
 ## Customizing action lists
 The lists of available actions (including the default action) for most of the commands above are stored in custom variables. If you set one of these variables, either directly or through the through the Customize interface, the new value will be picked up the next time you invoke the corresponding commmand.
 
