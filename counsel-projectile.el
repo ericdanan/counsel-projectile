@@ -6,7 +6,7 @@
 ;; URL: https://github.com/ericdanan/counsel-projectile
 ;; Keywords: project, convenience
 ;; Version: 0.3.0-snapshot
-;; Package-Requires: ((counsel "0.10.0") (projectile "0.14.0"))
+;; Package-Requires: ((counsel "0.10.0") (projectile "1.0.0"))
 
 ;; This file is NOT part of GNU Emacs.
 
