@@ -368,23 +368,34 @@ on `counsel-find-file-ignore-regexp'."
     str))
 
 ;;;###autoload
-(defun counsel-projectile-find-file (&optional arg)
+(defun counsel-projectile-find-file (&optional arg dwim)
   "Jump to a file in the current project.
 
-With a prefix ARG, invalidate the cache first."
+With a prefix ARG, invalidate the cache first.  If DWIM is
+non-nil, use completion based on context."
   (interactive "P")
   (projectile-maybe-invalidate-cache arg)
-  (ivy-read (projectile-prepend-project-name "Find file: ")
-            (projectile-current-project-files)
-            :matcher counsel-projectile-find-file-matcher
-            :require-match t
-            :sort counsel-projectile-sort-files
-            :action counsel-projectile-find-file-action
-            :caller 'counsel-projectile-find-file))
+  (let* ((project-files (projectile-current-project-files))
+         (files (and dwim (projectile-select-files project-files))))
+    (ivy-read (projectile-prepend-project-name "Find file: ")
+              (or files project-files)
+              :matcher counsel-projectile-find-file-matcher
+              :require-match t
+              :sort counsel-projectile-sort-files
+              :action counsel-projectile-find-file-action
+              :caller 'counsel-projectile-find-file)))
 
 (ivy-set-display-transformer
  'counsel-projectile-find-file
  'counsel-projectile-find-file-transformer)
+
+;;;###autoload
+(defun counsel-projectile-find-file-dwim (&optional arg)
+  "Jump to a file in the current project using completion based on context.
+
+With a prefix ARG, invalidate the cache first."
+  (interactive "P")
+  (counsel-projectile-find-file arg t))
 
 ;;;; counsel-projectile-find-dir
 
@@ -1363,6 +1374,7 @@ If not inside a project, call `counsel-projectile-switch-project'."
 
 (defcustom counsel-projectile-key-bindings
   '((projectile-find-file        . counsel-projectile-find-file)
+    (projectile-find-file-dwim   . counsel-projectile-find-file-dwim)
     (projectile-find-dir         . counsel-projectile-find-dir)
     (projectile-switch-to-buffer . counsel-projectile-switch-to-buffer)
     (projectile-grep             . counsel-projectile-grep)

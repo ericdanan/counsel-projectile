@@ -67,15 +67,16 @@ Note that if you turn on projectile mode but not counsel-projectile mode, the co
 ## Summary of interactive commands
 Replacements for existing commands:
 
-| Key binding          | Command                               | Description                 |
-| :------------------- | :------------------------------------ | :-------------------------- |
-| <kbd>C-c p p</kbd>   | `counsel-projectile-switch-project`   | Switch project              |
-| <kbd>C-c p f</kbd>   | `counsel-projectile-find-file`        | Jump to a project file      |
-| <kbd>C-c p d</kbd>   | `counsel-projectile-find-dir`         | Jump to a project directory |
-| <kbd>C-c p b</kbd>   | `counsel-projectile-switch-to-buffer` | Jump to a project buffer    |
-| <kbd>C-c p s g</kbd> | `counsel-projectile-grep`             | Search project with grep    |
-| <kbd>C-c p s s</kbd> | `counsel-projectile-ag`               | Search project with ag      |
-| <kbd>C-c p s r</kbd> | `counsel-projectile-rg`               | Search project with rg      |
+| Key binding          | Command                               | Description                                              |
+| :------------------- | :------------------------------------ | :------------------------------------------------------- |
+| <kbd>C-c p p</kbd>   | `counsel-projectile-switch-project`   | Switch project                                           |
+| <kbd>C-c p f</kbd>   | `counsel-projectile-find-file`        | Jump to a project file                                   |
+| <kbd>C-c p g</kbd>   | `counsel-projectile-find-file-dwim`   | Jump to a project file using completion based on context |
+| <kbd>C-c p d</kbd>   | `counsel-projectile-find-dir`         | Jump to a project directory                              |
+| <kbd>C-c p b</kbd>   | `counsel-projectile-switch-to-buffer` | Jump to a project buffer                                 |
+| <kbd>C-c p s g</kbd> | `counsel-projectile-grep`             | Search project with grep                                 |
+| <kbd>C-c p s s</kbd> | `counsel-projectile-ag`               | Search project with ag                                   |
+| <kbd>C-c p s r</kbd> | `counsel-projectile-rg`               | Search project with rg                                   |
 
 New commands:
 
@@ -142,6 +143,10 @@ This command is a replacement for `projectile-find-file`. It displays a list of 
 | <kbd>r</kbd> | Open file as root                                                        |
 | <kbd>m</kbd> | Find file manually: call `counsel-find-file` from file's directory       |
 | <kbd>p</kbd> | Switch project: call `counsel-projectile-switch-project` (see above)     |
+## The `counsel-projectile-find-file-dwim` command
+Default key binding: <kbd>C-c p g</kbd>.
+
+This command is a replacement for `projectile-find-file-dwim`. It is similar to `counsel-projectile-find-file` except that the list of project files is restricted to those matching the filename at point, if any.
 ## The `counsel-projectile-find-dir` command
 Default key binding: <kbd>C-c p d</kbd>.
 
