@@ -769,7 +769,14 @@ OPTIONS, if non-nil, is a string containing additional options to
 be passed to rg. It is read from the minibuffer if the function
 is called with a prefix argument."
   (interactive)
-  (let* ((ignored (mapconcat (lambda (i)
+  (let* ((unignored (mapconcat (lambda (i)
+                                 (concat "--glob "
+                                         (shell-quote-argument i)
+                                         " "))
+                               (append (projectile-unignored-files-rel)
+                                       (projectile-unignored-directories-rel))
+                               ""))
+         (ignored (mapconcat (lambda (i)
                                (concat "--glob "
                                        (shell-quote-argument (concat "!" i))
                                        " "))
@@ -781,7 +788,7 @@ is called with a prefix argument."
               (read-string (projectile-prepend-project-name "rg options: ")
                            ignored
                            'counsel-projectile-rg-options-history)
-            (concat ignored options))))
+            (concat unignored ignored options))))
     (counsel-rg (eval counsel-projectile-rg-initial-input)
                 (projectile-project-root)
                 options
