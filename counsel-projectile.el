@@ -735,7 +735,7 @@ is called with a prefix argument."
               (read-string (projectile-prepend-project-name "ag options: ")
                            ignored
                            'counsel-projectile-ag-options-history)
-            (concat "--skip-vcs-ignores " ignored options))))
+            (concat ignored options))))
     (counsel-ag (eval counsel-projectile-ag-initial-input)
                 (projectile-project-root)
                 options
@@ -781,7 +781,7 @@ is called with a prefix argument."
               (read-string (projectile-prepend-project-name "rg options: ")
                            ignored
                            'counsel-projectile-rg-options-history)
-            (concat "--no-ignore-vcs " ignored options))))
+            (concat ignored options))))
     (counsel-rg (eval counsel-projectile-rg-initial-input)
                 (projectile-project-root)
                 options
