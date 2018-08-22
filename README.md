@@ -97,7 +97,7 @@ This command lets you quickly jump to a project buffer or file. It uses ivy to d
 | :----------- | :--------------------------------------------------------------------------------- |
 | <kbd>o</kbd> | Open buffer or file in current window (default action)                             |
 | <kbd>j</kbd> | Open buffer or file in other window                                                |
-| <kbd>k</kbd> | Kill buffer (does nothing for files)                                               |
+| <kbd>k</kbd> | Kill buffer or delete file                                                         |
 | <kbd>x</kbd> | Open file externally (does nothing for buffers)                                    |
 | <kbd>r</kbd> | Open file as root (does nothing for buffers)                                       |
 | <kbd>m</kbd> | Find file manually: call `counsel-find-file` from buffer or file's directory       |
@@ -146,6 +146,7 @@ This command is a replacement for `projectile-find-file`. It displays a list of 
 | <kbd>x</kbd> | Open file externally                                                     |
 | <kbd>r</kbd> | Open file as root                                                        |
 | <kbd>m</kbd> | Find file manually: call `counsel-find-file` from file's directory       |
+| <kbd>k</kbd> | Delete file                                                              |
 | <kbd>p</kbd> | Switch project: call `counsel-projectile-switch-project` (see above)     |
 ## The `counsel-projectile-find-file-dwim` command
 Default key binding: <kbd>C-c p g</kbd>.

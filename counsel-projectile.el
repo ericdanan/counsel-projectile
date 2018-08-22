@@ -296,6 +296,8 @@ It is also possible to use a custom matcher.  It must be a function taking two a
     "open as root")
    ("m" counsel-projectile-find-file-action-find-file-manually
     "find file manually")
+   ("k" counsel-projectile-find-file-action-delete
+    "delete")
    ("p" (lambda (_) (counsel-projectile-switch-project))
     "switch project"))
  'counsel-projectile)
@@ -361,6 +363,10 @@ on `counsel-find-file-ignore-regexp'."
   "Find FILE as root and run `projectile-find-file-hook'."
   (counsel-find-file-as-root (projectile-expand-root file))
   (run-hooks 'projectile-find-file-hook))
+
+(defun counsel-projectile-find-file-action-delete (file)
+  "Delete FILE."
+  (counsel-find-file-delete (projectile-expand-root file)))
 
 (defun counsel-projectile-find-file-transformer (str)
   "Transform non-visited file names with `ivy-virtual' face."
@@ -1254,8 +1260,8 @@ action."
     "current window")
    ("j" counsel-projectile-action-other-window
     "other window")
-   ("k" counsel-projectile-action-kill-buffer
-    "kill buffer")
+   ("k" counsel-projectile-action-kill-delete
+    "kill buffer / delete-file")
    ("x" counsel-projectile-action-file-extern
     "open file externally")
    ("r" counsel-projectile-action-file-root
@@ -1339,11 +1345,11 @@ files."
       (switch-to-buffer-other-window name)
     (counsel-projectile-find-file-action-other-window name)))
 
-(defun counsel-projectile-action-kill-buffer (name)
-  "Kill buffer named NAME."
+(defun counsel-projectile-action-kill-delete (name)
+  "Kill buffer or delete-file named NAME."
   (if (member name counsel-projectile--buffers)
       (ivy--kill-buffer-action name)
-    (message "This action only applies to buffers.")))
+    (counsel-projectile-find-file-action-delete name)))
   
 (defun counsel-projectile-action-find-file-manually (name)
   "Call `counsel-find-file' from default directory of buffer
