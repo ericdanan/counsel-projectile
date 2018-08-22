@@ -83,6 +83,7 @@ New commands:
 | Key binding          | Command                          | Description                                         |
 | :------------------- | :------------------------------- | :-------------------------------------------------- |
 | <kbd>C-c p SPC</kbd> | `counsel-projectile`             | Jump to a project buffer or file, or switch project |
+| <kbd>C-c p s i</kbd> | `counsel-projectile-git-grep`    | Search project with git grep                        |
 | <kbd>C-c p O c</kbd> | `counsel-projectile-org-capture` | Capture into project                                |
 | <kbd>C-c p O a</kbd> | `counsel-projectile-org-capture` | Open project agenda                                 |
 ## The `counsel-projectile` command
@@ -123,6 +124,7 @@ This command is a replacement for `projectile-switch-project`. It adds the possi
 | <kbd>E</kbd>   | Edit project directory-local variables                                                  |
 | <kbd>v</kbd>   | Open project in vc-dir / magit / monky                                                  |
 | <kbd>s g</kbd> | Search project with grep: call `counsel-projectile-grep` (see below)                    |
+| <kbd>s i</kbd> | Search project with git grep: call `counsel-projectile-git-grep` (see below)            |
 | <kbd>s s</kbd> | Search project with ag: call `counsel-projectile-ag` (see below)                        |
 | <kbd>s r</kbd> | Search project with rg: call `counsel-projectile-rg` (see below)                        |
 | <kbd>x s</kbd> | Invoke shell from the project root                                                      |
@@ -178,6 +180,12 @@ The key binding <kbd>C-c C-k</kbd> can also be used from the minibuffer to kill 
 Default key binding: <kbd>C-c p s g</kbd>.
 
 This command is a replacement for `projectile-grep`. It searches all project files with `grep`, taking advantage of ivy's support for updating the list of candidates after each input (dynamic collections). Each canidate corresponds to a matching line in some project file, and there is only one action that opens that file at that line.
+
+If inside a git project and the variable `projectile-use-git-grep` is non-nil, then `counsel-projectile-grep` uses `git grep` instead of `grep`, by calling the function `counsel-projectile-git-grep` (see below).
+## The `counsel-projectile-git-grep` command
+Default key binding: <kbd>C-c p s i</kbd>.
+
+This command is similar to `counsel-projectile-grep` (see above) but uses `git grep` instead of `grep` (hence it only works in git projects).
 ## The `counsel-projectile-ag` command
 Default key binding: <kbd>C-c p s s</kbd>.
 

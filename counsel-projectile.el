@@ -588,14 +588,11 @@ of `(ivy-thing-at-point)' by hitting \"M-n\" in the minibuffer."
           (sexp  :tag "Custom expression"))
   :group 'counsel-projectile)
 
-(defvar counsel-projectile-grep-base-command "grep -rnE %s -- %%s ."
-  "Format string to use in `cousel-projectile-grep-function' to
+(defvar counsel-projectile-grep-base-command "grep -rnEI %s -- %%s %s"
+  "Format string to use in `cousel-projectile-grep' to
 construct the command.")
 
 (defvar counsel-projectile-grep-command nil)
-
-(defvar counsel-projectile-grep-options-history nil
-  "History for `counsel-projectile-grep' options.")
 
 (defun counsel-projectile-grep-function (string)
   "Grep for STRING in the current project."
@@ -636,11 +633,12 @@ construct the command.")
     (insert (format "%d candidates:\n" (length cands)))
     (ivy--occur-insert-lines cands)))
 
+;;;###autoload
 (defun counsel-projectile-grep (&optional options-or-cmd)
   "Search the current project with grep.
 
 If inside a git project and `projectile-use-git-grep' is non-nil,
-use `counsel-git-grep'. Otherwise use grep recursively.
+use git grep. Otherwise use grep recursively.
 
 OPTIONS-OR-CMD, if non-nil, is a string containing either
 additional options to be passed to grep, or an alternative git
@@ -648,36 +646,31 @@ grep command. It is read from the minibuffer if the function is
 called with a prefix argument."
   (interactive)
   (if (and (eq (projectile-project-vcs) 'git)
-           projectile-use-git-grep)
-      (let ((counsel-prompt-function
-             (lambda ()
-               (ivy-add-prompt-count
-                (format "%s: " (projectile-prepend-project-name (ivy-state-prompt ivy-last)))))))
-        (counsel-git-grep (or current-prefix-arg options-or-cmd)
-                          counsel-projectile-grep-initial-input))
-    (counsel-require-program (car (split-string counsel-projectile-grep-base-command)))
-    (let* ((ignored-files (mapconcat (lambda (i)
-                                       (concat "--exclude="
-                                               (shell-quote-argument i)
-                                               " "))
-                                     (projectile-ignored-files-rel)
-                                     ""))
-           (ignored-dirs (mapconcat (lambda (i)
-                                      (concat "--exclude-dir="
-                                              (shell-quote-argument i)
-                                              " "))
-                                    (projectile-ignored-directories-rel)
-                                    ""))
-           (ignored (concat ignored-files ignored-dirs))
-           (options
-            (if current-prefix-arg
-                (read-string (projectile-prepend-project-name "grep options: ")
-                             ignored
-                             'counsel-projectile-grep-options-history)
-              (concat ignored options-or-cmd)))
+             projectile-use-git-grep)
+      (counsel-projectile-git-grep options-or-cmd)
+    (let* ((path
+            (mapconcat 'shell-quote-argument
+                       (projectile-normalise-paths
+                        (car (projectile-parse-dirconfig-file)))
+                       " "))
+           (ignored-files
+            (mapconcat (lambda (i)
+                         (concat "--exclude=" (shell-quote-argument i)))
+                       (append
+                        (projectile--globally-ignored-file-suffixes-glob)
+                        (projectile-ignored-files-rel))
+                       " "))
+           (ignored-dirs
+            (mapconcat (lambda (i)
+                         (concat "--exclude-dir=" (shell-quote-argument i)))
+                       (projectile-ignored-directories-rel)
+                       " "))
+           (ignored (concat ignored-files " " ignored-dirs))
            (default-directory (projectile-project-root)))
+      (counsel-require-program
+       (car (split-string counsel-projectile-grep-base-command)))
       (setq counsel-projectile-grep-command
-            (format counsel-projectile-grep-base-command options))
+            (format counsel-projectile-grep-base-command ignored path))
       (ivy-set-prompt 'counsel-projectile-grep counsel-prompt-function)
       (ivy-read (projectile-prepend-project-name "grep")
                 #'counsel-projectile-grep-function
@@ -694,6 +687,30 @@ called with a prefix argument."
 (counsel-set-async-exit-code 'counsel-projectile-grep 1 "No matches found")
 (ivy-set-occur 'counsel-projectile-grep 'counsel-projectile-grep-occur)
 (ivy-set-display-transformer 'counsel-projectile-grep  'counsel-projectile-grep-transformer)
+
+;;;###autoload
+(defun counsel-projectile-git-grep (&optional cmd)
+  "Search the current project with git grep.
+
+CMD, if non-nil, is a string containing an alternative git grep
+command. It is read from the minibuffer if the function is called
+with a prefix argument."
+  (interactive)
+  (let* ((path
+          (mapconcat 'shell-quote-argument
+                     (projectile-normalise-paths
+                      (car (projectile-parse-dirconfig-file)))
+                     " "))
+         (counsel-git-grep-cmd-default
+          (concat (concat (string-trim-right counsel-git-grep-cmd-default " \\.")
+                          " " path)))
+         (counsel-prompt-function
+          (lambda ()
+            (ivy-add-prompt-count
+             (format "%s: " (projectile-prepend-project-name
+                             (ivy-state-prompt ivy-last)))))))
+    (counsel-git-grep (or current-prefix-arg cmd)
+                      counsel-projectile-grep-initial-input)))
 
 ;;* counsel-projectile-ag
 
@@ -712,9 +729,6 @@ of `(ivy-thing-at-point)' by hitting \"M-n\" in the minibuffer."
           (sexp  :tag "Custom expression"))
   :group 'counsel-projectile)
 
-(defvar counsel-projectile-ag-options-history nil
-  "History for `counsel-projectile-ag' options.")
-
 ;;;###autoload
 (defun counsel-projectile-ag (&optional options)
   "Search the current project with ag.
@@ -723,23 +737,26 @@ OPTIONS, if non-nil, is a string containing additional options to
 be passed to ag. It is read from the minibuffer if the function
 is called with a prefix argument."
   (interactive)
-  (let* ((ignored (mapconcat (lambda (i)
-                               (concat "--ignore "
-                                       (shell-quote-argument i)
-                                       " "))
-                             (append (projectile-ignored-files-rel)
-                                     (projectile-ignored-directories-rel))
-                             ""))
-         (options
-          (if current-prefix-arg
-              (read-string (projectile-prepend-project-name "ag options: ")
-                           ignored
-                           'counsel-projectile-ag-options-history)
-            (concat ignored options))))
+  (let* ((path (mapconcat 'shell-quote-argument
+                          (projectile-normalise-paths
+                           (car (projectile-parse-dirconfig-file)))
+                          " "))
+         (ignored
+          (mapconcat (lambda (i)
+                       (concat "--ignore " (shell-quote-argument i)))
+                     (append
+                      (projectile--globally-ignored-file-suffixes-glob)
+                      (projectile-ignored-files-rel)
+                      (projectile-ignored-directories-rel))
+                     " "))
+         (counsel-ag-base-command
+          (format (string-trim-right counsel-ag-base-command " \\.")
+                  (concat ignored " %s " path))))
     (counsel-ag (eval counsel-projectile-ag-initial-input)
                 (projectile-project-root)
                 options
-                (projectile-prepend-project-name "ag"))))
+                (projectile-prepend-project-name
+                 (car (split-string counsel-ag-base-command))))))
 
 ;;* counsel-projectile-rg
 
@@ -758,9 +775,6 @@ of `(ivy-thing-at-point)' by hitting \"M-n\" in the minibuffer."
           (sexp  :tag "Custom expression"))
   :group 'counsel-projectile)
 
-(defvar counsel-projectile-rg-options-history nil
-  "History for `counsel-projectile-rg' options.")
-
 ;;;###autoload
 (defun counsel-projectile-rg (&optional options)
   "Search the current project with rg.
@@ -769,23 +783,27 @@ OPTIONS, if non-nil, is a string containing additional options to
 be passed to rg. It is read from the minibuffer if the function
 is called with a prefix argument."
   (interactive)
-  (let* ((ignored (mapconcat (lambda (i)
-                               (concat "--glob "
-                                       (shell-quote-argument (concat "!" i))
-                                       " "))
-                             (append (projectile-ignored-files-rel)
-                                     (projectile-ignored-directories-rel))
-                             ""))
-         (options
-          (if current-prefix-arg
-              (read-string (projectile-prepend-project-name "rg options: ")
-                           ignored
-                           'counsel-projectile-rg-options-history)
-            (concat ignored options))))
+  (let* ((path
+          (mapconcat 'shell-quote-argument
+                     (projectile-normalise-paths
+                      (car (projectile-parse-dirconfig-file)))
+                     " "))
+         (ignored
+          (mapconcat (lambda (i)
+                       (concat "--glob !" (shell-quote-argument i)))
+                     (append
+                      (projectile--globally-ignored-file-suffixes-glob)
+                      (projectile-ignored-files-rel)
+                      (projectile-ignored-directories-rel))
+                     " "))
+         (counsel-rg-base-command
+          (format (string-trim-right counsel-rg-base-command " \\.")
+                  (concat ignored " %s " path))))
     (counsel-rg (eval counsel-projectile-rg-initial-input)
                 (projectile-project-root)
                 options
-                (projectile-prepend-project-name "rg"))))
+                (projectile-prepend-project-name
+                 (car (split-string counsel-rg-base-command))))))
 
 ;;* counsel-projectile-org-capture
 
@@ -1044,6 +1062,8 @@ candidates list of `counsel-projectile-switch-project'."
     "open project in vc-dir / magit / monky")
    ("sg" counsel-projectile-switch-project-action-grep
     "search project with grep")
+   ("si" counsel-projectile-switch-project-action-git-grep
+    "search project with git grep")
    ("ss" counsel-projectile-switch-project-action-ag
     "search project with ag")
    ("sr" counsel-projectile-switch-project-action-rg
@@ -1179,17 +1199,22 @@ action."
     (counsel-projectile-switch-project-by-name project)))
 
 (defun counsel-projectile-switch-project-action-grep (project)
-  "Search PROJECT with `grep'."
+  "Search PROJECT with grep."
   (let ((projectile-switch-project-action 'counsel-projectile-grep))
     (counsel-projectile-switch-project-by-name project)))
 
+(defun counsel-projectile-switch-project-action-git-grep (project)
+  "Search PROJECT with git grep."
+  (let ((projectile-switch-project-action 'counsel-projectile-git-grep))
+    (counsel-projectile-switch-project-by-name project)))
+
 (defun counsel-projectile-switch-project-action-ag (project)
-  "Search PROJECT with `ag'."
+  "Search PROJECT with ag."
   (let ((projectile-switch-project-action 'counsel-projectile-ag))
     (counsel-projectile-switch-project-by-name project)))
 
 (defun counsel-projectile-switch-project-action-rg (project)
-  "Search PROJECT with `rg'."
+  "Search PROJECT with rg."
   (let ((projectile-switch-project-action 'counsel-projectile-rg))
     (counsel-projectile-switch-project-by-name project)))
 
@@ -1383,6 +1408,7 @@ If not inside a project, call `counsel-projectile-switch-project'."
     (projectile-ripgrep          . counsel-projectile-rg)
     (projectile-switch-project   . counsel-projectile-switch-project)
     (" "                         . counsel-projectile)
+    ("si"                        . counsel-projectile-git-grep)
     ("Oc"                        . counsel-projectile-org-capture)
     ("Oa"                        . counsel-projectile-org-agenda))
   "Alist of counsel-projectile key bindings.
