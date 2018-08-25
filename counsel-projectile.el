@@ -1007,13 +1007,13 @@ capture."
 (defvar org-agenda-files)
 
 ;;;###autoload
-(defun counsel-projectile-org-agenda (&optional arg org-keys restriction)
+(defun counsel-projectile-org-agenda (&optional arg keys restriction)
   "Open project agenda.
 
 This command simply calls `org-agenda' after filtering out all
 agenda files that do not belong to the current project.
 
-Optional arguments ARG, ORG-KEYS, and RESTRICTION are as in
+Optional arguments ARG, KEYS, and RESTRICTION are as in
 `org-agenda'."
   (interactive "P")
   (require 'org-agenda)
@@ -1022,7 +1022,7 @@ Optional arguments ARG, ORG-KEYS, and RESTRICTION are as in
           (cl-remove-if-not (lambda (file)
                               (string-prefix-p root file))
                             (org-agenda-files t 'ifmode))))
-    (org-agenda arg org-keys restriction)))
+    (org-agenda arg keys restriction)))
 
 ;;* counsel-projectile-switch-project
 
