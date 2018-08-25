@@ -1276,7 +1276,7 @@ action."
   (let ((map (make-sparse-keymap)))
     (define-key map (kbd "C-c C-k") (lambda ()
                                       (interactive)
-                                      (counsel-projectile-action-kill-buffer (ivy-state-current ivy-last))))
+                                      (counsel-projectile-action-kill-delete (ivy-state-current ivy-last))))
     map)
   "Keymap for `counsel-projectile'.")
 
