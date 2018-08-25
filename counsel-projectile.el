@@ -1003,6 +1003,9 @@ capture."
 
 ;;* counsel-projectile-org-agenda
 
+(declare-function org-agenda-files "org")
+(defvar org-agenda-files)
+
 ;;;###autoload
 (defun counsel-projectile-org-agenda (&optional arg org-keys restriction)
   "Open project agenda.
