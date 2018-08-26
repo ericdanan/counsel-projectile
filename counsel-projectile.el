@@ -1051,6 +1051,8 @@ candidates list of `counsel-projectile-switch-project'."
     "jump to a project file")
    ("d" counsel-projectile-switch-project-action-find-dir
     "jump to a project directory")
+   ("D" counsel-projectile-switch-project-action-dired
+    "open project in dired")
    ("b" counsel-projectile-switch-project-action-switch-to-buffer
     "jump to a project buffer")
    ("m" counsel-projectile-switch-project-action-find-file-manually
@@ -1142,6 +1144,11 @@ action."
   (let ((projectile-switch-project-action
          (lambda ()
            (counsel-projectile-find-dir ivy-current-prefix-arg))))
+    (counsel-projectile-switch-project-by-name project)))
+
+(defun counsel-projectile-switch-project-action-dired (project)
+  "Open `dired' at PROJECT root."
+  (let ((projectile-switch-project-action 'projectile-dired))
     (counsel-projectile-switch-project-by-name project)))
 
 (defun counsel-projectile-switch-project-action-switch-to-buffer (project)

@@ -116,6 +116,7 @@ This command is a replacement for `projectile-switch-project`. It adds the possi
 | <kbd>o</kbd>   | Jump to a project buffer or file: call `counsel-projectile` (default action; see above) |
 | <kbd>f</kbd>   | Jump to a project file: call `counsel-projectile-find-file` (see below)                 |
 | <kbd>d</kbd>   | Jump to a project directory: call `counsel-projectile-find-dir` (see below)             |
+| <kbd>D</kbd>   | Open project in dired                                                                   |
 | <kbd>b</kbd>   | Jump to a project buffer: call `counsel-projectile-switch-to-buffer` (see below)        |
 | <kbd>m</kbd>   | Find file manually: call `counsel-find-file` from the project root                      |
 | <kbd>S</kbd>   | Save all project buffers                                                                |
