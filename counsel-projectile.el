@@ -1461,14 +1461,14 @@ counterparts."
    (counsel-projectile-mode
     (projectile-mode)
     (dolist (binding counsel-projectile-key-bindings)
-      (if (functionp (car binding))
-          (define-key projectile-mode-map `[remap ,(car binding)] (cdr binding))
-        (define-key projectile-command-map (car binding) (cdr binding)))))
+      (if (sequencep (car binding))
+          (define-key projectile-command-map (car binding) (cdr binding))
+        (define-key projectile-mode-map `[remap ,(car binding)] (cdr binding)))))
    (t
     (dolist (binding counsel-projectile-key-bindings)
-      (if (functionp (car binding))
-          (define-key projectile-mode-map `[remap ,(car binding)] nil)
-        (define-key projectile-command-map (car binding) nil)))
+      (if (sequencep (car binding))
+          (define-key projectile-command-map (car binding) nil)
+        (define-key projectile-mode-map `[remap ,(car binding)] nil)))
     (projectile-mode -1))))
 
 ;;* provide
