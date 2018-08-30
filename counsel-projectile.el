@@ -803,7 +803,7 @@ is called with a prefix argument."
                       (projectile-ignored-directories-rel))
                      " "))
          (counsel-rg-base-command
-          (format (string-trim-right counsel-rg-base-command " \\.")
+          (format counsel-rg-base-command
                   (concat ignored " %s " path))))
     (counsel-rg (eval counsel-projectile-rg-initial-input)
                 (projectile-project-root)
