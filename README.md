@@ -253,6 +253,7 @@ Extra actions can be added to these lists or, alternatively, can be set through 
 - add, remove, or move an action,
 - change an action key, function, or name,
 - change the index of the default action.
+
 See its docstring for details.
 ## Setting `counsel-projectile-org-capture` templates
 The project-specific capture templates for `counsel-projectile-org-capture` are read from the variable `counsel-projectile-org-capture-templates`. This variable has the same format as the variable `org-capture-templates`, except that in a template's name or target, the placeholders `${root}` and
@@ -292,11 +293,13 @@ The following commands allow to modify the way candidates are sorted:
 - `counsel-projectile-find-file`
 - `counsel-projectile-find-dir`
 - `counsel-projectile-switch-to-buffer`
+
 Sorting for these commands is controlled by the following variables, respectively:
 - `counsel-projectile-sort-projects`
 - `counsel-projectile-sort-files`
 - `counsel-projectile-sort-directories`
 - `counsel-projectile-sort-buffers`
+
 If one of these variable is nil, the default, the command's candidates are not sorted. If it is non-nil, they are sorted. The sorting criterion can be customized through the variable `ivy-sort-functions-alist`. For instance, if you want files to be sorted from newest to oldest, then you need to add the following entry to this list:
 ```emacs-lisp
 '(counsel-projectile-find-file . file-newer-than-file-p)
