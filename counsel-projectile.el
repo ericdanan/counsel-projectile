@@ -708,8 +708,8 @@ with a prefix argument."
                       (car (projectile-parse-dirconfig-file)))
                      " "))
          (counsel-git-grep-cmd-default
-          (concat (concat (string-trim-right counsel-git-grep-cmd-default " \\.")
-                          " " path)))
+          (concat (string-trim-right counsel-git-grep-cmd-default " \\.")
+                  " " path))
          (counsel-prompt-function
           (lambda ()
             (ivy-add-prompt-count
