@@ -791,8 +791,9 @@ is called with a prefix argument."
   (interactive)
   (let* ((path
           (mapconcat 'shell-quote-argument
-                     (projectile-normalise-paths
-                      (car (projectile-parse-dirconfig-file)))
+                     (or (projectile-normalise-paths
+                          (car (projectile-parse-dirconfig-file)))
+                         '("."))
                      " "))
          (ignored
           (mapconcat (lambda (i)
