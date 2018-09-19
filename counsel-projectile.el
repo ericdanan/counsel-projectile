@@ -943,6 +943,29 @@ The format is the same as in `org-capture-templates-contexts'."
                           (function :tag "Custom function")))))
   :group 'counsel-projectile)
 
+(defcustom counsel-projectile-org-capture-extra-actions
+  '(("P" counsel-projectile-org-capture-action-switch-project
+     "switch project"))
+  "List of extra actions to add to
+`counsel-projectile-org-capture' (in addition to the actions of
+`counsel-org-capture')."
+  :type '(repeat :tag "Actions"
+                 (list :tag "Action"
+                       (string   :tag "     key")
+                       (function :tag "function")
+                       (string   :tag "    name")))
+  :group 'counsel-projectile)
+
+(defvar counsel-projectile--org-capture-templates-backup nil
+  "Stores a backup of `org-capture-templates'.")
+
+(defun counsel-projectile-org-capture-action-switch-project (_)
+  "Reset `org-capture-templates' from
+`counsel-projectile--org-capture-templates-backup' and call
+`counsel-projectile-switch-project'."
+  (setq org-capture-templates counsel-projectile--org-capture-templates-backup)
+  (counsel-projectile-switch-project))
+  
 ;;;###autoload
 (defun counsel-projectile-org-capture (&optional from-buffer)
   "Capture into the current project.
@@ -960,7 +983,9 @@ Optional argument FROM-BUFFER specifies the buffer from which to
 capture."
   (interactive)
   (require 'org-capture)
-  (let* ((root (ignore-errors (projectile-project-root)))
+  (setq counsel-projectile--org-capture-templates-backup org-capture-templates)
+  (let* ((ivy--actions-list (copy-sequence ivy--actions-list))
+         (root (ignore-errors (projectile-project-root)))
          (name (projectile-project-name))
          (org-capture-templates-contexts
           (append (when root
@@ -993,6 +1018,9 @@ capture."
                        else
                        collect item)))
            org-capture-templates)))
+    (ivy-add-actions
+     'counsel-org-capture
+     counsel-projectile-org-capture-extra-actions)
     (with-current-buffer (or from-buffer (current-buffer))
       (counsel-org-capture))))
 
