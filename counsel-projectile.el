@@ -298,7 +298,7 @@ It is also possible to use a custom matcher.  It must be a function taking two a
     "find file manually")
    ("k" counsel-projectile-find-file-action-delete
     "delete")
-   ("p" (lambda (_) (counsel-projectile-switch-project))
+   ("p" counsel-projectile-find-file-action-switch-project
     "switch project"))
  'counsel-projectile)
 
@@ -368,6 +368,10 @@ on `counsel-find-file-ignore-regexp'."
   "Delete FILE."
   (counsel-find-file-delete (projectile-expand-root file)))
 
+(defun counsel-projectile-find-file-action-switch-project (_)
+  "Switch project action for `counsel-projectile-find-file'."
+  (counsel-projectile-switch-project 'counsel-projectile-switch-project-action-find-file))
+
 (defun counsel-projectile-find-file-transformer (str)
   "Transform non-visited file names with `ivy-virtual' face."
   (if (not (get-file-buffer (projectile-expand-root str)))
@@ -428,7 +432,7 @@ The sorting function can be modified by adding an entry for
     "open as root")
    ("m" counsel-projectile-find-file-action-find-file-manually
     "find file manually")
-   ("p" (lambda (_) (counsel-projectile-switch-project))
+   ("p" counsel-projectile-find-dir-action-switch-project
     "switch project"))
  'counsel-projectile)
  
@@ -458,6 +462,10 @@ The sorting function can be modified by adding an entry for
   "Visit DIR as root and run `projectile-find-dir-hook'."
   (counsel-find-file-as-root (projectile-expand-root dir))
   (run-hooks 'projectile-find-dir-hook))
+
+(defun counsel-projectile-find-dir-action-switch-project (_)
+  "Switch project action for `counsel-projectile-find-dir'."
+  (counsel-projectile-switch-project 'counsel-projectile-switch-project-action-find-dir))
 
 (defun counsel-projectile-find-dir-transformer (str)
   "Transform candidates with `ivy-subdir' face."
@@ -511,7 +519,7 @@ candidates list of `counsel-projectile-switch-to-buffer' and
     "kill")
    ("m" counsel-projectile-switch-to-buffer-action-find-file-manually
     "find file manually")
-   ("p" (lambda (_) (counsel-projectile-switch-project))
+   ("p" counsel-projectile-switch-to-buffer-action-switch-project
     "switch project"))
  'counsel-projectile)
 
@@ -549,6 +557,10 @@ names as in `ivy--buffer-list', and remove current buffer if
            (or (and b (buffer-local-value 'default-directory b))
                (projectile-project-root))))
     (counsel-find-file)))
+
+(defun counsel-projectile-switch-to-buffer-action-switch-project (_)
+  "Switch project action for `counsel-projectile-switch-to-buffer'."
+  (counsel-projectile-switch-project 'counsel-projectile-switch-project-action-switch-to-buffer))
 
 (defun counsel-projectile-switch-to-buffer-transformer (str)
   "Transform candidate STR when switching project buffers.
@@ -599,12 +611,12 @@ of `(ivy-thing-at-point)' by hitting \"M-n\" in the minibuffer."
  '(1
    ("o" counsel-git-grep-action
     "default")
-   ("p" (lambda (_) (counsel-projectile-switch-project))
+   ("p" counsel-projectile-grep-action-switch-project
     "switch project"))
  'counsel-projectile)
 
 (defcustom counsel-projectile-git-grep-extra-actions
-  '(("p" (lambda (_) (counsel-projectile-switch-project))
+  '(("p" counsel-projectile-git-grep-action-switch-project
      "switch project"))
   "List of extra actions to add to
 `counsel-projectile-git-grep' (in addition to the actions of
@@ -632,6 +644,14 @@ construct the command.")
         (counsel--async-command (format counsel-projectile-grep-command
                                         (shell-quote-argument regex)))
         nil)))
+
+(defun counsel-projectile-grep-action-switch-project (_)
+  "Switch project action for `counsel-projectile-grep'."
+  (counsel-projectile-switch-project 'counsel-projectile-switch-project-action-grep))
+
+(defun counsel-projectile-git-grep-action-switch-project (_)
+  "Switch project action for `counsel-projectile-git-grep'."
+  (counsel-projectile-switch-project 'counsel-projectile-switch-project-action-git-grep))
 
 (defun counsel-projectile-grep-transformer (str)
   "Higlight file and line number in STR, first removing the
@@ -756,7 +776,7 @@ of `(ivy-thing-at-point)' by hitting \"M-n\" in the minibuffer."
   :group 'counsel-projectile)
 
 (defcustom counsel-projectile-ag-extra-actions
-  '(("p" (lambda (_) (counsel-projectile-switch-project))
+  '(("p" counsel-projectile-ag-action-switch-project
      "switch project"))
   "List of extra actions to add to
 `counsel-projectile-ag' (in addition to the actions of
@@ -767,6 +787,10 @@ of `(ivy-thing-at-point)' by hitting \"M-n\" in the minibuffer."
                        (function :tag "function")
                        (string   :tag "    name")))
   :group 'counsel-projectile)
+
+(defun counsel-projectile-ag-action-switch-project (_)
+  "Switch project action for `counsel-projectile-ag'."
+  (counsel-projectile-switch-project 'counsel-projectile-switch-project-action-ag))
 
 ;;;###autoload
 (defun counsel-projectile-ag (&optional options)
@@ -819,7 +843,7 @@ of `(ivy-thing-at-point)' by hitting \"M-n\" in the minibuffer."
   :group 'counsel-projectile)
 
 (defcustom counsel-projectile-rg-extra-actions
-  '(("p" (lambda (_) (counsel-projectile-switch-project))
+  '(("p" counsel-projectile-rg-action-switch-project
      "switch project"))
   "List of extra actions to add to
 `counsel-projectile-rg' (in addition to the actions of
@@ -830,6 +854,10 @@ of `(ivy-thing-at-point)' by hitting \"M-n\" in the minibuffer."
                        (function :tag "function")
                        (string   :tag "    name")))
   :group 'counsel-projectile)
+
+(defun counsel-projectile-rg-action-switch-project (_)
+  "Switch project action for `counsel-projectile-rg'."
+  (counsel-projectile-switch-project 'counsel-projectile-switch-project-action-rg))
 
 ;;;###autoload
 (defun counsel-projectile-rg (&optional options)
@@ -1020,11 +1048,9 @@ The format is the same as in `org-capture-templates-contexts'."
   "Stores a backup of `org-capture-templates'.")
 
 (defun counsel-projectile-org-capture-action-switch-project (_)
-  "Reset `org-capture-templates' from
-`counsel-projectile--org-capture-templates-backup' and call
-`counsel-projectile-switch-project'."
+  "Switch project action for `counsel-projectile-org-capture'."
   (setq org-capture-templates counsel-projectile--org-capture-templates-backup)
-  (counsel-projectile-switch-project))
+  (counsel-projectile-switch-project 'counsel-projectile-switch-project-action-org-capture))
   
 ;;;###autoload
 (defun counsel-projectile-org-capture (&optional from-buffer)
@@ -1330,8 +1356,12 @@ action."
     (counsel-projectile-switch-project-by-name project)))
 
 ;;;###autoload
-(defun counsel-projectile-switch-project ()
-  "Switch project."
+(defun counsel-projectile-switch-project (&optional default-action)
+  "Switch project.
+
+Optional argument DEFAULT-ACTION is the key, function, name, or
+index in the list `counsel-projectile-switch-project-action' (1
+for the first action, etc) of the action to set as default."
   (interactive)
   (ivy-read (projectile-prepend-project-name "Switch to project: ")
             (if counsel-projectile-remove-current-project
@@ -1339,7 +1369,14 @@ action."
               projectile-known-projects)
             :preselect (and (projectile-project-p)
                             (abbreviate-file-name (projectile-project-root)))
-            :action counsel-projectile-switch-project-action
+            :action (or (and default-action
+                             (listp counsel-projectile-switch-project-action)
+                             (integerp (car counsel-projectile-switch-project-action))
+                             (cons (counsel-projectile--action-index
+                                    default-action
+                                    counsel-projectile-switch-project-action)
+                                   (cdr counsel-projectile-switch-project-action)))
+                        counsel-projectile-switch-project-action)
             :require-match t
             :sort counsel-projectile-sort-projects
             :caller 'counsel-projectile-switch-project))
@@ -1361,7 +1398,7 @@ action."
     "open file as root")
    ("m" counsel-projectile-action-find-file-manually
     "find file manually")
-   ("p" (lambda (_) (counsel-projectile-switch-project))
+   ("p" counsel-projectile-action-switch-project
     "switch project"))
  'counsel-projectile)
 
@@ -1462,6 +1499,10 @@ directory of file named NAME."
   (if (member name counsel-projectile--buffers)
       (message "This action does not apply to buffers.")
     (counsel-projectile-find-file-action-root name)))
+
+(defun counsel-projectile-action-switch-project (_)
+  "Switch project action for `counsel-projectile'."
+  (counsel-projectile-switch-project 'counsel-projectile-switch-project-action))
 
 (defun counsel-projectile-transformer (str)
   "Fontifies modified, file-visiting buffers as well as non-visited files."
