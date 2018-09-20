@@ -183,7 +183,12 @@ The key binding <kbd>C-c C-k</kbd> can also be used from the minibuffer to kill 
 ## The `counsel-projectile-grep` command
 Default key binding: <kbd>C-c p s g</kbd>.
 
-This command is a replacement for `projectile-grep`. It searches all project files with `grep`, taking advantage of ivy's support for updating the list of candidates after each input (dynamic collections). Each canidate corresponds to a matching line in some project file, and there is only one action that opens that file at that line.
+This command is a replacement for `projectile-grep`. It searches all project files with `grep`, taking advantage of ivy's support for updating the list of candidates after each input (dynamic collections). Each canidate corresponds to a matching line in some project file, and the following actions are offered:
+
+| Key          | Action                                                                     |
+| :----------- | :------------------------------------------------------------------------- |
+| <kbd>o</kbd> | Jump to the candidate file and line                                        |
+| <kbd>p</kbd> | Switch project: call `counsel-projectile-switch-project` (see above)       |
 
 If inside a git project and the variable `projectile-use-git-grep` is non-nil, then `counsel-projectile-grep` uses `git grep` instead of `grep`, by calling the function `counsel-projectile-git-grep` (see below).
 ## The `counsel-projectile-git-grep` command
@@ -204,6 +209,18 @@ Default key binding: <kbd>C-c p O c</kbd>.
 This command is a replacement for `org-capture` (or `counsel-org-capture`) offering project-specific capture templates, in addition to the regular templates available from `org-capture`. By default, there is a single project template, named `[<project-name>] Tasks`, which stores the captured information under headline `Tasks` in file `<project-root>/notes.org`.
 
 If not inside a project, the project templates are ignored and only the regular ones are offered. So you may want to systematically use `counsel-projectile-org-capture` isntead of `org-capture` or `counsel-org-capture` (you may also want to give it a global key binding, such as `C-c c`).
+
+The following actions are offered:
+
+| Key          | Action                                                                     |
+| :----------- | :------------------------------------------------------------------------- |
+| <kbd>o</kbd> | Capture                                                                    |
+| <kbd>t</kbd> | Go to target                                                               |
+| <kbd>l</kbd> | Go to last stored                                                          |
+| <kbd>p</kbd> | Insert template at point                                                   |
+| <kbd>c</kbd> | Customize org-capture-templates                                            |
+| <kbd>P</kbd> | Switch project: call `counsel-projectile-switch-project` (see above)       |
+
 ## The `counsel-projectile-org-agenda` command
 Default key binding: <kbd>C-c p O a</kbd>.
 
@@ -228,6 +245,7 @@ The variable holding the action list for `<command>` is named `<command>-action`
 - `counsel-projectile-find-file-action`
 - `counsel-projectile-find-dir-action`
 - `counsel-projectile-switch-to-buffer-action`
+- `counsel-projectile-grep-action`
 
 For instance, the default value of `counsel-projectile-action` is:
 
@@ -255,6 +273,14 @@ Extra actions can be added to these lists or, alternatively, can be set through 
 - change the index of the default action.
 
 See its docstring for details.
+
+The mechanism to customize action lists is slightly different for some commands that internally rely on built-in ivy commands and hence inherit these command's actions. For these commands, a variable `<command-extra-actions>` is defined:
+- `counsel-projectile-git-grep-extra-actions`
+- `counsel-projectile-ag-extra-actions`
+- `counsel-projectile-rg-extra-actions`
+- `counsel-projectile-org-capture-extra-actions`
+
+These variable have the same format as above without the initial index. You can also modify the built-in command's action through ivy's `ivy-set-actions` mechanism.
 ## Setting `counsel-projectile-org-capture` templates
 The project-specific capture templates for `counsel-projectile-org-capture` are read from the variable `counsel-projectile-org-capture-templates`. This variable has the same format as the variable `org-capture-templates`, except that in a template's name or target, the placeholders `${root}` and
 `${name}` can be used to stand for the current project root and
