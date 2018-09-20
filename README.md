@@ -274,7 +274,7 @@ Extra actions can be added to these lists or, alternatively, can be set through 
 
 See its docstring for details.
 
-The mechanism to customize action lists is slightly different for some commands that internally rely on built-in ivy commands and hence inherit these command's actions. For these commands, a variable `<command-extra-actions>` is defined:
+The mechanism to customize action lists is slightly different for some commands that internally rely on built-in ivy commands and hence inherit these command's actions. For these commands, a variable `<command>-extra-actions` is defined:
 - `counsel-projectile-git-grep-extra-actions`
 - `counsel-projectile-ag-extra-actions`
 - `counsel-projectile-rg-extra-actions`
