@@ -594,6 +594,28 @@ of `(ivy-thing-at-point)' by hitting \"M-n\" in the minibuffer."
           (sexp  :tag "Custom expression"))
   :group 'counsel-projectile)
 
+(counsel-projectile--defcustom-action
+ 'counsel-projectile-grep
+ '(1
+   ("o" counsel-git-grep-action
+    "default")
+   ("p" (lambda (_) (counsel-projectile-switch-project))
+    "switch project"))
+ 'counsel-projectile)
+
+(defcustom counsel-projectile-git-grep-extra-actions
+  '(("p" (lambda (_) (counsel-projectile-switch-project))
+     "switch project"))
+  "List of extra actions to add to
+`counsel-projectile-git-grep' (in addition to the actions of
+`counsel-git-grep')."
+  :type '(repeat :tag "Actions"
+                 (list :tag "Action"
+                       (string   :tag "     key")
+                       (function :tag "function")
+                       (string   :tag "    name")))
+  :group 'counsel-projectile)
+
 (defvar counsel-projectile-grep-base-command "grep -rnEI %s -- %%s %s"
   "Format string to use in `cousel-projectile-grep' to
 construct the command.")
@@ -683,7 +705,7 @@ called with a prefix argument."
                 :dynamic-collection t
                 :keymap counsel-ag-map
                 :history 'counsel-git-grep-history
-                :action #'counsel-git-grep-action
+                :action counsel-projectile-grep-action
                 :unwind (lambda ()
                           (counsel-delete-process)
                           (swiper--cleanup))
@@ -701,7 +723,8 @@ CMD, if non-nil, is a string containing an alternative git grep
 command. It is read from the minibuffer if the function is called
 with a prefix argument."
   (interactive)
-  (let* ((path
+  (let* ((ivy--actions-list (copy-sequence ivy--actions-list))
+         (path
           (mapconcat 'shell-quote-argument
                      (projectile-normalise-paths
                       (car (projectile-parse-dirconfig-file)))
@@ -709,6 +732,9 @@ with a prefix argument."
          (counsel-git-grep-cmd-default
           (concat (string-trim-right counsel-git-grep-cmd-default " \\.")
                   " " path)))
+    (ivy-add-actions
+     'counsel-git-grep
+     counsel-projectile-git-grep-extra-actions)
     (counsel-git-grep (or current-prefix-arg cmd)
                       counsel-projectile-grep-initial-input)))
 
@@ -729,6 +755,19 @@ of `(ivy-thing-at-point)' by hitting \"M-n\" in the minibuffer."
           (sexp  :tag "Custom expression"))
   :group 'counsel-projectile)
 
+(defcustom counsel-projectile-ag-extra-actions
+  '(("p" (lambda (_) (counsel-projectile-switch-project))
+     "switch project"))
+  "List of extra actions to add to
+`counsel-projectile-ag' (in addition to the actions of
+`counsel-ag')."
+  :type '(repeat :tag "Actions"
+                 (list :tag "Action"
+                       (string   :tag "     key")
+                       (function :tag "function")
+                       (string   :tag "    name")))
+  :group 'counsel-projectile)
+
 ;;;###autoload
 (defun counsel-projectile-ag (&optional options)
   "Search the current project with ag.
@@ -737,7 +776,8 @@ OPTIONS, if non-nil, is a string containing additional options to
 be passed to ag. It is read from the minibuffer if the function
 is called with a prefix argument."
   (interactive)
-  (let* ((path (mapconcat 'shell-quote-argument
+  (let* ((ivy--actions-list (copy-sequence ivy--actions-list))
+         (path (mapconcat 'shell-quote-argument
                           (projectile-normalise-paths
                            (car (projectile-parse-dirconfig-file)))
                           " "))
@@ -752,6 +792,9 @@ is called with a prefix argument."
          (counsel-ag-base-command
           (format (string-trim-right counsel-ag-base-command " \\.")
                   (concat ignored " %s " path))))
+    (ivy-add-actions
+     'counsel-ag
+     counsel-projectile-ag-extra-actions)
     (counsel-ag (eval counsel-projectile-ag-initial-input)
                 (projectile-project-root)
                 options
@@ -775,6 +818,19 @@ of `(ivy-thing-at-point)' by hitting \"M-n\" in the minibuffer."
           (sexp  :tag "Custom expression"))
   :group 'counsel-projectile)
 
+(defcustom counsel-projectile-rg-extra-actions
+  '(("p" (lambda (_) (counsel-projectile-switch-project))
+     "switch project"))
+  "List of extra actions to add to
+`counsel-projectile-rg' (in addition to the actions of
+`counsel-rg')."
+  :type '(repeat :tag "Actions"
+                 (list :tag "Action"
+                       (string   :tag "     key")
+                       (function :tag "function")
+                       (string   :tag "    name")))
+  :group 'counsel-projectile)
+
 ;;;###autoload
 (defun counsel-projectile-rg (&optional options)
   "Search the current project with rg.
@@ -783,7 +839,8 @@ OPTIONS, if non-nil, is a string containing additional options to
 be passed to rg. It is read from the minibuffer if the function
 is called with a prefix argument."
   (interactive)
-  (let* ((path
+  (let* ((ivy--actions-list (copy-sequence ivy--actions-list))
+         (path
           (mapconcat 'shell-quote-argument
                      (or (projectile-normalise-paths
                           (car (projectile-parse-dirconfig-file)))
@@ -800,6 +857,9 @@ is called with a prefix argument."
          (counsel-rg-base-command
           (format (string-trim-right counsel-rg-base-command " \\.")
                   (concat ignored " %s " path))))
+    (ivy-add-actions
+     'counsel-ag
+     counsel-projectile-rg-extra-actions)
     (counsel-rg (eval counsel-projectile-rg-initial-input)
                 (projectile-project-root)
                 options
