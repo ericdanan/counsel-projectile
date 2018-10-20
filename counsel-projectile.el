@@ -731,7 +731,7 @@ called with a prefix argument."
          (car (split-string counsel-projectile-grep-base-command)))
         (setq counsel-projectile-grep-command
               (format counsel-projectile-grep-base-command ignored path))
-        (ivy-read (projectile-prepend-project-name "grep")
+        (ivy-read (projectile-prepend-project-name "grep: ")
                   #'counsel-projectile-grep-function
                   :initial-input counsel-projectile-grep-initial-input
                   :dynamic-collection t
