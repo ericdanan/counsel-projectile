@@ -841,7 +841,7 @@ is called with a prefix argument."
                   (projectile-project-root)
                   options
                   (projectile-prepend-project-name
-                   (car (split-string counsel-ag-base-command)))))))
+                   (concat (car (split-string counsel-ag-base-command)) ": "))))))
 
 ;;* counsel-projectile-rg
 
@@ -913,7 +913,7 @@ is called with a prefix argument."
                   (projectile-project-root)
                   options
                   (projectile-prepend-project-name
-                   (car (split-string counsel-rg-base-command)))))))
+                   (concat (car (split-string counsel-rg-base-command)) ": "))))))
 
 ;;* counsel-projectile-org-capture
 
