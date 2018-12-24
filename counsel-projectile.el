@@ -647,7 +647,7 @@ construct the command.")
   "Grep for STRING in the current project."
   (or (counsel-more-chars)
       (let ((default-directory (ivy-state-directory ivy-last))
-            (regex (counsel-unquote-regex-parens
+            (regex (counsel--elisp-to-pcre
                     (setq ivy--old-re
                           (ivy--regex string)))))
         (counsel--async-command (format counsel-projectile-grep-command
@@ -681,7 +681,7 @@ construct the command.")
              (match-string 1 (buffer-name))))
   (let* ((cmd (format counsel-projectile-grep-command
                       (shell-quote-argument
-                       (counsel-unquote-regex-parens
+                       (counsel--elisp-to-pcre
                         (ivy--regex ivy-text)))))
          (cands (split-string (shell-command-to-string cmd) "\n" t)))
     ;; Need precise number of header lines for `wgrep' to work.
