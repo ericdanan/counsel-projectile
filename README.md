@@ -46,8 +46,9 @@
 # Description
 [Projectile](https://github.com/bbatsov/projectile) has native support for using [ivy](https://github.com/abo-abo/swiper) as its completion system. Counsel-projectile provides further ivy integration into projectile by taking advantage of ivy's support for selecting from a list of actions and applying an action without leaving the completion session. Concretely, counsel-projectile defines replacements for existing projectile commands as well as new commands that have no projectile counterparts. A minor mode is also provided that adds key bindings for all these commands on top of the projectile key bindings.
 # News
+- [2019-01-27] New version `0.3`. If you are upgrading from `0.2`, please read [here](#breaking-changes-in-version-03) about breaking changes.
 - [2018-01-05] Package now available on MELPA Stable.
-- [2017-12-18] New version `0.2`. If you are upgrading from `0.1`, please read [here](#breaking-changes-in-version-02) about important changes.
+- [2017-12-18] New version `0.2`. If you are upgrading from `0.1`, please read [here](#breaking-changes-in-version-02) about breaking changes.
 - [2016-04-12] First version `0.1`.
 # Installation
 Install the package from [MELPA](https://melpa.org), [MELPA Stable](https://stable.melpa.org), or [el-get](https://github.com/dimitri/el-get), or clone this repository somewhere in your load path.
