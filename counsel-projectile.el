@@ -243,6 +243,17 @@ If anything goes wrong, throw an error and do not modify ACTION-VAR."
                      (cdr action-list))))))
     (set action-var action-list)))
 
+;; Copy the function `string-trim-right' from emacs 26 here so as to
+;; support emacs 25 (the function exists in emacs 25 but doesn't
+;; accept the REGEXP optional argument).
+(defsubst counsel-projectile--string-trim-right (string &optional regexp)
+  "Trim STRING of trailing string matching REGEXP.
+
+REGEXP defaults to  \"[ \\t\\n\\r]+\"."
+  (if (string-match (concat "\\(?:" (or regexp "[ \t\n\r]+") "\\)\\'") string)
+      (replace-match "" t t string)
+    string))
+
 ;;* counsel-projectile-find-file
 
 (defcustom counsel-projectile-sort-files nil
@@ -748,7 +759,7 @@ with a prefix argument."
                         (car (projectile-parse-dirconfig-file)))
                        " "))
            (counsel-git-grep-cmd-default
-            (concat (string-trim-right counsel-git-grep-cmd-default " \\.")
+            (concat (counsel-projectile--string-trim-right counsel-git-grep-cmd-default " \\.")
                     " " path)))
       (ivy-add-actions
        'counsel-git-grep
@@ -815,7 +826,7 @@ is called with a prefix argument."
                         (projectile-ignored-directories-rel))
                        " "))
            (counsel-ag-base-command
-            (format (string-trim-right counsel-ag-base-command " \\.")
+            (format (counsel-projectile--string-trim-right counsel-ag-base-command " \\.")
                     (concat ignored " %s " path))))
       (ivy-add-actions
        'counsel-ag
@@ -887,7 +898,7 @@ is called with a prefix argument."
                         (projectile-ignored-directories-rel))
                        " "))
            (counsel-rg-base-command
-            (format (string-trim-right counsel-rg-base-command " \\.")
+            (format (counsel-projectile--string-trim-right counsel-rg-base-command " \\.")
                     (concat ignored " %s " path))))
       (ivy-add-actions
        'counsel-ag
