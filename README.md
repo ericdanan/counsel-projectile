@@ -88,7 +88,7 @@ New commands:
 | <kbd>C-c p SPC</kbd> | `counsel-projectile`             | Jump to a project buffer or file, or switch project |
 | <kbd>C-c p s i</kbd> | `counsel-projectile-git-grep`    | Search project with git grep                        |
 | <kbd>C-c p O c</kbd> | `counsel-projectile-org-capture` | Capture into project                                |
-| <kbd>C-c p O a</kbd> | `counsel-projectile-org-capture` | Open project agenda                                 |
+| <kbd>C-c p O a</kbd> | `counsel-projectile-org-agenda`  | Open project agenda                                 |
 ## The `counsel-projectile` command
 Default key binding: <kbd>C-c p SPC</kbd>.
 
