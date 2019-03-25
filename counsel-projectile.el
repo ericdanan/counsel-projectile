@@ -620,9 +620,9 @@ Note that you can always insert the value
 of `(ivy-thing-at-point)' by hitting \"M-n\" in the minibuffer."
   :type '(choice
           (const :tag "None" nil)
-          (const :tag "Symbol at point (generic)" '(thing-at-point 'symbol t))
-          (const :tag "Symbol or selection at point (projectile)" '(projectile-symbol-or-selection-at-point))
-          (const :tag "Thing at point (ivy)" '(ivy-thing-at-point))
+          (const :tag "Symbol at point (generic)" (thing-at-point 'symbol t))
+          (const :tag "Symbol or selection at point (projectile)" (projectile-symbol-or-selection-at-point))
+          (const :tag "Thing at point (ivy)" (ivy-thing-at-point))
           (sexp  :tag "Custom expression"))
   :group 'counsel-projectile)
 
@@ -726,7 +726,7 @@ called with a prefix argument."
               (format counsel-projectile-grep-base-command ignored path))
         (ivy-read (projectile-prepend-project-name "grep: ")
                   #'counsel-projectile-grep-function
-                  :initial-input counsel-projectile-grep-initial-input
+                  :initial-input (eval counsel-projectile-grep-initial-input)
                   :dynamic-collection t
                   :keymap counsel-ag-map
                   :history 'counsel-git-grep-history
@@ -765,7 +765,7 @@ with a prefix argument."
        'counsel-git-grep
        counsel-projectile-git-grep-extra-actions)
       (counsel-git-grep (or current-prefix-arg cmd)
-                        counsel-projectile-grep-initial-input))))
+                        (eval counsel-projectile-grep-initial-input)))))
 
 ;;* counsel-projectile-ag
 
@@ -778,9 +778,9 @@ Note that you can always insert the value
 of `(ivy-thing-at-point)' by hitting \"M-n\" in the minibuffer."
   :type '(choice
           (const :tag "None" nil)
-          (const :tag "Symbol at point (generic)" '(thing-at-point 'symbol t))
-          (const :tag "Symbol or selection at point (projectile)" '(projectile-symbol-or-selection-at-point))
-          (const :tag "Thing at point (ivy)" '(ivy-thing-at-point))
+          (const :tag "Symbol at point (generic)" (thing-at-point 'symbol t))
+          (const :tag "Symbol or selection at point (projectile)" (projectile-symbol-or-selection-at-point))
+          (const :tag "Thing at point (ivy)" (ivy-thing-at-point))
           (sexp  :tag "Custom expression"))
   :group 'counsel-projectile)
 
@@ -848,9 +848,9 @@ Note that you can always insert the value
 of `(ivy-thing-at-point)' by hitting \"M-n\" in the minibuffer."
   :type '(choice
           (const :tag "None" nil)
-          (const :tag "Symbol at point (generic)" '(thing-at-point 'symbol t))
-          (const :tag "Symbol or selection at point (projectile)" '(projectile-symbol-or-selection-at-point))
-          (const :tag "Thing at point (ivy)" '(ivy-thing-at-point))
+          (const :tag "Symbol at point (generic)" (thing-at-point 'symbol t))
+          (const :tag "Symbol or selection at point (projectile)" (projectile-symbol-or-selection-at-point))
+          (const :tag "Thing at point (ivy)" (ivy-thing-at-point))
           (sexp  :tag "Custom expression"))
   :group 'counsel-projectile)
 
