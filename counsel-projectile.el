@@ -656,7 +656,7 @@ construct the command.")
 
 (defun counsel-projectile-grep-function (string)
   "Grep for STRING in the current project."
-  (or (counsel-more-chars)
+  (or (ivy-more-chars)
       (let ((default-directory (ivy-state-directory ivy-last))
             (regex (counsel--grep-regex string)))
         (counsel--async-command (format counsel-projectile-grep-command
