@@ -310,7 +310,9 @@ It is also possible to use a custom matcher.  It must be a function taking two a
    ("k" counsel-projectile-find-file-action-delete
     "delete")
    ("p" counsel-projectile-find-file-action-switch-project
-    "switch project"))
+    "switch project")
+   ("d" counsel-projectile-find-file-action-open-in-dired
+    "open in dired"))
  'counsel-projectile)
 
 (defun counsel-projectile-find-file-matcher-basename (regexp candidates)
@@ -346,7 +348,7 @@ on `counsel-find-file-ignore-regexp'."
         ;; We apply `counsel--find-file-matcher' to `cands' so we can
         ;; honor `ivy-use-ignore', but we don't need to filter
         ;; again.
-        (counsel--find-file-matcher nil cands))))     
+        (counsel--find-file-matcher nil cands))))
 
 (defun counsel-projectile-find-file-action (file)
   "Find FILE and run `projectile-find-file-hook'."
@@ -382,6 +384,11 @@ on `counsel-find-file-ignore-regexp'."
 (defun counsel-projectile-find-file-action-switch-project (&optional _)
   "Switch project action for `counsel-projectile-find-file'."
   (counsel-projectile-switch-project 'counsel-projectile-switch-project-action-find-file))
+
+(defun counsel-projectile-find-file-action-open-in-dired (file)
+  "Visit the directory contaning the current FILE in Dired."
+  (dired (or (file-name-directory (projectile-expand-root file))
+             default-directory)))
 
 (defun counsel-projectile-find-file-transformer (str)
   "Transform non-visited file names with `ivy-virtual' face."
@@ -449,7 +456,7 @@ The sorting function can be modified by adding an entry for
    ("p" counsel-projectile-find-dir-action-switch-project
     "switch project"))
  'counsel-projectile)
- 
+
 (defun counsel-projectile--project-directories ()
   "Return a list of current project's directories."
   (if projectile-find-dir-includes-top-level
@@ -1066,7 +1073,7 @@ The format is the same as in `org-capture-templates-contexts'."
   "Switch project action for `counsel-projectile-org-capture'."
   (setq org-capture-templates counsel-projectile--org-capture-templates-backup)
   (counsel-projectile-switch-project 'counsel-projectile-switch-project-action-org-capture))
-  
+
 ;;;###autoload
 (defun counsel-projectile-org-capture (&optional from-buffer)
   "Capture into the current project.
@@ -1499,7 +1506,7 @@ files."
   (if (member name counsel-projectile--buffers)
       (ivy--kill-buffer-action name)
     (counsel-projectile-find-file-action-delete name)))
-  
+
 (defun counsel-projectile-action-find-file-manually (name)
   "Call `counsel-find-file' from default directory of buffer
 directory of file named NAME."
