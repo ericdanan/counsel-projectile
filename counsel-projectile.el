@@ -1148,7 +1148,7 @@ Optional arguments ARG, KEYS, and RESTRICTION are as in
   (let* ((root (projectile-project-root))
          (org-agenda-files
           (cl-remove-if-not (lambda (file)
-                              (string-prefix-p root file))
+                              (string-prefix-p root (expand-file-name file)))
                             (org-agenda-files t 'ifmode))))
     (org-agenda arg keys restriction))))
 
