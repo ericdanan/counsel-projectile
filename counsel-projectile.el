@@ -901,7 +901,7 @@ is called with a prefix argument."
             (format (counsel-projectile--string-trim-right counsel-rg-base-command " \\.")
                     (concat ignored " %s " path))))
       (ivy-add-actions
-       'counsel-ag
+       'counsel-rg
        counsel-projectile-rg-extra-actions)
       (counsel-rg (eval counsel-projectile-rg-initial-input)
                   (projectile-project-root)
