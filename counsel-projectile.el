@@ -678,7 +678,7 @@ construct the command.")
   ;; `counsel-ag'-like commands.
   (counsel-git-grep-transformer (string-remove-prefix "./" str)))
 
-(defun counsel-projectile-grep-occur ()
+(defun counsel-projectile-grep-occur (&optional _cands)
   "Generate a custom occur buffer for `counsel-projectile-grep'."
   (counsel-grep-like-occur
    counsel-projectile-grep-command))
