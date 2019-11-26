@@ -672,7 +672,7 @@ construct the command.")
   (counsel-projectile-switch-project 'counsel-projectile-switch-project-action-git-grep))
 
 (defun counsel-projectile-grep-transformer (str)
-  "Higlight file and line number in STR, first removing the
+  "Highlight file and line number in STR, first removing the
 \"./\" prefix from the filename."
   ;; This makes the display consistent with `counsel-git-grep' and
   ;; `counsel-ag'-like commands.

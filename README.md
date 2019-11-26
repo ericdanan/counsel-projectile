@@ -184,7 +184,7 @@ The key binding <kbd>C-c C-k</kbd> can also be used from the minibuffer to kill 
 ## The `counsel-projectile-grep` command
 Default key binding: <kbd>C-c p s g</kbd>.
 
-This command is a replacement for `projectile-grep`. It searches all project files with `grep`, taking advantage of ivy's support for updating the list of candidates after each input (dynamic collections). Each canidate corresponds to a matching line in some project file, and the following actions are offered:
+This command is a replacement for `projectile-grep`. It searches all project files with `grep`, taking advantage of ivy's support for updating the list of candidates after each input (dynamic collections). Each candidate corresponds to a matching line in some project file, and the following actions are offered:
 
 | Key          | Action                                                                     |
 | :----------- | :------------------------------------------------------------------------- |
@@ -238,7 +238,7 @@ Note that starting with projectile version `1.1`, the projectile (and counsel-pr
 ## Customizing counsel-projectile key bindings
 The key bindings that are added when counsel-projectile-mode is turned on are determined by the variable `counsel-projectile-key-bindings`. You can set this variable, either directly or through the customize interface, to customize these key bindings. It holds an alist of `(KEY . DEF)` pairs, where KEY is either a key sequence to bind in `projectile-command-map` or a projectile command to remap in `projectile-mode-map`, and DEF is the counsel-projectile command to which KEY is remapped or bound.
 ## Customizing action lists
-The lists of available actions (including the default action) for most of the commands above are stored in custom variables. If you set one of these variables, either directly or through the through the Customize interface, the new value will be picked up the next time you invoke the corresponding commmand.
+The lists of available actions (including the default action) for most of the commands above are stored in custom variables. If you set one of these variables, either directly or through the through the Customize interface, the new value will be picked up the next time you invoke the corresponding command.
 
 The variable holding the action list for `<command>` is named `<command>-action`. The following action list variables are defined:
 - `counsel-projectile-action`
@@ -344,7 +344,7 @@ The commands `counsel-projectile-on`, `counsel-projectile-off` and `counsel-proj
 The available actions for the various counsel-projectile commands are now customized differently:
 - The custom variable corresponding to `<command>` is now named `<command-action>` instead of `<command-actions>`.
 - This variable now stores all the available actions, including the default action, not only the extra actions.
-- It also stores the index of the default action (it is a list whose first element is this index and whose remaining elements are the availabe actions).
+- It also stores the index of the default action (it is a list whose first element is this index and whose remaining elements are the available actions).
 - This variable is now used as the value of the `:action` parameter for the command's `ivy-read` call. Hence if you set it outside the Customize interface, you no longer need to call `ivy-set-actions` afterwards. If you set extra actions through `ivy-set-actions`, they will not replace the variable's actions but will be added to them.
 
 Also, in the default action lists, the keys set for some actions have changed, mainly for the `counsel-projectile-switch-project` command. Indeed, as new actions were added to this command, the corresponding list of keys was becoming somewhat inconsistent. The new keys replicate the default projectile key bindings (for instance, the action to save all project buffers is now called with the key <kbd>S</kbd>, mimicking the default key binding <kbd>C-c p S</kbd> for the command `projectile-save-project-buffers`). When an action calls a command that has no default projectile key binding, its key is chosen among those that are not bound by projectile by default.
