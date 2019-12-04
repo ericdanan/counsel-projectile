@@ -134,6 +134,7 @@ This command is a replacement for `projectile-switch-project`. It adds the possi
 | <kbd>x s</kbd> | Invoke shell from the project root                                                      |
 | <kbd>x e</kbd> | Invoke eshell from the project root                                                     |
 | <kbd>x t</kbd> | Invoke term from the project root                                                       |
+| <kbd>x v</kbd> | Invoke vterm from the project root                                                      |
 | <kbd>O c</kbd> | Capture into project: call `counsel-projectile-org-capture` (see below)                 |
 | <kbd>O a</kbd> | Open project agenda: call `counsel-projectile-org-agenda` (see below)                   |
 ## The `counsel-projectile-find-file` command
