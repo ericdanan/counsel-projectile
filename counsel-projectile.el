@@ -1213,6 +1213,8 @@ candidates list of `counsel-projectile-switch-project'."
     "invoke eshell from project root")
    ("xt" counsel-projectile-switch-project-action-run-term
     "invoke term from project root")
+   ("xv" counsel-projectile-switch-project-action-run-vterm
+    "invoke vterm from project root")
    ("Oc" counsel-projectile-switch-project-action-org-capture
     "capture into project")
    ("Oa" counsel-projectile-switch-project-action-org-agenda
@@ -1340,6 +1342,11 @@ action."
   (let ((projectile-switch-project-action
          (lambda ()
            (projectile-run-term nil))))
+    (counsel-projectile-switch-project-by-name project)))
+
+(defun counsel-projectile-switch-project-action-run-vterm (project)
+  "Invoke `vterm' from PROJECT's root."
+  (let ((projectile-switch-project-action 'projectile-run-vterm))
     (counsel-projectile-switch-project-by-name project)))
 
 (defun counsel-projectile-switch-project-action-grep (project)
