@@ -1329,24 +1329,30 @@ action."
 
 (defun counsel-projectile-switch-project-action-run-shell (project)
   "Invoke `shell' from PROJECT's root."
-  (let ((projectile-switch-project-action 'projectile-run-shell))
+  (let ((projectile-switch-project-action
+         (lambda ()
+           (projectile-run-shell ivy-current-prefix-arg))))
     (counsel-projectile-switch-project-by-name project)))
 
 (defun counsel-projectile-switch-project-action-run-eshell (project)
   "Invoke `eshell' from PROJECT's root."
-  (let ((projectile-switch-project-action 'projectile-run-eshell))
+  (let ((projectile-switch-project-action
+         (lambda ()
+           (projectile-run-eshell ivy-current-prefix-arg))))
     (counsel-projectile-switch-project-by-name project)))
 
 (defun counsel-projectile-switch-project-action-run-term (project)
   "Invoke `term' from PROJECT's root."
   (let ((projectile-switch-project-action
          (lambda ()
-           (projectile-run-term nil))))
+           (projectile-run-term ivy-current-prefix-arg))))
     (counsel-projectile-switch-project-by-name project)))
 
 (defun counsel-projectile-switch-project-action-run-vterm (project)
   "Invoke `vterm' from PROJECT's root."
-  (let ((projectile-switch-project-action 'projectile-run-vterm))
+  (let ((projectile-switch-project-action
+         (lambda ()
+           (projectile-run-vterm ivy-current-prefix-arg))))
     (counsel-projectile-switch-project-by-name project)))
 
 (defun counsel-projectile-switch-project-action-grep (project)
