@@ -243,17 +243,6 @@ If anything goes wrong, throw an error and do not modify ACTION-VAR."
                      (cdr action-list))))))
     (set action-var action-list)))
 
-;; Copy the function `string-trim-right' from emacs 26 here so as to
-;; support emacs 25 (the function exists in emacs 25 but doesn't
-;; accept the REGEXP optional argument).
-(defsubst counsel-projectile--string-trim-right (string &optional regexp)
-  "Trim STRING of trailing string matching REGEXP.
-
-REGEXP defaults to  \"[ \\t\\n\\r]+\"."
-  (if (string-match (concat "\\(?:" (or regexp "[ \t\n\r]+") "\\)\\'") string)
-      (replace-match "" t t string)
-    string))
-
 ;;* counsel-projectile-find-file
 
 (defcustom counsel-projectile-sort-files nil
@@ -648,7 +637,7 @@ of `(ivy-thing-at-point)' by hitting \"M-n\" in the minibuffer."
                        (string   :tag "    name")))
   :group 'counsel-projectile)
 
-(defvar counsel-projectile-grep-base-command "grep -rnEI %s -- %%s %s"
+(defvar counsel-projectile-grep-base-command "grep -rnEI %s -- %%s"
   "Format string to use in `cousel-projectile-grep' to
 construct the command.")
 
@@ -701,12 +690,7 @@ called with a prefix argument."
     (if (and (eq (projectile-project-vcs) 'git)
              projectile-use-git-grep)
         (counsel-projectile-git-grep options-or-cmd)
-      (let* ((path
-              (mapconcat 'shell-quote-argument
-                         (projectile-normalise-paths
-                          (car (projectile-parse-dirconfig-file)))
-                         " "))
-             (ignored-files
+      (let* ((ignored-files
               (mapconcat (lambda (i)
                            (concat "--exclude=" (shell-quote-argument i)))
                          (append
@@ -723,7 +707,7 @@ called with a prefix argument."
         (counsel-require-program
          (car (split-string counsel-projectile-grep-base-command)))
         (setq counsel-projectile-grep-command
-              (format counsel-projectile-grep-base-command ignored path))
+              (format counsel-projectile-grep-base-command ignored))
         (ivy-read (projectile-prepend-project-name "grep: ")
                   #'counsel-projectile-grep-function
                   :initial-input (eval counsel-projectile-grep-initial-input)
@@ -752,15 +736,7 @@ with a prefix argument."
   (if (and (eq projectile-require-project-root 'prompt)
            (not (projectile-project-p)))
       (counsel-projectile-git-grep-action-switch-project)
-    (let* ((ivy--actions-list (copy-sequence ivy--actions-list))
-           (path
-            (mapconcat 'shell-quote-argument
-                       (projectile-normalise-paths
-                        (car (projectile-parse-dirconfig-file)))
-                       " "))
-           (counsel-git-grep-cmd-default
-            (concat (counsel-projectile--string-trim-right counsel-git-grep-cmd-default " \\.")
-                    " " path)))
+    (let ((ivy--actions-list (copy-sequence ivy--actions-list)))
       (ivy-add-actions
        'counsel-git-grep
        counsel-projectile-git-grep-extra-actions)
@@ -813,10 +789,6 @@ is called with a prefix argument."
            (not (projectile-project-p)))
       (counsel-projectile-ag-action-switch-project)
     (let* ((ivy--actions-list (copy-sequence ivy--actions-list))
-           (path (mapconcat 'shell-quote-argument
-                            (projectile-normalise-paths
-                             (car (projectile-parse-dirconfig-file)))
-                            " "))
            (ignored
             (mapconcat (lambda (i)
                          (concat "--ignore " (shell-quote-argument i)))
@@ -826,8 +798,8 @@ is called with a prefix argument."
                         (projectile-ignored-directories-rel))
                        " "))
            (counsel-ag-base-command
-            (format (counsel-projectile--string-trim-right counsel-ag-base-command " \\.")
-                    (concat ignored " %s " path))))
+            (format counsel-ag-base-command
+                    (concat ignored " %s"))))
       (ivy-add-actions
        'counsel-ag
        counsel-projectile-ag-extra-actions)
@@ -883,12 +855,6 @@ is called with a prefix argument."
            (not (projectile-project-p)))
       (counsel-projectile-rg-action-switch-project)
     (let* ((ivy--actions-list (copy-sequence ivy--actions-list))
-           (path
-            (mapconcat 'shell-quote-argument
-                       (or (projectile-normalise-paths
-                            (car (projectile-parse-dirconfig-file)))
-                           '("."))
-                       " "))
            (ignored
             (mapconcat (lambda (i)
                          (concat "--glob !" (shell-quote-argument i)))
@@ -898,8 +864,8 @@ is called with a prefix argument."
                         (projectile-ignored-directories-rel))
                        " "))
            (counsel-rg-base-command
-            (format (counsel-projectile--string-trim-right counsel-rg-base-command " \\.")
-                    (concat ignored " %s " path))))
+            (format counsel-rg-base-command
+                    (concat ignored " %s"))))
       (ivy-add-actions
        'counsel-rg
        counsel-projectile-rg-extra-actions)
