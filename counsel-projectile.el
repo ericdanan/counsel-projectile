@@ -637,7 +637,7 @@ of `(ivy-thing-at-point)' by hitting \"M-n\" in the minibuffer."
                        (string   :tag "    name")))
   :group 'counsel-projectile)
 
-(defvar counsel-projectile-grep-base-command "grep -rnEI %s -- %%s"
+(defvar counsel-projectile-grep-base-command "grep -rnEI %s %%s"
   "Format string to use in `cousel-projectile-grep' to
 construct the command.")
 
