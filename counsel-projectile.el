@@ -797,9 +797,8 @@ is called with a prefix argument."
                         (projectile-ignored-files-rel)
                         (projectile-ignored-directories-rel))
                        " "))
-           (counsel-ag-base-command
-            (format counsel-ag-base-command
-                    (concat ignored " %s"))))
+           (counsel-ag-command counsel-ag-base-command)
+           (counsel-ag-base-command (counsel--format-ag-command ignored "%s")))
       (ivy-add-actions
        'counsel-ag
        counsel-projectile-ag-extra-actions)
@@ -807,7 +806,10 @@ is called with a prefix argument."
                   (projectile-project-root)
                   options
                   (projectile-prepend-project-name
-                   (concat (car (split-string counsel-ag-base-command)) ": "))))))
+                   (concat (car (if (listp counsel-ag-base-command)
+                                    counsel-ag-base-command
+                                  (split-string counsel-ag-base-command)))
+                           ": "))))))
 
 ;;* counsel-projectile-rg
 
@@ -863,9 +865,8 @@ is called with a prefix argument."
                         (projectile-ignored-files-rel)
                         (projectile-ignored-directories-rel))
                        " "))
-           (counsel-rg-base-command
-            (format counsel-rg-base-command
-                    (concat ignored " %s"))))
+           (counsel-ag-command counsel-rg-base-command)
+           (counsel-rg-base-command (counsel--format-ag-command ignored "%s")))
       (ivy-add-actions
        'counsel-rg
        counsel-projectile-rg-extra-actions)
@@ -873,7 +874,10 @@ is called with a prefix argument."
                   (projectile-project-root)
                   options
                   (projectile-prepend-project-name
-                   (concat (car (split-string counsel-rg-base-command)) ": "))))))
+                   (concat (car (if (listp counsel-rg-base-command)
+                                    counsel-rg-base-command
+                                  (split-string counsel-rg-base-command)))
+                           ": "))))))
 
 ;;* counsel-projectile-org-capture
 
