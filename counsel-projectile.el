@@ -572,7 +572,7 @@ names as in `ivy--buffer-list', and remove current buffer if
   "Transform candidate STR when switching project buffers.
 
 This simply applies the same transformer as in `ivy-switch-buffer', which is `ivy-switch-buffer-transformer' by default but could have been modified e.g. by the ivy-rich package."
-  (funcall (plist-get ivy--display-transformers-alist 'ivy-switch-buffer)
+  (funcall (ivy-alist-setting ivy--display-transformers-alist 'ivy-switch-buffer)
            str))
 
 ;;;###autoload
