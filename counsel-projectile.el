@@ -399,9 +399,8 @@ non-nil, use completion based on context."
                 :action counsel-projectile-find-file-action
                 :caller 'counsel-projectile-find-file))))
 
-(ivy-set-display-transformer
- 'counsel-projectile-find-file
- 'counsel-projectile-find-file-transformer)
+(ivy-configure 'counsel-projectile-find-file
+ :display-transformer-fn #'counsel-projectile-find-file-transformer)
 
 ;;;###autoload
 (defun counsel-projectile-find-file-dwim (&optional arg)
@@ -491,9 +490,8 @@ With a prefix ARG, invalidate the cache first."
               :action counsel-projectile-find-dir-action
               :caller 'counsel-projectile-find-dir)))
 
-(ivy-set-display-transformer
- 'counsel-projectile-find-dir
- 'counsel-projectile-find-dir-transformer)
+(ivy-configure 'counsel-projectile-find-dir
+ :display-transformer-fn #'counsel-projectile-find-dir-transformer)
 
 ;;* counsel-projectile-switch-to-buffer
 
@@ -594,9 +592,8 @@ This simply applies the same transformer as in `ivy-switch-buffer', which is `iv
               :keymap counsel-projectile-switch-to-buffer-map
               :caller 'counsel-projectile-switch-to-buffer)))
 
-(ivy-set-display-transformer
- 'counsel-projectile-switch-to-buffer
- 'counsel-projectile-switch-to-buffer-transformer)
+(ivy-configure 'counsel-projectile-switch-to-buffer
+ :display-transformer-fn #'counsel-projectile-switch-to-buffer-transformer)
 
 ;;* counsel-projectile-grep
 
@@ -720,10 +717,11 @@ called with a prefix argument."
                             (swiper--cleanup))
                   :caller 'counsel-projectile-grep)))))
 
-(cl-pushnew 'counsel-projectile-grep ivy-highlight-grep-commands)
-(counsel-set-async-exit-code 'counsel-projectile-grep 1 "No matches found")
-(ivy-set-occur 'counsel-projectile-grep 'counsel-projectile-grep-occur)
-(ivy-set-display-transformer 'counsel-projectile-grep  'counsel-projectile-grep-transformer)
+(ivy-configure 'counsel-projectile-grep
+  :display-transformer-fn #'counsel-projectile-grep-transformer
+  :occur #'counsel-projectile-grep-occur
+  :grep-p t
+  :exit-codes '(1 "No matches found"))
 
 ;;;###autoload
 (defun counsel-projectile-git-grep (&optional cmd)
@@ -1543,9 +1541,8 @@ If not inside a project, call `counsel-projectile-switch-project'."
               :keymap counsel-projectile-map
               :caller 'counsel-projectile)))
 
-(ivy-set-display-transformer
- 'counsel-projectile
- 'counsel-projectile-transformer)
+(ivy-configure 'counsel-projectile
+ :display-transformer-fn #'counsel-projectile-transformer)
 
 ;;* counsel-projectile-mode
 
