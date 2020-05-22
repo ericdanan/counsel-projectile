@@ -796,7 +796,9 @@ is called with a prefix argument."
                         (projectile-ignored-directories-rel))
                        " "))
            (counsel-ag-command counsel-ag-base-command)
-           (counsel-ag-base-command (counsel--format-ag-command ignored "%s")))
+           (counsel-ag-base-command
+            (let ((counsel-ag-command counsel-ag-base-command))
+              (counsel--format-ag-command ignored "%s"))))
       (ivy-add-actions
        'counsel-ag
        counsel-projectile-ag-extra-actions)
@@ -862,9 +864,10 @@ is called with a prefix argument."
                         (projectile--globally-ignored-file-suffixes-glob)
                         (projectile-ignored-files-rel)
                         (projectile-ignored-directories-rel))
-                       " "))
-           (counsel-ag-command counsel-rg-base-command)
-           (counsel-rg-base-command (counsel--format-ag-command ignored "%s")))
+                       " "))        
+           (counsel-rg-base-command
+            (let ((counsel-ag-command counsel-rg-base-command))
+              (counsel--format-ag-command ignored "%s"))))
       (ivy-add-actions
        'counsel-rg
        counsel-projectile-rg-extra-actions)
