@@ -51,7 +51,12 @@
 - [2017-12-18] New version `0.2`. If you are upgrading from `0.1`, please read [here](#breaking-changes-in-version-02) about breaking changes.
 - [2016-04-12] First version `0.1`.
 # Installation
-Install the package from [MELPA](https://melpa.org), [MELPA Stable](https://stable.melpa.org), or [el-get](https://github.com/dimitri/el-get), or clone this repository somewhere in your load path.
+Install the package from
+- [MELPA](https://melpa.org),
+- [MELPA Stable](https://stable.melpa.org),
+- [el-get](https://github.com/dimitri/el-get),
+- [GNU Guix](https://guix.gnu.org/en/packages/emacs-counsel-projectile-0.3.1/), or
+- clone this repository somewhere in your load path.
 # Usage
 ## Getting started
 To turn on counsel-projectile mode, either call the command `counsel-projectile-mode` or use the Customize interface to toggle on the variable `counsel-projectile-mode`. This will turn on projectile mode, thus enabling all projectile key bindings, and add the counsel-projectile key bindings on top of them.
