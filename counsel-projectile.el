@@ -580,17 +580,21 @@ This simply applies the same transformer as in `ivy-switch-buffer', which is `iv
   (if (and (eq projectile-require-project-root 'prompt)
            (not (projectile-project-p)))
       (counsel-projectile-switch-to-buffer-action-switch-project)
-    (ivy-read (projectile-prepend-project-name "Switch to buffer: ")
-              ;; We use a collection function so that it is called each
-              ;; time the `ivy-state' is reset. This is needed for the
-              ;; "kill buffer" action.
-              #'counsel-projectile--project-buffers
-              :matcher #'ivy--switch-buffer-matcher
-              :require-match t
-              :sort counsel-projectile-sort-buffers
-              :action counsel-projectile-switch-to-buffer-action
-              :keymap counsel-projectile-switch-to-buffer-map
-              :caller 'counsel-projectile-switch-to-buffer)))
+    (let ((ivy-update-fns-alist
+           '((counsel-projectile-switch-to-buffer . counsel--switch-buffer-update-fn)))
+          (ivy-unwind-fns-alist
+           '((counsel-projectile-switch-to-buffer . counsel--switch-buffer-unwind))))
+      (ivy-read (projectile-prepend-project-name "Switch to buffer: ")
+                ;; We use a collection function so that it is called each
+                ;; time the `ivy-state' is reset. This is needed for the
+                ;; "kill buffer" action.
+                #'counsel-projectile--project-buffers
+                :matcher #'ivy--switch-buffer-matcher
+                :require-match t
+                :sort counsel-projectile-sort-buffers
+                :action counsel-projectile-switch-to-buffer-action
+                :keymap counsel-projectile-switch-to-buffer-map
+                :caller 'counsel-projectile-switch-to-buffer))))
 
 (ivy-configure 'counsel-projectile-switch-to-buffer
  :display-transformer-fn #'counsel-projectile-switch-to-buffer-transformer)
@@ -1532,17 +1536,21 @@ If not inside a project, call `counsel-projectile-switch-project'."
   (if (and (eq projectile-require-project-root 'prompt)
            (not (projectile-project-p)))
       (counsel-projectile-action-switch-project)
-    (projectile-maybe-invalidate-cache arg)
-    (ivy-read (projectile-prepend-project-name "Load buffer or file: ")
-              ;; We use a collection function so that it is called each
-              ;; time the `ivy-state' is reset. This is needed for the
-              ;; "kill buffer" action.
-              #'counsel-projectile--project-buffers-and-files
-              :matcher #'counsel-projectile--matcher
-              :require-match t
-              :action counsel-projectile-action
-              :keymap counsel-projectile-map
-              :caller 'counsel-projectile)))
+    (let ((ivy-update-fns-alist
+           '((counsel-projectile . counsel--switch-buffer-update-fn)))
+          (ivy-unwind-fns-alist
+           '((counsel-projectile . counsel--switch-buffer-unwind))))
+      (projectile-maybe-invalidate-cache arg)
+      (ivy-read (projectile-prepend-project-name "Load buffer or file: ")
+                ;; We use a collection function so that it is called each
+                ;; time the `ivy-state' is reset. This is needed for the
+                ;; "kill buffer" action.
+                #'counsel-projectile--project-buffers-and-files
+                :matcher #'counsel-projectile--matcher
+                :require-match t
+                :action counsel-projectile-action
+                :keymap counsel-projectile-map
+                :caller 'counsel-projectile))))
 
 (ivy-configure 'counsel-projectile
  :display-transformer-fn #'counsel-projectile-transformer)
