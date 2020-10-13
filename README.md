@@ -319,7 +319,9 @@ If you want some initial input to be inserted in the minibuffer every time you c
 ## Matcher for `counsel-projectile-find-file`
 By default, the command `counsel-projectile-find-file` relies on the the matcher of the command `counsel-find-file` to display files matching minibuffer input, allowing to ignore some files based on the variable `counsel-find-file-ignore-regexp`. It is possible to use another matcher by setting the variable `counsel-projectile-find-file-matcher`. Some choices are proposed if you use the Customize interface, in particular the `counsel-projectile-find-file-matcher-basename` matcher which is provided by counsel-projectile and only displays files whose basename matches the minibuffer input (if there is none, it shows all matching files).
 
-The matcher specified by `counsel-find-file-ignore-regexp` is also used by `counsel-projectile` to match files.
+Independently of the chosen matcher, it is possible to specifying a minimum number of characters to input before the matching project files are shown through the variable `counsel-projectile-find-file-more-chars`.  The default value is `0`, but a strictly positive value can improve performance in large projects.
+
+The values of `counsel-projectile-find-file-matcher` and `counsel-projectile-find-file-more-chars` are also used by `counsel-projectile` to match files.
 ## Sorting candidates
 The following commands allow to modify the way candidates are sorted:
 - `cousnel-projectile-switch-project`

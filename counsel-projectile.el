@@ -283,6 +283,13 @@ It is also possible to use a custom matcher.  It must be a function taking two a
           (function :tag "Custom function"))
   :group 'counsel-projectile)
 
+(defcustom counsel-projectile-find-file-more-chars 0
+  "Number of characters to input before matching project files are shown.
+
+Setting it to a strictly positive value can improve performance in large projects."
+  :type 'integer
+  :group 'counsel-projectile)
+
 (counsel-projectile--defcustom-action
  'counsel-projectile-find-file
  '(1
@@ -301,6 +308,12 @@ It is also possible to use a custom matcher.  It must be a function taking two a
    ("p" counsel-projectile-find-file-action-switch-project
     "switch project"))
  'counsel-projectile)
+
+(defun counsel-projectile--find-file-matcher (regexp candidates)
+  (let ((ivy-more-chars-alist
+         `((t . ,counsel-projectile-find-file-more-chars))))
+    (or (ivy-more-chars)
+        (funcall counsel-projectile-find-file-matcher regexp candidates))))
 
 (defun counsel-projectile-find-file-matcher-basename (regexp candidates)
   "Return the list of CANDIDATES whose basename matches REGEXP,
@@ -393,7 +406,7 @@ non-nil, use completion based on context."
            (files (and dwim (projectile-select-files project-files))))
       (ivy-read (projectile-prepend-project-name "Find file: ")
                 (or files project-files)
-                :matcher counsel-projectile-find-file-matcher
+                :matcher #'counsel-projectile--find-file-matcher
                 :require-match t
                 :sort counsel-projectile-sort-files
                 :action counsel-projectile-find-file-action
@@ -1476,7 +1489,7 @@ Relies on `ivy--switch-buffer-matcher' for buffers and the
 matcher specified in `counsel-projectile-find-file-matcher' for
 files."
   (append (ivy--switch-buffer-matcher regexp counsel-projectile--buffers)
-          (funcall counsel-projectile-find-file-matcher regexp counsel-projectile--non-visited-files)))
+          (counsel-projectile--find-file-matcher regexp counsel-projectile--non-visited-files)))
 
 (defun counsel-projectile-action (name)
   "Switch to buffer or find file named NAME."
