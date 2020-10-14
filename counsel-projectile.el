@@ -651,20 +651,9 @@ of `(ivy-thing-at-point)' by hitting \"M-n\" in the minibuffer."
                        (string   :tag "    name")))
   :group 'counsel-projectile)
 
-(defvar counsel-projectile-grep-base-command "grep -rnEI %s %%s"
+(defvar counsel-projectile-grep-base-command "grep -rnEI %s"
   "Format string to use in `cousel-projectile-grep' to
 construct the command.")
-
-(defvar counsel-projectile-grep-command nil)
-
-(defun counsel-projectile-grep-function (string)
-  "Grep for STRING in the current project."
-  (or (ivy-more-chars)
-      (let ((default-directory (ivy-state-directory ivy-last))
-            (regex (counsel--grep-regex string)))
-        (counsel--async-command (format counsel-projectile-grep-command
-                                        (shell-quote-argument regex)))
-        nil)))
 
 (defun counsel-projectile-grep-action-switch-project (&optional _)
   "Switch project action for `counsel-projectile-grep'."
@@ -673,18 +662,6 @@ construct the command.")
 (defun counsel-projectile-git-grep-action-switch-project (&optional _)
   "Switch project action for `counsel-projectile-git-grep'."
   (counsel-projectile-switch-project 'counsel-projectile-switch-project-action-git-grep))
-
-(defun counsel-projectile-grep-transformer (str)
-  "Highlight file and line number in STR, first removing the
-\"./\" prefix from the filename."
-  ;; This makes the display consistent with `counsel-git-grep' and
-  ;; `counsel-ag'-like commands.
-  (counsel-git-grep-transformer (string-remove-prefix "./" str)))
-
-(defun counsel-projectile-grep-occur (&optional _cands)
-  "Generate a custom occur buffer for `counsel-projectile-grep'."
-  (counsel-grep-like-occur
-   counsel-projectile-grep-command))
 
 ;;;###autoload
 (defun counsel-projectile-grep (&optional options-or-cmd)
@@ -696,7 +673,7 @@ use git grep. Otherwise use grep recursively.
 OPTIONS-OR-CMD, if non-nil, is a string containing either
 additional options to be passed to grep, or an alternative git
 grep command. It is read from the minibuffer if the function is
-called with a prefix argument."
+called with a `\\[universal-argument]' prefix argument."
   (interactive)
   (if (and (eq projectile-require-project-root 'prompt)
            (not (projectile-project-p)))
@@ -707,36 +684,42 @@ called with a prefix argument."
       (let* ((ignored-files
               (mapconcat (lambda (i)
                            (concat "--exclude=" (shell-quote-argument i)))
-                         (append
+			 (append
                           (projectile--globally-ignored-file-suffixes-glob)
                           (projectile-ignored-files-rel))
-                         " "))
+			 " "))
              (ignored-dirs
               (mapconcat (lambda (i)
                            (concat "--exclude-dir=" (shell-quote-argument i)))
-                         (projectile-ignored-directories-rel)
-                         " "))
+			 (projectile-ignored-directories-rel)
+			 " "))
              (ignored (concat ignored-files " " ignored-dirs))
-             (default-directory (projectile-project-root)))
-        (counsel-require-program
-         (car (split-string counsel-projectile-grep-base-command)))
-        (setq counsel-projectile-grep-command
-              (format counsel-projectile-grep-base-command ignored))
-        (ivy-read (projectile-prepend-project-name "grep: ")
-                  #'counsel-projectile-grep-function
-                  :initial-input (eval counsel-projectile-grep-initial-input)
-                  :dynamic-collection t
-                  :keymap counsel-ag-map
-                  :history 'counsel-git-grep-history
-                  :action counsel-projectile-grep-action
-                  :unwind (lambda ()
-                            (counsel-delete-process)
-                            (swiper--cleanup))
-                  :caller 'counsel-projectile-grep)))))
+             (counsel-ag-base-command
+              (let ((counsel-ag-command counsel-projectile-grep-base-command))
+		(counsel--format-ag-command ignored "%s"))))
+	;; `counsel-ag' requires a single `\\[universal-argument]'
+	;; prefix argument to prompt for initial directory and a double
+	;; `\\[universal-argument]' prefix argument to prompt for extra
+	;; options. But since the initial directory is always the
+	;; project root here, prompt for ortpions with a single
+	;; `\\[universal-argument]' prefix argument prefix argument as
+	;; well.
+	(when (= (prefix-numeric-value current-prefix-arg) 4)
+          (setq current-prefix-arg '(16)))
+	(counsel-ag (eval counsel-projectile-grep-initial-input)
+                    (projectile-project-root)
+                    options-or-cmd
+                    (projectile-prepend-project-name
+                     (concat (car (if (listp counsel-ag-base-command)
+                                      counsel-ag-base-command
+                                    (split-string counsel-ag-base-command)))
+                             ": "))
+                    :caller 'counsel-projectile-grep)))))
 
 (ivy-configure 'counsel-projectile-grep
-  :display-transformer-fn #'counsel-projectile-grep-transformer
-  :occur #'counsel-projectile-grep-occur
+  :occur #'counsel-ag-occur
+  :unwind-fn #'counsel--grep-unwind
+  :display-transformer-fn #'counsel-git-grep-transformer
   :grep-p t
   :exit-codes '(1 "No matches found"))
 
@@ -746,7 +729,7 @@ called with a prefix argument."
 
 CMD, if non-nil, is a string containing an alternative git grep
 command. It is read from the minibuffer if the function is called
-with a prefix argument."
+with a `\\[universal-argument]' prefix argument."
   (interactive)
   (if (and (eq projectile-require-project-root 'prompt)
            (not (projectile-project-p)))
@@ -755,8 +738,9 @@ with a prefix argument."
       (ivy-add-actions
        'counsel-git-grep
        counsel-projectile-git-grep-extra-actions)
-      (counsel-git-grep (or current-prefix-arg cmd)
-                        (eval counsel-projectile-grep-initial-input)))))
+      (counsel-git-grep (eval counsel-projectile-grep-initial-input)
+                        (projectile-project-root)
+                        (or current-prefix-arg cmd)))))
 
 ;;* counsel-projectile-ag
 
@@ -798,7 +782,7 @@ of `(ivy-thing-at-point)' by hitting \"M-n\" in the minibuffer."
 
 OPTIONS, if non-nil, is a string containing additional options to
 be passed to ag. It is read from the minibuffer if the function
-is called with a prefix argument."
+is called with a `\\[universal-argument]' prefix argument."
   (interactive)
   (if (and (eq projectile-require-project-root 'prompt)
            (not (projectile-project-p)))
@@ -812,13 +796,21 @@ is called with a prefix argument."
                         (projectile-ignored-files-rel)
                         (projectile-ignored-directories-rel))
                        " "))
-           (counsel-ag-command counsel-ag-base-command)
            (counsel-ag-base-command
             (let ((counsel-ag-command counsel-ag-base-command))
               (counsel--format-ag-command ignored "%s"))))
       (ivy-add-actions
        'counsel-ag
        counsel-projectile-ag-extra-actions)
+      ;; `counsel-ag' requires a single `\\[universal-argument]'
+      ;; prefix argument to prompt for initial directory and a double
+      ;; `\\[universal-argument]' prefix argument to prompt for extra
+      ;; options. But since the initial directory is always the
+      ;; project root here, prompt for ortpions with a single
+      ;; `\\[universal-argument]' prefix argument prefix argument as
+      ;; well.
+      (when (= (prefix-numeric-value current-prefix-arg) 4)
+        (setq current-prefix-arg '(16)))
       (counsel-ag (eval counsel-projectile-ag-initial-input)
                   (projectile-project-root)
                   options
@@ -868,7 +860,7 @@ of `(ivy-thing-at-point)' by hitting \"M-n\" in the minibuffer."
 
 OPTIONS, if non-nil, is a string containing additional options to
 be passed to rg. It is read from the minibuffer if the function
-is called with a prefix argument."
+is called with a `\\[universal-argument]' prefix argument."
   (interactive)
   (if (and (eq projectile-require-project-root 'prompt)
            (not (projectile-project-p)))
@@ -888,6 +880,15 @@ is called with a prefix argument."
       (ivy-add-actions
        'counsel-rg
        counsel-projectile-rg-extra-actions)
+      ;; `counsel-rg' requires a single `\\[universal-argument]'
+      ;; prefix argument to prompt for initial directory and a double
+      ;; `\\[universal-argument]' prefix argument to prompt for extra
+      ;; options. But since the initial directory is always the
+      ;; project root here, prompt for ortpions with a single
+      ;; `\\[universal-argument]' prefix argument prefix argument as
+      ;; well.
+      (when (= (prefix-numeric-value current-prefix-arg) 4)
+        (setq current-prefix-arg '(16)))
       (counsel-rg (eval counsel-projectile-rg-initial-input)
                   (projectile-project-root)
                   options
@@ -1353,29 +1354,42 @@ action."
 
 (defun counsel-projectile-switch-project-action-grep (project)
   "Search PROJECT with grep."
-  (let ((projectile-switch-project-action 'counsel-projectile-grep))
+  (let ((projectile-switch-project-action
+         (lambda ()
+           (setq current-prefix-arg ivy-current-prefix-arg)
+           (counsel-projectile-grep))))
     (counsel-projectile-switch-project-by-name project)))
 
 (defun counsel-projectile-switch-project-action-git-grep (project)
   "Search PROJECT with git grep."
-  (let ((projectile-switch-project-action 'counsel-projectile-git-grep))
+  (let ((projectile-switch-project-action
+         (lambda ()
+           (setq current-prefix-arg ivy-current-prefix-arg)
+           (counsel-projectile-git-grep))))
     (counsel-projectile-switch-project-by-name project)))
 
 (defun counsel-projectile-switch-project-action-ag (project)
   "Search PROJECT with ag."
-  (let ((projectile-switch-project-action 'counsel-projectile-ag))
+  (let ((projectile-switch-project-action
+         (lambda ()
+           (setq current-prefix-arg ivy-current-prefix-arg)
+           (counsel-projectile-ag))))
     (counsel-projectile-switch-project-by-name project)))
 
 (defun counsel-projectile-switch-project-action-rg (project)
   "Search PROJECT with rg."
-  (let ((projectile-switch-project-action 'counsel-projectile-rg))
+  (let ((projectile-switch-project-action
+         (lambda ()
+           (setq current-prefix-arg ivy-current-prefix-arg)
+           (counsel-projectile-rg))))
     (counsel-projectile-switch-project-by-name project)))
 
 (defun counsel-projectile-switch-project-action-org-capture (project)
   "Capture into PROJECT."
   (let* ((from-buffer (ivy-state-buffer ivy-last))
-         (projectile-switch-project-action `(lambda ()
-                                              (counsel-projectile-org-capture ,from-buffer))))
+         (projectile-switch-project-action
+          `(lambda ()
+             (counsel-projectile-org-capture ,from-buffer))))
     (counsel-projectile-switch-project-by-name project)))
 
 (defun counsel-projectile-switch-project-action-org-agenda (project)
