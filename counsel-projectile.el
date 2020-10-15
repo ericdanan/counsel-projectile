@@ -525,6 +525,17 @@ candidates list of `counsel-projectile-switch-to-buffer' and
   :type 'boolean
   :group 'counsel-projectile)
 
+(defcustom counsel-projectile-preview-buffers nil
+  "When non-nil, `counsel-projectile-switch-to-buffer' and `counsel-projectile'
+display a preview of the selected buffer in the current window.
+
+This makes these commands behave similarly to `counsel-switch-buffer'.  If
+`counsel-switch-buffer-preview-virtual-buffers' is also non-nil,
+`counsel-projectile' also displays a preview of the selected
+non-visited file."
+  :type 'boolean
+  :group 'counsel-projectile)
+
 (counsel-projectile--defcustom-action
  'counsel-projectile-switch-to-buffer
  '(1
@@ -586,31 +597,70 @@ This simply applies the same transformer as in `ivy-switch-buffer', which is `iv
   (funcall (ivy-alist-setting ivy--display-transformers-alist 'ivy-switch-buffer)
            str))
 
+(defun counsel-projectile--switch-to-buffer-update-fn ()
+  "Update function for `counsel-projectile--switch-to-buffer'."
+  ;; Adapted from counsel--switch-buffer-update-fn.
+  (unless counsel--switch-buffer-previous-buffers
+    (setq counsel--switch-buffer-previous-buffers (buffer-list)))
+  (when counsel-projectile-preview-buffers
+    (when (member (ivy-state-current ivy-last) ivy-marked-candidates)
+      (setf (ivy-state-current ivy-last)
+            (substring (ivy-state-current ivy-last) (length ivy-mark-prefix))))
+    ;; Unlike in `counsel-switch-buffer' we could have an empty string
+    ;; as candidate if no project buffer is open.
+    (cond
+     ((and (not (string= (ivy-state-current ivy-last) ""))
+           (get-buffer (ivy-state-current ivy-last)))
+      (let ((ivy-marked-candidates nil))
+        (ivy-call)))
+     ;; Following case if for use in `counsel-projectile'.
+     ((and (not (string= (ivy-state-current ivy-last) ""))
+           counsel-switch-buffer-preview-virtual-buffers
+           (file-exists-p (projectile-expand-root (ivy-state-current ivy-last))))
+      (let ((buf (ignore-errors
+                   ;; may not open due to `large-file-warning-threshold' etc.
+                   (find-file-noselect (projectile-expand-root (ivy-state-current ivy-last))))))
+        (if buf
+            (progn
+              (push buf counsel--switch-buffer-temporary-buffers)
+              (ivy-call))
+          ;; clean up the minibuffer so that there's no delay before
+          ;; the Ivy candidates are displayed once again
+          (message ""))))
+     (t
+      (with-ivy-window
+        (switch-to-buffer (or (plist-get (ivy-state-extra-props ivy-last) :from-buffer)
+                              (ivy-state-buffer ivy-last))))))))
+
 ;;;###autoload
-(defun counsel-projectile-switch-to-buffer ()
-  "Jump to a buffer in the current project."
+(defun counsel-projectile-switch-to-buffer (&optional from-buffer)
+  "Jump to a buffer in the current project.
+
+If `counsel-projectile-preview-buffers' is non-nil, display a
+preview of the selected ivy completion candidate buffer as in
+`counsel-switch-buffer', falling back to the current buffer or
+optionally FROM-BUFFER."
   (interactive)
   (if (and (eq projectile-require-project-root 'prompt)
            (not (projectile-project-p)))
       (counsel-projectile-switch-to-buffer-action-switch-project)
-    (let ((ivy-update-fns-alist
-           '((counsel-projectile-switch-to-buffer . counsel--switch-buffer-update-fn)))
-          (ivy-unwind-fns-alist
-           '((counsel-projectile-switch-to-buffer . counsel--switch-buffer-unwind))))
-      (ivy-read (projectile-prepend-project-name "Switch to buffer: ")
-                ;; We use a collection function so that it is called each
-                ;; time the `ivy-state' is reset. This is needed for the
-                ;; "kill buffer" action.
-                #'counsel-projectile--project-buffers
-                :matcher #'ivy--switch-buffer-matcher
-                :require-match t
-                :sort counsel-projectile-sort-buffers
-                :action counsel-projectile-switch-to-buffer-action
-                :keymap counsel-projectile-switch-to-buffer-map
-                :caller 'counsel-projectile-switch-to-buffer))))
+    (ivy-read (projectile-prepend-project-name "Switch to buffer: ")
+              ;; We use a collection function so that it is called each
+              ;; time the `ivy-state' is reset. This is needed for the
+              ;; "kill buffer" action.
+              #'counsel-projectile--project-buffers
+              :matcher #'ivy--switch-buffer-matcher
+              :require-match t
+              :sort counsel-projectile-sort-buffers
+              :action counsel-projectile-switch-to-buffer-action
+              :keymap counsel-projectile-switch-to-buffer-map
+              :extra-props (list :from-buffer from-buffer)
+              :caller 'counsel-projectile-switch-to-buffer)))
 
 (ivy-configure 'counsel-projectile-switch-to-buffer
- :display-transformer-fn #'counsel-projectile-switch-to-buffer-transformer)
+  :display-transformer-fn #'counsel-projectile-switch-to-buffer-transformer
+  :update-fn #'counsel-projectile--switch-to-buffer-update-fn
+  :unwind-fn #'counsel--switch-buffer-unwind)
 
 ;;* counsel-projectile-grep
 
@@ -1247,9 +1297,10 @@ action."
 
 (defun counsel-projectile-switch-project-action (project)
   "Jump to a file or buffer in PROJECT."
-  (let ((projectile-switch-project-action
-         (lambda ()
-           (counsel-projectile ivy-current-prefix-arg))))
+  (let* ((from-buffer (ivy-state-buffer ivy-last))
+         (projectile-switch-project-action
+          `(lambda ()
+             (counsel-projectile ivy-current-prefix-arg ,from-buffer))))
     (counsel-projectile-switch-project-by-name project)))
 
 (defun counsel-projectile-switch-project-action-find-file (project)
@@ -1280,7 +1331,10 @@ action."
 
 (defun counsel-projectile-switch-project-action-switch-to-buffer (project)
   "Jump to a buffer in PROJECT."
-  (let ((projectile-switch-project-action 'counsel-projectile-switch-to-buffer))
+  (let* ((from-buffer (ivy-state-buffer ivy-last))
+         (projectile-switch-project-action
+          `(lambda ()
+            (counsel-projectile-switch-to-buffer ,from-buffer))))
     (counsel-projectile-switch-project-by-name project)))
 
 (defun counsel-projectile-switch-project-action-save-all-buffers (project)
@@ -1553,34 +1607,40 @@ directory of file named NAME."
     (propertize str 'face 'ivy-virtual)))
 
 ;;;###autoload
-(defun counsel-projectile (&optional arg)
+(defun counsel-projectile (&optional arg from-buffer)
   "Jump to a buffer or file in the current project.
 
 With a prefix ARG, invalidate the cache first.
 
-If not inside a project, call `counsel-projectile-switch-project'."
+If `counsel-projectile-preview-buffers' is non-nil, display a
+preview of the selected ivy completion candidate buffer as in
+`counsel-switch-buffer', falling back to the current buffer or
+optionally FROM-BUFFER.
+
+If `counsel-switch-buffer-preview-virtual-buffers' is also
+non-nil, also display a preview of the selected ivy completion
+candidate non-visited file."
   (interactive "P")
   (if (and (eq projectile-require-project-root 'prompt)
            (not (projectile-project-p)))
       (counsel-projectile-action-switch-project)
-    (let ((ivy-update-fns-alist
-           '((counsel-projectile . counsel--switch-buffer-update-fn)))
-          (ivy-unwind-fns-alist
-           '((counsel-projectile . counsel--switch-buffer-unwind))))
-      (projectile-maybe-invalidate-cache arg)
-      (ivy-read (projectile-prepend-project-name "Load buffer or file: ")
-                ;; We use a collection function so that it is called each
-                ;; time the `ivy-state' is reset. This is needed for the
-                ;; "kill buffer" action.
-                #'counsel-projectile--project-buffers-and-files
-                :matcher #'counsel-projectile--matcher
-                :require-match t
-                :action counsel-projectile-action
-                :keymap counsel-projectile-map
-                :caller 'counsel-projectile))))
+    (projectile-maybe-invalidate-cache arg)
+    (ivy-read (projectile-prepend-project-name "Load buffer or file: ")
+              ;; We use a collection function so that it is called each
+              ;; time the `ivy-state' is reset. This is needed for the
+              ;; "kill buffer" action.
+              #'counsel-projectile--project-buffers-and-files
+              :matcher #'counsel-projectile--matcher
+              :require-match t
+              :action counsel-projectile-action
+              :keymap counsel-projectile-map
+              :extra-props (list :from-buffer from-buffer)
+              :caller 'counsel-projectile)))
 
 (ivy-configure 'counsel-projectile
- :display-transformer-fn #'counsel-projectile-transformer)
+:display-transformer-fn #'counsel-projectile-transformer
+ :update-fn #'counsel-projectile--switch-to-buffer-update-fn
+ :unwind-fn #'counsel--switch-buffer-unwind)
 
 ;;* counsel-projectile-mode
 

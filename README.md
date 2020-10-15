@@ -341,6 +341,8 @@ If one of these variable is nil, the default, the command's candidates are not s
 ```
 
 Note that the `counsel-projectile` command always sorts buffers before files. Buffers are sorted as in `counsel-projectile-switch-to-buffer` and files are sorted according to `counsel-projectile-find-file`.
+## Preview in `counsel-projectile-switch-to-buffer` and `counsel-projectile`
+If the variable `counsel-projectile-preview-buffers` is non-nil, `counsel-projectile-switch-to-buffer` and `counsel-projectile` display a preview of the selected buffer in the current window. This makes these commands behave similarly to `counsel-switch-buffer`. If `counsel-switch-buffer-preview-virtual-buffers` is also non-nil, `counsel-projectile` also displays a preview of the selected non-visited file.
 # Upgrading
 ## Breaking changes in version `0.3`
 ### Key bindings
