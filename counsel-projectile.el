@@ -1,6 +1,6 @@
 ;;; counsel-projectile.el --- Ivy integration for Projectile -*- lexical-binding: t -*-
 
-;; Copyright (C) 2016-2019 Eric Danan
+;; Copyright (C) 2016-2021 Eric Danan
 
 ;; Author: Eric Danan
 ;; URL: https://github.com/ericdanan/counsel-projectile
