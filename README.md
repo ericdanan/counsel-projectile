@@ -324,7 +324,7 @@ Independently of the chosen matcher, it is possible to specifying a minimum numb
 The values of `counsel-projectile-find-file-matcher` and `counsel-projectile-find-file-more-chars` are also used by `counsel-projectile` to match files.
 ## Sorting candidates
 The following commands allow to modify the way candidates are sorted:
-- `cousnel-projectile-switch-project`
+- `counsel-projectile-switch-project`
 - `counsel-projectile-find-file`
 - `counsel-projectile-find-dir`
 - `counsel-projectile-switch-to-buffer`
